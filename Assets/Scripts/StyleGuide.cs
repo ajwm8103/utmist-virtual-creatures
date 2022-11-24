@@ -28,6 +28,27 @@
 // - Use a link to an external reference for legal information or licensing to save space.
 // - Use a summary XML tag in front of public methods or functions for output documentation/Intellisense.
 
+// ORDERING FIELDS AND METHODS:
+// - Use the following order for fields and methods:
+// 1a. Constant variables
+// 2a. Static variables
+// 3a. Editor-assigned variables
+// 4a. Other variables
+// 5a. Properties
+// 1b. Unity methods 1
+// - Awake()
+// - OnEnable()
+// - Start()
+// - Update()
+// - FixedUpdate()
+// 2b. Custom methods
+// - Init()
+// - ...
+// - Reset()
+// 3b. Unity methods 2
+// - OnDisable()
+// - OnDestroy()
+// 1c. UNITY_EDITOR #region
 
 // USING LINES:
 // - Keep using lines at the top of your file.
@@ -111,7 +132,8 @@ namespace StyleSheetExample
         // - Use camelCase for fields, add an underscore (_) in front of private fields to differentiate from local variables
         // - You can alternatively use more explicit prefixes: m_ = member variable, s_ = static, k_ = const
         // - Specify the default access modifier.
-
+        // - Use XxxPrefab for prefas
+        
         private int _elapsedTimeInDays;
 
         // Use [SerializeField] attribute if you want to display a private field in Inspector.
@@ -203,8 +225,16 @@ namespace StyleSheetExample
         // METHODS:
         // - Start a method's name with a verbs or verb phrases to show an action.
         // - Parameter names are camel case.
-
+        
         // Methods start with a verb.
+        // - Use OnXxxClick for UI butotn clicks
+        // Write summaries as such (https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/xmldoc/examples)
+        /// <summary>
+        /// Sets the initial position of the transform.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
         public void SetInitialPosition(float x, float y, float z)
         {
             transform.position = new Vector3(x, y, z);
