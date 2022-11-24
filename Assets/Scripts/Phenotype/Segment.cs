@@ -60,7 +60,7 @@ public class Segment : MonoBehaviour
 
     public float GetPhotosensor(int varNumber)
     {
-        LightSource lightsource = GameObject.FindObjectOfType<LightSource>();
+        LightSource lightsource = FindObjectOfType<LightSource>();
         if (lightsource == null)
         {
             return 0;

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 [System.Serializable]
 public class Neuron
@@ -82,6 +83,7 @@ public class Neuron
             22 => b * (Time.time * a - Mathf.Floor(Time.time * a)) + c, // oscillate-saw
             _ => 0
         };
+
         if (ng.type == 17 || ng.type == 18)
         {
             dummy1 = a;
@@ -119,6 +121,9 @@ public class Neuron
 
 public class Creature : MonoBehaviour
 {
+    public List<Neuron> sensors = new List<Neuron>();
+    public List<Neuron> neurons = new List<Neuron>();
+    public List<Neuron> effectors = new List<Neuron>();
     // Start is called before the first frame update
     void Start()
     {
