@@ -135,7 +135,6 @@ namespace StyleSheetExample
 
 
         // PROPERTIES:
-        // - Preferable to a public field.
         // - Pascal case, without special characters.
         // - Use the expression-bodied properties to shorten, but choose your preferrred format.
         // - e.g. use expression-bodied for read-only properties but { get; set; } for everything else.
@@ -146,16 +145,8 @@ namespace StyleSheetExample
 
         // read-only, returns backing field
         public int MaxHealthReadOnly => _maxHealth;
-
         // equivalent to:
         // public int MaxHealth { get; private set; }
-
-        // explicitly implementing getter and setter
-        public int MaxHealth
-        {
-            get => _maxHealth;
-            set => _maxHealth = value;
-        }
 
         // write-only (not using backing field)
         public int Health { private get; set; }
@@ -235,8 +226,7 @@ namespace StyleSheetExample
 
 
             // SWITCH STATEMENTS:
-            // - The formatting can vary. Select one for your style guide and follow it.
-            // - This example  indents each case and the break underneath.
+            // - Indent each case and the break underneath.
             switch (someExpression)
             {
                 case 0:
