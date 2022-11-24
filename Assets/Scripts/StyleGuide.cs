@@ -210,7 +210,7 @@ namespace StyleSheetExample
 
 
         // METHODS:
-        // - Start a methods name with a verbs or verb phrases to show an action.
+        // - Start a method's name with a verbs or verb phrases to show an action.
         // - Parameter names are camel case.
 
         // Methods start with a verb.
