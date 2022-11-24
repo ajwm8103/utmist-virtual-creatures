@@ -30,10 +30,10 @@
 
 // ORDERING FIELDS AND METHODS:
 // - Use the following order for fields and methods:
-// 1a. Constant variables
-// 2a. Static variables
-// 3a. Editor-assigned variables
-// 4a. Other variables
+// 1a. Constant fields
+// 2a. Static fields
+// 3a. Editor-assigned fields
+// 4a. Other fields
 // 5a. Properties
 // 1b. Unity methods 1
 // - Awake()
