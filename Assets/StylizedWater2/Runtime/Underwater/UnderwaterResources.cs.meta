@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 998c26a7af8f496d9380a11e5803c00e
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - underwaterShader: {fileID: 4800000, guid: 33652c9d694d8004bb649164aafc9ecc, type: 3}
+  - waterlineShader: {fileID: 4800000, guid: aef8d53c098c94044b72ea6bda9bb6bc, type: 3}
+  - watermaskShader: {fileID: 4800000, guid: 85caab243c23a1e489cd0bdcaf742560, type: 3}
+  - postProcessShader: {fileID: 4800000, guid: 33652c9d694d8004bb649164aafc9ecc, type: 3}
+  - distortionShader: {fileID: 4800000, guid: c0dc1a28fd7639a498465a61cbf19094, type: 3}
+  - depthNormalsShader: {fileID: 4800000, guid: 7dade2c437abfb94b95d1ede3c2c094b,
+      type: 3}
+  - distortionNoise: {fileID: 2800000, guid: 2037899b83ce81948a538ca8e53f1017, type: 3}
+  - geoSphere: {fileID: -9027816566018387332, guid: cf19684295f459f4e8c84ebbe80b3314,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
