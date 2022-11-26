@@ -64,13 +64,13 @@ public class FluidDrag : MonoBehaviour
         Vector3 pointVelPosY = rigidBod.GetPointVelocity(ypos_face_center);
         // linear drag: Vector3 fluidDragVecPosY = -up * LinearDragFloat(sa_y, Vector3.Dot(up, pointVelPosY));
 	Vector3 fluidDragVecPosY = -up * dragScaling * 0.5f * sa_y * 1.05f * 1000 * Mathf.Pow(Vector3.Dot(up, pointVelPosY), 2);
-        rigidBod.AddForceAtPosition(fluidDragVecPosY * 2, ypos_face_center);
+        rigidBod.AddForceAtPosition(fluidDragVecPosY, ypos_face_center);
 
         // RIGHT (posX):
         Vector3 pointVelPosX = rigidBod.GetPointVelocity(xpos_face_center);
         // linear drag: Vector3 fluidDragVecPosX = -right * LinearDragFloat(sa_x, Vector3.Dot(right, pointVelPosX));
 	Vector3 fluidDragVecPosX = -right * dragScaling * 0.5f * sa_x * 1.05f * 1000 * Mathf.Pow(Vector3.Dot(right, pointVelPosX), 2);
-        rigidBod.AddForceAtPosition(fluidDragVecPosX * 2, xpos_face_center);
+        rigidBod.AddForceAtPosition(fluidDragVecPosX, xpos_face_center);
 
     }
 }
