@@ -113,7 +113,7 @@ public class MutateGenotype
 
         public bool CoinFlip(string parameter)
         {
-            return CreatureUtil.CoinFlip(mutationFrequencies[parameter].mutationChance * currentScaleFactor);
+            return MutateGenotype.CoinFlip(mutationFrequencies[parameter].mutationChance * currentScaleFactor);
         }
 
         public float ModifyFloat(float mean, string parameter)
