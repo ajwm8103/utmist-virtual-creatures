@@ -4,9 +4,10 @@ using UnityEngine;
 
 public class FluidDrag : MonoBehaviour
 {
-    public float viscosityDrag = 1f;
-    public float dragScaling = 1f;
-    private Rigidbody rigidBod;
+    private float viscosityDrag = 1f;
+    private float fluidDensity = 1000f;
+    private float dragScaling = 1f;
+    private Rigidbody rigidbody;
 
     // Surface Areas for each pair of faces (neg x will be same as pos x):
     private float sa_x;
@@ -17,21 +18,28 @@ public class FluidDrag : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        rigidBod = GetComponent<Rigidbody>();
+        rigidbody = GetComponent<Rigidbody>();
 
         // Calculate surface areas for each face:
         sa_x = transform.localScale.y * transform.localScale.z;
         sa_y = transform.localScale.x * transform.localScale.z;
         sa_z = transform.localScale.x * transform.localScale.y;
+
+        // Store local parameters
+        FluidManager fluidManager = FluidManager.instance;
+        fluidDensity = fluidManager.fluidDensity;
+        viscosityDrag = fluidManager.viscosityDrag;
     }
 
     float LinearDragFloat(float A, float dot)
     {
+        // TOOD: Probably incorrect
         return A * dot * viscosityDrag * C_D;
     }
     float QuadraticDragFloat(float A, float dot)
     {
-        return A * dot * Mathf.Pow(viscosityDrag, 2) * C_D;
+        // 0.5 * rho * v^2 * C_D * A
+        return 0.5f * fluidDensity * Mathf.Pow(dot, 2) * C_D * A;
     }
 
     void FixedUpdate()
@@ -50,27 +58,73 @@ public class FluidDrag : MonoBehaviour
         Vector3 yneg_face_center = -(up * transform.localScale.y / 2) + transform.position;
         Vector3 zneg_face_center = -(forward * transform.localScale.z / 2) + transform.position;
 
+        Vector3 pointVelPosZ = rigidbody.GetPointVelocity(zpos_face_center);
+        Vector3 pointVelPosY = rigidbody.GetPointVelocity(ypos_face_center);
+        Vector3 pointVelPosX = rigidbody.GetPointVelocity(xpos_face_center);
+
+        // Quadratic drag seems to break some stuff with symmetry, so using linear drag as in the original paper:
+
+        Vector3 fluidDragVecPosZ;
+
+        // Do the dot product first, but break it up and do it manually like this instead of calling the Dot() method:
+        float dotZ;
+        dotZ = -forward.x * pointVelPosZ.x +
+            -forward.y * pointVelPosZ.y +
+            -forward.z * pointVelPosZ.z;
+
+        fluidDragVecPosZ.x = forward.x * dotZ * sa_z * viscosityDrag;
+        fluidDragVecPosZ.y = forward.y * dotZ * sa_z * viscosityDrag;
+        fluidDragVecPosZ.z = forward.z * dotZ * sa_z * viscosityDrag;
+
+        rigidbody.AddForceAtPosition(fluidDragVecPosZ * 2, zpos_face_center);
+
+        Vector3 fluidDragVecPosY;
+
+        float dotY;
+        dotY = -up.x * pointVelPosY.x +
+            -up.y * pointVelPosY.y +
+            -up.z * pointVelPosY.z;
+
+        fluidDragVecPosY.x = up.x * dotY * sa_y * viscosityDrag;
+        fluidDragVecPosY.y = up.y * dotY * sa_y * viscosityDrag;
+        fluidDragVecPosY.z = up.z * dotY * sa_y * viscosityDrag;
+
+        rigidbody.AddForceAtPosition(fluidDragVecPosY * 2, ypos_face_center);
+
+        Vector3 fluidDragVecPosX;
+
+        float dotX;
+        dotX = -right.x * pointVelPosX.x +
+            -right.y * pointVelPosX.y +
+            -right.z * pointVelPosX.z;
+
+        fluidDragVecPosX.x = right.x * dotX * sa_x * viscosityDrag;
+        fluidDragVecPosX.y = right.y * dotX * sa_x * viscosityDrag;
+        fluidDragVecPosX.z = right.z * dotX * sa_x * viscosityDrag;
+
+        rigidbody.AddForceAtPosition(fluidDragVecPosX * 2, xpos_face_center);
+
         //=== FOR EACH FACE of rigidbody box: ----------------------------------------
         //=== Get Velocity: ---------------------------------------------
         //=== Apply Opposing Force ----------------------------------------
 
+        /*
         // FRONT (posZ):
-        Vector3 pointVelPosZ = rigidBod.GetPointVelocity(zpos_face_center);
+        Vector3 pointVelPosZ = rigidbody.GetPointVelocity(zpos_face_center);
         // linear drag: Vector3 fluidDragVecPosZ = -forward * LinearDragFloat(sa_z, Vector3.Dot(forward, pointVelPosZ));
-	Vector3 fluidDragVecPosZ = -forward * dragScaling * 0.5f * sa_z * 1.05f * 1000 * Mathf.Pow(Vector3.Dot(forward, pointVelPosZ), 2);
-        rigidBod.AddForceAtPosition(fluidDragVecPosZ, zpos_face_center);  // Apply force at face's center, in the direction opposite the face normal
+        Vector3 fluidDragVecPosZ = -forward * dragScaling * QuadraticDragFloat(sa_z, Vector3.Dot(forward, pointVelPosZ));
+        rigidbody.AddForceAtPosition(fluidDragVecPosZ, zpos_face_center);  // Apply force at face's center, in the direction opposite the face normal
 
         // TOP (posY):
-        Vector3 pointVelPosY = rigidBod.GetPointVelocity(ypos_face_center);
+        Vector3 pointVelPosY = rigidbody.GetPointVelocity(ypos_face_center);
         // linear drag: Vector3 fluidDragVecPosY = -up * LinearDragFloat(sa_y, Vector3.Dot(up, pointVelPosY));
-	Vector3 fluidDragVecPosY = -up * dragScaling * 0.5f * sa_y * 1.05f * 1000 * Mathf.Pow(Vector3.Dot(up, pointVelPosY), 2);
-        rigidBod.AddForceAtPosition(fluidDragVecPosY, ypos_face_center);
+	    Vector3 fluidDragVecPosY = -up * dragScaling * QuadraticDragFloat(sa_y, Vector3.Dot(up, pointVelPosY));
+        rigidbody.AddForceAtPosition(fluidDragVecPosY, ypos_face_center);
 
         // RIGHT (posX):
-        Vector3 pointVelPosX = rigidBod.GetPointVelocity(xpos_face_center);
+        Vector3 pointVelPosX = rigidbody.GetPointVelocity(xpos_face_center);
         // linear drag: Vector3 fluidDragVecPosX = -right * LinearDragFloat(sa_x, Vector3.Dot(right, pointVelPosX));
-	Vector3 fluidDragVecPosX = -right * dragScaling * 0.5f * sa_x * 1.05f * 1000 * Mathf.Pow(Vector3.Dot(right, pointVelPosX), 2);
-        rigidBod.AddForceAtPosition(fluidDragVecPosX, xpos_face_center);
-
+	    Vector3 fluidDragVecPosX = -right * dragScaling * QuadraticDragFloat(sa_x, Vector3.Dot(right, pointVelPosX));
+        rigidbody.AddForceAtPosition(fluidDragVecPosX, xpos_face_center);*/
     }
 }
