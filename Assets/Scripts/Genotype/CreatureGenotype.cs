@@ -40,7 +40,6 @@ public struct NeuronReference
     //[Tooltip("-3:ghost\n-2:parent\n-1:self\n0>:child connection id")]
     //public int ownerSegment;
 
-
     public bool isGhost;
     public bool isParent;
     public bool isSelf;
@@ -55,8 +54,6 @@ public struct NeuronReference
     // 9-11 - photosensors
     // 12 - joint effector
     // 13-onwards - other neurons
-
-
 }
 
 [System.Serializable]
@@ -210,7 +207,7 @@ public class SegmentGenotype
 public class CreatureGenotype
 {
     public string name;
-
+    public CreatureStage stage;
     public List<SegmentGenotype> segments;
 
     public SegmentGenotype GetSegment(byte id)
