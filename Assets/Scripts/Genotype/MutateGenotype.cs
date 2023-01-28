@@ -10,8 +10,8 @@ public class MutateGenotype
         float v1, v2, s;
         do
         {
-            v1 = 2.0f * Random.Range(0f, 1f) - 1.0f;
-            v2 = 2.0f * Random.Range(0f, 1f) - 1.0f;
+            v1 = Random.Range(0f, 2f) - 1.0f;
+            v2 = Random.Range(0f, 2f) - 1.0f;
             s = v1 * v1 + v2 * v2;
         } while (s >= 1.0f || s == 0f);
         s = Mathf.Sqrt((-2.0f * Mathf.Log(s)) / s);
@@ -117,6 +117,7 @@ public class MutateGenotype
             return MutateGenotype.CoinFlip(mutationFrequencies[parameter].mutationChance * currentScaleFactor);
         }
 
+	// Why does standard deviation increase?
         public float ModifyFloat(float mean, string parameter)
         {
             return NextGaussian(mean, mutationFrequencies[parameter].stdev + Mathf.Abs(mean * stdevSizeAdjustmentFactor), floatClamps[parameter][0], floatClamps[parameter][1]);
@@ -229,7 +230,9 @@ public class MutateGenotype
         }
     }
 
-    public void TraceConnections(CreatureGenotype cg, Dictionary<byte, byte> recursiveLimitValues, SegmentConnectionGenotype myConnection, List<byte> connectionPath, List<byte> segmentIds, List<List<byte>> connectionPaths, List<NeuronReference> neuronReferences)
+    public void TraceConnections(CreatureGenotype cg, Dictionary<byte, byte> recursiveLimitValues,
+		    SegmentConnectionGenotype myConnection, List<byte> connectionPath, List<byte> segmentIds,
+		    List<List<byte>> connectionPaths, List<NeuronReference> neuronReferences)
     {
         // Find SegmentGenotype
         byte id;
