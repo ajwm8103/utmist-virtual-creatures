@@ -180,7 +180,7 @@ public class MutateGenotype
             }
             else
             {
-                segmentConnectionsByDest.Add(scg.destination, new List<SegmentConnectionGenotype>() { scm });
+                segmentConnectionsByDest.Add(scg.destination, new List<SegmentConnectionGenotype>() { scg });
             }
 
 
