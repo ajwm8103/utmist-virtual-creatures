@@ -117,7 +117,6 @@ public class MutateGenotype
             return MutateGenotype.CoinFlip(mutationFrequencies[parameter].mutationChance * currentScaleFactor);
         }
 
-	// Why does standard deviation increase?
         public float ModifyFloat(float mean, string parameter)
         {
             return NextGaussian(mean, mutationFrequencies[parameter].stdev + Mathf.Abs(mean * stdevSizeAdjustmentFactor), floatClamps[parameter][0], floatClamps[parameter][1]);
