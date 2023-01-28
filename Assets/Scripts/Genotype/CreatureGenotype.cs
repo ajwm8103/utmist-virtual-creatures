@@ -138,6 +138,13 @@ public enum JointType
 }
 
 [System.Serializable]
+public enum CreatureStage
+{
+    KSS,
+    RL,
+}
+
+[System.Serializable]
 public class SegmentGenotype
 {
     public byte r;
