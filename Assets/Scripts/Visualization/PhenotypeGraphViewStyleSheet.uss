@@ -1,0 +1,7 @@
+GridBackground
+{
+	--grid-background-color: var(--pt-colors-grid-light-grey-1);
+	--line-color: var(--pt-colors-grid-light-grey-2);
+	--thick-line-color: var(--pt-colors-grid-light-grey-1);
+	--spacing: var(--pt-metrics-grid-25);
+}
