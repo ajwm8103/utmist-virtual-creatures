@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
  
-// hello :D
-
 public class MutateGenotype
 {
     public static float NextGaussian()
