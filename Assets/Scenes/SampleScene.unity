@@ -283,52 +283,6 @@ Transform:
   m_Father: {fileID: 657143654}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &349237675
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: defe3efb56c1bc943a6bfb504a00dc77, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  active: 1
-  startDistance:
-    m_OverrideState: 0
-    m_Value: 0
-  fogDensity:
-    m_OverrideState: 0
-    m_Value: 20
-  heightFogDepth:
-    m_OverrideState: 0
-    m_Value: 25
-  heightFogDensity:
-    m_OverrideState: 0
-    m_Value: 50
-  heightFogBrightness:
-    m_OverrideState: 0
-    m_Value: 0.6
-  fogBrightness:
-    m_OverrideState: 0
-    m_Value: 1
-  subsurfaceStrength:
-    m_OverrideState: 0
-    m_Value: 1
-  causticsStrength:
-    m_OverrideState: 0
-    m_Value: 1
-  distortionStrength:
-    m_OverrideState: 0
-    m_Value: 0.25
-  distortionFrequency:
-    m_OverrideState: 0
-    m_Value: 0.75
-  distortionSpeed:
-    m_OverrideState: 0
-    m_Value: 0.5
 --- !u!1001 &440245915
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1069,7 +1023,7 @@ MonoBehaviour:
   waterLevelPadding: 0
   waterMaterial: {fileID: 2100000, guid: af1a77d4d4ac18743ba6f50fac4b7600, type: 2}
   dynamicMaterial: 0
-  settings: {fileID: 349237675}
+  settings: {fileID: 0}
   useVolumeBlending: 0
   startDistance: 0
   fogDensity: 8
@@ -1618,8 +1572,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1602748648}
+  - component: {fileID: 1602748649}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: CreatureSpawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1640,6 +1595,128 @@ Transform:
   m_Father: {fileID: 177012395}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1602748649
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1602748647}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 995ffbf13ae25dd4282f4ad0f04a3e25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  creaturePrefab: {fileID: 5168623450832129693, guid: f57b33118f5715c428887d11a1b04801, type: 3}
+  segmentPrefab: {fileID: 6837624401485191407, guid: 56ac4567187132f4f921d8ae50078f2e, type: 3}
+  creatureGenotype:
+    name: Test
+    stage: 0
+    segments:
+    - r: 255
+      g: 0
+      b: 0
+      id: 1
+      connections:
+      - id: 0
+        destination: 2
+        anchorX: 0.5
+        anchorY: 0
+        anchorZ: 0
+        orientationX: 0
+        orientationY: 0
+        orientationZ: 0
+        orientationW: 0
+        eulerX: 0
+        eulerY: 0
+        eulerZ: -90
+        scale: 1
+        reflected: 0
+        terminalOnly: 0
+      neurons:
+      - type: 0
+        inputs: []
+        weights: []
+        nr:
+          isGhost: 0
+          isParent: 0
+          isSelf: 0
+          connectionPath: 
+          id: 3
+      recursiveLimit: 1
+      dimensionX: 1
+      dimensionY: 1
+      dimensionZ: 1
+      jointType: 0
+    - r: 0
+      g: 0
+      b: 125
+      id: 2
+      connections:
+      - id: 0
+        destination: 2
+        anchorX: 0
+        anchorY: 0.5
+        anchorZ: 0
+        orientationX: 0
+        orientationY: 0
+        orientationZ: 0
+        orientationW: 0
+        eulerX: 0
+        eulerY: 0
+        eulerZ: 0
+        scale: 1
+        reflected: 0
+        terminalOnly: 0
+      neurons:
+      - type: 21
+        inputs:
+        - isGhost: 0
+          isParent: 1
+          isSelf: 0
+          connectionPath: 
+          id: 3
+        - isGhost: 0
+          isParent: 1
+          isSelf: 0
+          connectionPath: 
+          id: 3
+        - isGhost: 0
+          isParent: 1
+          isSelf: 0
+          connectionPath: 
+          id: 3
+        weights:
+        - 1
+        - 1
+        - 0
+        nr:
+          isGhost: 0
+          isParent: 0
+          isSelf: 0
+          connectionPath: 
+          id: 13
+      - type: 0
+        inputs:
+        - isGhost: 0
+          isParent: 0
+          isSelf: 1
+          connectionPath: 00
+          id: 13
+        weights:
+        - 350
+        nr:
+          isGhost: 0
+          isParent: 0
+          isSelf: 0
+          connectionPath: 
+          id: 12
+      recursiveLimit: 1
+      dimensionX: 0.2
+      dimensionY: 2
+      dimensionZ: 1
+      jointType: 3
+  creatureGenotypeHistory: []
 --- !u!1 &1693628148
 GameObject:
   m_ObjectHideFlags: 0
