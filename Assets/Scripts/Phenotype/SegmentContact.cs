@@ -4,15 +4,25 @@ using UnityEngine;
 
 public class SegmentContact : MonoBehaviour
 {
+    private Segment segment;
+
     // Start is called before the first frame update
     void Start()
     {
-        
+        segment = transform.parent.parent.GetComponent<Segment>();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnTriggerStay(Collider other)
     {
-        
+        if (segment == null)
+        {
+            segment = transform.parent.parent.GetComponent<Segment>();
+        }
+        else
+        {
+            segment.HandleStay(other, gameObject.name);
+        }
+
     }
+
 }
