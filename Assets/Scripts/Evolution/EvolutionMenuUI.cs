@@ -29,7 +29,6 @@ public class EvolutionMenuUI : MonoBehaviour
 
     public void ShowLoadServerMenu()
     {
-        Debug.Log("click");
         loadServerMenu.SetActive(true);
         evolutionMenu.SetActive(false);
     }
@@ -37,5 +36,10 @@ public class EvolutionMenuUI : MonoBehaviour
     public void Load()
     {
         SceneManager.LoadScene("OceanEnv");
+    }
+
+    public void ReturnToMainMenu()
+    {
+        SceneManager.LoadScene("Menu");
     }
 }
