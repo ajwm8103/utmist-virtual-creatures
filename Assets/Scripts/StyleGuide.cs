@@ -1,3 +1,5 @@
+#pragma warning disable 0067
+
 // STYLE SHEET EXAMPLE
 
 // GENERAL:

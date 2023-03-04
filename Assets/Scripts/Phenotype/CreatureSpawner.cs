@@ -6,8 +6,13 @@ using static MutateGenotype;
 
 public class CreatureSpawner : MonoBehaviour
 {
+    [Header("Prefabs")]
     public Creature creaturePrefab;
     public GameObject segmentPrefab;
+
+    [Header("Settings")]
+    [SerializeField]
+    private Vector3 spawnPos;
 
     
     public CreatureGenotype creatureGenotype;
@@ -78,6 +83,7 @@ public class CreatureSpawner : MonoBehaviour
 
         Creature c = Instantiate(creaturePrefab, Vector3.zero, Quaternion.identity);
         c.name = $"Creature ({cm.name})";
+        c.transform.parent = transform;
 
         // Add neurons
         SegmentGenotype ghost = cm.GetSegment(0);
@@ -333,4 +339,12 @@ public class CreatureSpawner : MonoBehaviour
             }
         }
     }
+
+    void OnDrawGizmosSelected()
+    {
+        // Draw a yellow sphere at the transform's position
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position + spawnPos, 0.1f);
+    }
+
 }
