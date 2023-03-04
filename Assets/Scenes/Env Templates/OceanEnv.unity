@@ -256,7 +256,7 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 254256318}
   m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &1148675278
+--- !u!114 &288894563
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -451,71 +451,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &1890953602
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1747916716211864736, guid: 97a2aba4547e47e47b9fc1052a1f0b12, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1747916716799035020, guid: 97a2aba4547e47e47b9fc1052a1f0b12, type: 3}
-      propertyPath: settings
-      value: 
-      objectReference: {fileID: 1148675278}
-    - target: {fileID: 1747916717318426409, guid: 97a2aba4547e47e47b9fc1052a1f0b12, type: 3}
-      propertyPath: m_RootOrder
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1747916717318426409, guid: 97a2aba4547e47e47b9fc1052a1f0b12, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1747916717318426409, guid: 97a2aba4547e47e47b9fc1052a1f0b12, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1747916717318426409, guid: 97a2aba4547e47e47b9fc1052a1f0b12, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -12.8
-      objectReference: {fileID: 0}
-    - target: {fileID: 1747916717318426409, guid: 97a2aba4547e47e47b9fc1052a1f0b12, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1747916717318426409, guid: 97a2aba4547e47e47b9fc1052a1f0b12, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1747916717318426409, guid: 97a2aba4547e47e47b9fc1052a1f0b12, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1747916717318426409, guid: 97a2aba4547e47e47b9fc1052a1f0b12, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1747916717318426409, guid: 97a2aba4547e47e47b9fc1052a1f0b12, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1747916717318426409, guid: 97a2aba4547e47e47b9fc1052a1f0b12, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1747916717318426409, guid: 97a2aba4547e47e47b9fc1052a1f0b12, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1747916717318426410, guid: 97a2aba4547e47e47b9fc1052a1f0b12, type: 3}
-      propertyPath: m_Name
-      value: PoolEnv
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 97a2aba4547e47e47b9fc1052a1f0b12, type: 3}
 --- !u!114 &639806998971211288
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1067,7 +1002,7 @@ MonoBehaviour:
   waterLevelPadding: 0
   waterMaterial: {fileID: 2100000, guid: af1a77d4d4ac18743ba6f50fac4b7600, type: 2}
   dynamicMaterial: 0
-  settings: {fileID: 0}
+  settings: {fileID: 288894563}
   useVolumeBlending: 0
   startDistance: 0
   fogDensity: 8
