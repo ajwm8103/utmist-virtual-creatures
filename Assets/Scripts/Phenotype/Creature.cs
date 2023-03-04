@@ -7,7 +7,7 @@ using System.Linq;
 public class Neuron
 {
     public Neuron neuronA, neuronB, neuronC;
-    public float a, b, c;
+    public float a, b, c; // temp variables
     public float outValue;
     public float dummy1;
     public NeuronGenotype ng;
@@ -22,7 +22,7 @@ public class Neuron
         if (neuronC != null) c = neuronC.outValue * ng.weights[2];
 
 
-        if (ng.nr.id == 12)
+        if (ng.nr.id == 12) // joint effector
         {
             // I am an "effector" I must "effect"
             //Debug.Log("Effector output" + a);
@@ -84,7 +84,7 @@ public class Neuron
             _ => 0
         };
 
-        if (ng.type == 17 || ng.type == 18)
+        if (ng.type == 17 || ng.type == 18) // integrate or differentiate
         {
             dummy1 = a;
         }
@@ -108,7 +108,7 @@ public class Neuron
         }
         if (inputNeurons.Count > 3)
         {
-            Debug.Log("??????");
+            Debug.Log("More than 3 inputNeurons when there should be at most 3");
             return;
         }
     }
@@ -169,7 +169,7 @@ public class Creature : MonoBehaviour
             List<Neuron> inputNeuronsToAdd = new List<Neuron>();
             foreach (NeuronReference nr in n.ng.inputs)
             {
-                if (nr.id >= 13)
+                if (nr.id >= 13) // other neurons
                 {
                     //Debug.Log($"Finding a neuron ({nr.id}) for neuron {n.ng.nr.id}.");
                     Neuron foundNeuron = GetNeuron(neurons, nr, n.ng.nr);
@@ -184,7 +184,7 @@ public class Creature : MonoBehaviour
                         inputNeuronsToAdd.Add(foundNeuron);
                     }
                 }
-                else if (nr.id == 12)
+                else if (nr.id == 12) // joint effector
                 {
                     //Debug.Log($"Finding an effector ({nr.id}) for neuron {n.ng.nr.id}.");
                     Neuron foundNeuron = GetNeuron(effectors, nr, n.ng.nr);
@@ -308,18 +308,18 @@ public class Creature : MonoBehaviour
     {
         //Debug.Log("Adding neuron" + ng.nr.id);
         Neuron n = new Neuron(ng);
-        if (n.ng.nr.id >= 13)
+        if (n.ng.nr.id >= 13) // other
         {
             //Debug.Log("Neuron");
             neurons.Add(n);
         }
-        else if (n.ng.nr.id == 12)
+        else if (n.ng.nr.id == 12) // joint effector
         {
             //Debug.Log("Effector");
             n.effectorJoint = effectorJoint;
             effectors.Add(n);
         }
-        else
+        else // is a sensor
         {
             //Debug.Log("Sensor");
             n.segment = segment;
