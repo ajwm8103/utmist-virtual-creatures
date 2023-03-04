@@ -85,6 +85,7 @@ public class CreatureSpawner : MonoBehaviour
         c.name = $"Creature ({cm.name})";
         c.transform.parent = transform;
 
+        
         // Add neurons
         SegmentGenotype ghost = cm.GetSegment(0);
         if (ghost != null)
@@ -97,8 +98,7 @@ public class CreatureSpawner : MonoBehaviour
 
         SpawnSegment(cm, c, recursiveLimitInitial, position);
         c.InitializeCreature();
-
-
+        c.cg = cm;
     }
 
 
@@ -160,6 +160,7 @@ public class CreatureSpawner : MonoBehaviour
 
         Rigidbody rb = spawnedSegmentGameObject.GetComponent<Rigidbody>();
         rb.mass *= spawnedSegmentGameObject.transform.localScale.x * spawnedSegmentGameObject.transform.localScale.y * spawnedSegmentGameObject.transform.localScale.z;
+        
         switch (currentSegmentGenotype.jointType)
         {
             case (JointType.Fixed):
@@ -239,22 +240,31 @@ public class CreatureSpawner : MonoBehaviour
             runTerminalOnly = true;
         }
 
-        // Add neurons
-        foreach (NeuronGenotype nm in currentSegmentGenotype.neurons)
-        {
-            nm.nr.connectionPath = connectionPath;
-            if (nm.nr.id == 12)
+        if (creatureGenotype.stage == CreatureStage.KSS){
+            // Add neurons
+            foreach (NeuronGenotype nm in currentSegmentGenotype.neurons)
             {
-                c.AddNeuron(nm, spawnedSegmentGameObject.GetComponent<HingeJoint>(), null);
+                nm.nr.connectionPath = connectionPath;
+                if (nm.nr.id == 12)
+                {
+                    c.AddNeuron(nm, spawnedSegmentGameObject.GetComponent<HingeJoint>(), null);
+                }
+                else if (nm.nr.id <= 11)
+                {
+                    c.AddNeuron(nm, null, spawnedSegmentGameObject.GetComponent<Segment>());
+                }
+                else
+                {
+                    c.AddNeuron(nm, null, null);
+                }
             }
-            else if (nm.nr.id <= 11)
-            {
-                c.AddNeuron(nm, null, spawnedSegmentGameObject.GetComponent<Segment>());
-            }
-            else
-            {
-                c.AddNeuron(nm, null, null);
-            }
+        } else if (creatureGenotype.stage == CreatureStage.RL){
+            // get the current spawned segment
+            // add the 6 contact sensors to the current creature obs M
+            // add the 3 joint sensors and 3 photosensprs to the curent creature obs m
+            c.segments.Add(spawnedSegmentGameObject.GetComponent<Segment>());
+            // add the motors to the act
+            c.actMotors.Add(spawnedSegmentGameObject.GetComponent<HingeJoint>());
         }
 
         foreach (SegmentConnectionGenotype connection in currentSegmentGenotype.connections)
@@ -305,24 +315,34 @@ public class CreatureSpawner : MonoBehaviour
 
         List<byte> connectionPath = new List<byte>();
 
-        // Add neurons
-        foreach (NeuronGenotype nm in currentSegmentGenotype.neurons)
-        {
-            nm.nr.connectionPath = connectionPath;
+        if (creatureGenotype.stage == CreatureStage.KSS){
+            // Add neurons
+            foreach (NeuronGenotype nm in currentSegmentGenotype.neurons)
+            {
+                nm.nr.connectionPath = connectionPath;
 
-            if (nm.nr.id == 12)
-            {
-                c.AddNeuron(nm, spawnedSegmentGameObject.GetComponent<HingeJoint>(), null);
+                if (nm.nr.id == 12)
+                {
+                    c.AddNeuron(nm, spawnedSegmentGameObject.GetComponent<HingeJoint>(), null);
+                }
+                else if (nm.nr.id <= 11)
+                {
+                    c.AddNeuron(nm, null, spawnedSegmentGameObject.GetComponent<Segment>());
+                }
+                else
+                {
+                    c.AddNeuron(nm, null, null);
+                }
             }
-            else if (nm.nr.id <= 11)
-            {
-                c.AddNeuron(nm, null, spawnedSegmentGameObject.GetComponent<Segment>());
-            }
-            else
-            {
-                c.AddNeuron(nm, null, null);
-            }
+        } else if (creatureGenotype.stage == CreatureStage.RL){
+            // get the current spawned segment
+            // add the 6 contact sensors to the current creature obs M
+            // add the 3 joint sensors and 3 photosensprs to the curent creature obs m
+            c.segments.Add(spawnedSegmentGameObject.GetComponent<Segment>());
+            // root node does not add the motors to the action motors list, because root cannot move
+            //c.actMotors.Add(spawnedSegmentGameObject.GetComponent<HingeJoint>());
         }
+        
 
 
         foreach (SegmentConnectionGenotype connection in currentSegmentGenotype.connections)

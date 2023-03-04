@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 [System.Serializable]
 public class Neuron
@@ -125,6 +126,11 @@ public class Creature : MonoBehaviour
     public List<Neuron> neurons = new List<Neuron>();
     public List<Neuron> effectors = new List<Neuron>();
 
+    public CreatureGenotype cg;
+
+    public List<HingeJoint> actMotors = new List<HingeJoint>();
+    public List<Segment> segments = new List<Segment>();
+
     // Update is called once per frame
     void Update()
     {
@@ -159,6 +165,29 @@ public class Creature : MonoBehaviour
         foreach (Neuron n in effectors)
         {
             n.GetInputs();
+        }
+    }
+
+    public List<float> GetObservations()
+    {   
+        // observations is a list of 12 observations per segment it has
+        List<float> observations = new List<float>();
+        foreach (Segment s in segments)
+        {
+            List<float> segObservations = s.GetObservations();
+            foreach (float value in segObservations) observations.Add(value);
+        }
+        return observations;
+    }
+
+    // actions is received from ML-Agents, and each action is a float that we apply to JointMotors
+    public void Act(List<float> actions)
+    {   
+        for (int index = 0; index < actions.Count; index++)
+        {   
+            JointMotor motor = actMotors[index].motor;
+            motor.targetVelocity = actions[index]; // actions[index] defines the target velocity of the motor
+            actMotors[index].motor = motor;
         }
     }
 
