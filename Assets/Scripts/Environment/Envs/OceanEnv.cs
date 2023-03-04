@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SwimEnvironment : MonoBehaviour
+public class OceanEnv : Environment
 {
     // Start is called before the first frame update
     void Start()
