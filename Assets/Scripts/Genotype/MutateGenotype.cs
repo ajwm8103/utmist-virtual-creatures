@@ -331,7 +331,7 @@ public class MutateGenotype
                     {
                         continue;
                     }
-                    List<byte, byte> recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
+                    Dictionary<byte, byte> recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
                     List<byte> connectionPathClone = new List<byte>(connectionPath);
                     connectionPathClone.Add(connection.id);
                     TraceConnections(cg, recursiveLimitClone, connection, connectionPathClone, segmentIds, connectionPaths, neuronReferences);
