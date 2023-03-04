@@ -119,6 +119,7 @@ public class MutateGenotype
 
         public float ModifyFloat(float mean, string parameter)
         {
+            /// Modifies float using Gaussian distribution where stdev is scaled by mean
             return NextGaussian(mean, mutationFrequencies[parameter].stdev + Mathf.Abs(mean * stdevSizeAdjustmentFactor), floatClamps[parameter][0], floatClamps[parameter][1]);
         }
 
@@ -145,9 +146,9 @@ public class MutateGenotype
 
     public void SimplifyCreatureGenotype(CreatureGenotype cg)
     {
-        // Remove all unconnected segments
+        /// Remove all unconnected segments
 
-        // List all connected segments
+        /// List all connected segments
         Dictionary<byte, List<SegmentConnectionGenotype>> segmentConnectionsByDest = new Dictionary<byte, List<SegmentConnectionGenotype>>();
         /*foreach (SegmentGenotype sm in cm.segments)
         {
@@ -168,6 +169,7 @@ public class MutateGenotype
         segmentConnectionsByDest[0] = new List<SegmentConnectionGenotype>();
         segmentConnectionsByDest[1] = new List<SegmentConnectionGenotype>();
 
+        /// adds everything connected to root (id: 1) to the queue
         cg.GetSegment(1).connections.ForEach(item => connectionsToSearch.Enqueue(item));
         while (connectionsToSearch.Count > 0)
         {
@@ -204,7 +206,7 @@ public class MutateGenotype
             {
                 continue;
             }
-            for (byte i = 2; i < Mathf.Min(sg.id, 255); i++)
+            for (byte i = 2; i < sg.id; i++)
             {
                 if (cg.GetSegment(i) == null)
                 {
@@ -233,6 +235,8 @@ public class MutateGenotype
 		    SegmentConnectionGenotype myConnection, List<byte> connectionPath, List<byte> segmentIds,
 		    List<List<byte>> connectionPaths, List<NeuronReference> neuronReferences)
     {
+        /// Runs through entire creature genotype and fills out connectionPaths, segmentIds, neuronReferences
+        
         // Find SegmentGenotype
         byte id;
         if (myConnection == null)
@@ -241,19 +245,17 @@ public class MutateGenotype
             id = 0;
             SegmentGenotype ghostSegmentGenotype = cg.GetSegment(id);
 
-            if (ghostSegmentGenotype != null)
+            // Add neurons
+            foreach (NeuronGenotype ng in ghostSegmentGenotype.neurons)
             {
-                // Add neurons
-                foreach (NeuronGenotype ng in ghostSegmentGenotype.neurons)
-                {
-                    ng.nr.connectionPath = connectionPath;
-                    ng.nr.isGhost = true;
-                    neuronReferences.Add(ng.nr);
-                }
-
-                connectionPaths.Add(null);
-                segmentIds.Add(id);
+                ng.nr.connectionPath = connectionPath;
+                ng.nr.isGhost = true;
+                neuronReferences.Add(ng.nr);
             }
+
+            connectionPaths.Add(null);
+            segmentIds.Add(id);
+            
             // Do the stuff for Root
             id = 1;
             SegmentGenotype rootSegmentGenotype = cg.GetSegment(id);
@@ -287,8 +289,8 @@ public class MutateGenotype
                     {
                         continue;
                     }
-                    var recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
-                    var connectionPathClone = connectionPath.Select(item => (byte)item).ToList();
+                    Dictionary<byte, byte> recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
+                    List<byte> connectionPathClone = connectionPath.Select(item => (byte)item).ToList();
                     connectionPathClone.Add(connection.id);
                     TraceConnections(cg, recursiveLimitClone, connection, connectionPathClone, segmentIds, connectionPaths, neuronReferences);
                 }
@@ -329,9 +331,8 @@ public class MutateGenotype
                     {
                         continue;
                     }
-                    var recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
-                    //var connectionPathClone = connectionPath.Select(item => (byte)item).ToList();
-                    var connectionPathClone = new List<byte>(connectionPath);
+                    List<byte, byte> recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
+                    List<byte> connectionPathClone = new List<byte>(connectionPath);
                     connectionPathClone.Add(connection.id);
                     TraceConnections(cg, recursiveLimitClone, connection, connectionPathClone, segmentIds, connectionPaths, neuronReferences);
                 }
