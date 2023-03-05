@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using UnityEngine;
 
@@ -235,126 +234,66 @@ public class CreatureGenotype
         return cg;
     }
 
+    /// <summary>
+    /// Runs through entire creature genotype and counts the number of segments
+    /// </summary>
+    /// <param name="cg"></param>
+    /// <param name="recursiveLimitValues"></param>
+    /// <param name="myConnection"></param>
+    /// <param name="connectionPath"></param>
     public void IterateSegment(CreatureGenotype cg, Dictionary<byte, byte> recursiveLimitValues,
-		    SegmentConnectionGenotype myConnection, List<byte> connectionPath, List<byte> segmentIds,
-		    List<List<byte>> connectionPaths, List<NeuronReference> neuronReferences)
+		    SegmentConnectionGenotype myConnection, List<byte> connectionPath, ref int segmentCount)
     {
-        /// Runs through entire creature genotype and fills out connectionPaths, segmentIds, neuronReferences
-        
+        segmentCount++;
+
         // Find SegmentGenotype
-        byte id;
-        if (myConnection == null)
+        byte id = myConnection == null ? (byte)1 : myConnection.destination;
+
+        SegmentGenotype currentSegmentGenotype = cg.GetSegment(id);
+
+        if (currentSegmentGenotype == null) return;
+
+        // Change recursiveLimit stuff
+        bool runTerminalOnly = false;
+        recursiveLimitValues[id]--;
+        if (recursiveLimitValues[id] == 0)
         {
-            // Do the stuff for Ghost
-            id = 0;
-            SegmentGenotype ghostSegmentGenotype = cg.GetSegment(id);
-
-            // Add neurons
-            foreach (NeuronGenotype ng in ghostSegmentGenotype.neurons)
-            {
-                ng.nr.connectionPath = connectionPath;
-                ng.nr.isGhost = true;
-                neuronReferences.Add(ng.nr);
-            }
-
-            connectionPaths.Add(null);
-            segmentIds.Add(id);
-            
-            // Do the stuff for Root
-            id = 1;
-            SegmentGenotype rootSegmentGenotype = cg.GetSegment(id);
-
-            if (rootSegmentGenotype == null) return;
-
-            // Change recursiveLimit stuff
-            bool runTerminalOnly = false;
-            recursiveLimitValues[id]--;
-            if (recursiveLimitValues[id] == 0)
-            {
-                runTerminalOnly = true;
-            }
-
-            // Add neurons
-            foreach (NeuronGenotype ng in rootSegmentGenotype.neurons)
-            {
-                ng.nr.connectionPath = connectionPath;
-                neuronReferences.Add(ng.nr);
-            }
-
-            connectionPaths.Add(connectionPath);
-            segmentIds.Add(id);
-
-            foreach (SegmentConnectionGenotype connection in rootSegmentGenotype.connections)
-            {
-
-                if (recursiveLimitValues[connection.destination] > 0)
-                {
-                    if (!runTerminalOnly && connection.terminalOnly)
-                    {
-                        continue;
-                    }
-                    Dictionary<byte, byte> recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
-                    List<byte> connectionPathClone = connectionPath.Select(item => (byte)item).ToList();
-                    connectionPathClone.Add(connection.id);
-                    IterateSegment(cg, recursiveLimitClone, connection, connectionPathClone, segmentIds, connectionPaths, neuronReferences);
-                    this.obsDim++;
-                }
-            }
+            runTerminalOnly = true;
         }
-        else
+
+        foreach (SegmentConnectionGenotype connection in currentSegmentGenotype.connections)
         {
-            id = myConnection.destination;
-            SegmentGenotype currentSegmentGenotype = cg.GetSegment(id);
 
-            if (currentSegmentGenotype == null) return;
-
-            // Change recursiveLimit stuff
-            bool runTerminalOnly = false;
-            recursiveLimitValues[id]--;
-            if (recursiveLimitValues[id] == 0)
+            if (recursiveLimitValues[connection.destination] > 0)
             {
-                runTerminalOnly = true;
-            }
-
-            // Add neurons
-            foreach (NeuronGenotype ng in currentSegmentGenotype.neurons)
-            {
-                ng.nr.connectionPath = connectionPath;
-                neuronReferences.Add(ng.nr);
-
-            }
-
-            connectionPaths.Add(connectionPath);
-            segmentIds.Add(id);
-
-            foreach (SegmentConnectionGenotype connection in currentSegmentGenotype.connections)
-            {
-
-                if (recursiveLimitValues[connection.destination] > 0)
+                if (!runTerminalOnly && connection.terminalOnly)
                 {
-                    if (!runTerminalOnly && connection.terminalOnly)
-                    {
-                        continue;
-                    }
-                    Dictionary<byte, byte> recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
-                    List<byte> connectionPathClone = new List<byte>(connectionPath);
-                    connectionPathClone.Add(connection.id);
-                    IterateSegment(cg, recursiveLimitClone, connection, connectionPathClone, segmentIds, connectionPaths, neuronReferences);
-                    
+                    continue;
                 }
+                Dictionary<byte, byte> recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
+                List<byte> connectionPathClone = connectionPath.Select(item => (byte)item).ToList();
+                //List<byte> connectionPathClone = new List<byte>(connectionPath);
+                connectionPathClone.Add(connection.id);
+                IterateSegment(cg, recursiveLimitClone, connection, connectionPathClone, ref segmentCount);
             }
         }
     }
 
+    /// <summary>
+    /// Calculates dimensions of observation and action vectors
+    /// </summary>
     void CalculateDims() {
-        this.actDim = 0;
-        this.obsDim = 0;
+        // Initialize recurisve limit tracker
         Dictionary<byte, byte> recursiveLimitInitial = new Dictionary<byte, byte>();
+        foreach (SegmentGenotype segment in segments) recursiveLimitInitial[segment.id] = segment.recursiveLimit;
 
-        foreach (SegmentGenotype segment in this.segments) recursiveLimitInitial[segment.id] = segment.recursiveLimit;
+        int segmentCount = 0;
 
-        IterateSegment(this, recursiveLimitInitial, null, new List<byte>(), new List<byte>(), new List<List<byte>>(), new List<NeuronReference>());
-        this.actDim = this.obsDim - 1;
-        this.obsDim = this.obsDim * 12;
+        // Iterate
+        IterateSegment(this, recursiveLimitInitial, null, new List<byte>(), ref segmentCount);
+
+        // Set resultant dims
+        actDim = segmentCount - 1;
+        obsDim = segmentCount * 12;
     }
 }
