@@ -20,17 +20,17 @@ public class MainMenu : MonoBehaviour
 
     public void ShowEvolve()
     {
-        SceneManager.LoadScene("Evolution");
+        SceneManager.LoadScene("EvolutionMenu");
     }
 
     public void ShowEdit()
     {
-        Debug.Log("show edit scene");
+        Debug.Log("Show edit scene");
     }
 
     public void ShowView()
     {
-        Debug.Log("show view scene");
+        Debug.Log("Show view scene");
     }
 
 }
