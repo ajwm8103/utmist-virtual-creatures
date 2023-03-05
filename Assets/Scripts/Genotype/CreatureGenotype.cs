@@ -210,6 +210,10 @@ public class CreatureGenotype
     public CreatureStage stage;
     public List<SegmentGenotype> segments;
 
+    public int obsDim;
+
+    public int actDim;
+    
     public SegmentGenotype GetSegment(byte id)
     {
         foreach (SegmentGenotype segment in segments)
@@ -228,5 +232,68 @@ public class CreatureGenotype
         cg.name = name;
         cg.segments = segments.Select(item => item.Clone()).ToList();
         return cg;
+    }
+
+    /// <summary>
+    /// Runs through entire creature genotype and counts the number of segments
+    /// </summary>
+    /// <param name="cg"></param>
+    /// <param name="recursiveLimitValues"></param>
+    /// <param name="myConnection"></param>
+    /// <param name="connectionPath"></param>
+    public void IterateSegment(CreatureGenotype cg, Dictionary<byte, byte> recursiveLimitValues,
+		    SegmentConnectionGenotype myConnection, List<byte> connectionPath, ref int segmentCount)
+    {
+        segmentCount++;
+
+        // Find SegmentGenotype
+        byte id = myConnection == null ? (byte)1 : myConnection.destination;
+
+        SegmentGenotype currentSegmentGenotype = cg.GetSegment(id);
+
+        if (currentSegmentGenotype == null) return;
+
+        // Change recursiveLimit stuff
+        bool runTerminalOnly = false;
+        recursiveLimitValues[id]--;
+        if (recursiveLimitValues[id] == 0)
+        {
+            runTerminalOnly = true;
+        }
+
+        foreach (SegmentConnectionGenotype connection in currentSegmentGenotype.connections)
+        {
+
+            if (recursiveLimitValues[connection.destination] > 0)
+            {
+                if (!runTerminalOnly && connection.terminalOnly)
+                {
+                    continue;
+                }
+                Dictionary<byte, byte> recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
+                List<byte> connectionPathClone = connectionPath.Select(item => (byte)item).ToList();
+                //List<byte> connectionPathClone = new List<byte>(connectionPath);
+                connectionPathClone.Add(connection.id);
+                IterateSegment(cg, recursiveLimitClone, connection, connectionPathClone, ref segmentCount);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Calculates dimensions of observation and action vectors
+    /// </summary>
+    void CalculateDims() {
+        // Initialize recurisve limit tracker
+        Dictionary<byte, byte> recursiveLimitInitial = new Dictionary<byte, byte>();
+        foreach (SegmentGenotype segment in segments) recursiveLimitInitial[segment.id] = segment.recursiveLimit;
+
+        int segmentCount = 0;
+
+        // Iterate
+        IterateSegment(this, recursiveLimitInitial, null, new List<byte>(), ref segmentCount);
+
+        // Set resultant dims
+        actDim = segmentCount - 1;
+        obsDim = segmentCount * 12;
     }
 }

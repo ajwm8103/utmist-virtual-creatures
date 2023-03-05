@@ -43,6 +43,25 @@ public class Segment : MonoBehaviour
         }
     }
 
+    public List<float> GetObservations(){
+        // add 12 observations of the sensor to list, and return
+        List<float> obs = new List<float>();
+        obs.Add(GetContact("Right"));
+        obs.Add(GetContact("Left"));
+        obs.Add(GetContact("Top"));
+        obs.Add(GetContact("Bottom"));
+        obs.Add(GetContact("Front"));
+        obs.Add(GetContact("Back"));
+        obs.Add(jointAxisX);
+        obs.Add(jointAxisY);
+        obs.Add(jointAxisZ);
+        obs.Add(GetPhotosensor(0));
+        obs.Add(GetPhotosensor(1));
+        obs.Add(GetPhotosensor(2));
+
+        return obs;
+    }
+
     public sbyte GetContact(string name)
     {
         bool value = name switch

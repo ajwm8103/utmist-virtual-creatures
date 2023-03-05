@@ -127,6 +127,9 @@ public class Creature : MonoBehaviour
     public List<Neuron> neurons = new List<Neuron>();
     public List<Neuron> effectors = new List<Neuron>();
 
+    public List<HingeJoint> actionMotors = new List<HingeJoint>();
+    public List<Segment> segments = new List<Segment>();
+
     // Update is called once per frame
     void Update()
     {
@@ -161,6 +164,28 @@ public class Creature : MonoBehaviour
         foreach (Neuron n in effectors)
         {
             n.GetInputs();
+        }
+    }
+
+    public List<float> GetObservations()
+    {   
+        // Collects obs
+        List<float> observations = new List<float>();
+        foreach (Segment s in segments)
+        {
+            observations.AddRange(s.GetObservations());
+        }
+        return observations;
+    }
+
+    // actions is received from ML-Agents, and each action is a float that we apply to JointMotors
+    public void Act(List<float> actions)
+    {   
+        for (int index = 0; index < actions.Count; index++)
+        {   
+            JointMotor motor = actionMotors[index].motor;
+            motor.targetVelocity = actions[index]; // actions[index] defines the target velocity of the motor
+            actionMotors[index].motor = motor;
         }
     }
 
