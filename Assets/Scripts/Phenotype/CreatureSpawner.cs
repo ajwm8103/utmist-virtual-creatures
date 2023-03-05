@@ -84,7 +84,6 @@ public class CreatureSpawner : MonoBehaviour
         Creature c = Instantiate(creaturePrefab, Vector3.zero, Quaternion.identity);
         c.name = $"Creature ({cm.name})";
         c.transform.parent = transform;
-
         
         // Add neurons
         SegmentGenotype ghost = cm.GetSegment(0);
@@ -98,7 +97,6 @@ public class CreatureSpawner : MonoBehaviour
 
         SpawnSegment(cm, c, recursiveLimitInitial, position);
         c.InitializeCreature();
-        c.cg = cm;
     }
 
 
@@ -259,12 +257,9 @@ public class CreatureSpawner : MonoBehaviour
                 }
             }
         } else if (creatureGenotype.stage == CreatureStage.RL){
-            // get the current spawned segment
-            // add the 6 contact sensors to the current creature obs M
-            // add the 3 joint sensors and 3 photosensprs to the curent creature obs m
+            // Add Segment and HingeJoint references
             c.segments.Add(spawnedSegmentGameObject.GetComponent<Segment>());
-            // add the motors to the act
-            c.actMotors.Add(spawnedSegmentGameObject.GetComponent<HingeJoint>());
+            c.actionMotors.Add(spawnedSegmentGameObject.GetComponent<HingeJoint>());
         }
 
         foreach (SegmentConnectionGenotype connection in currentSegmentGenotype.connections)
@@ -335,12 +330,8 @@ public class CreatureSpawner : MonoBehaviour
                 }
             }
         } else if (creatureGenotype.stage == CreatureStage.RL){
-            // get the current spawned segment
-            // add the 6 contact sensors to the current creature obs M
-            // add the 3 joint sensors and 3 photosensprs to the curent creature obs m
+            // Add Segment
             c.segments.Add(spawnedSegmentGameObject.GetComponent<Segment>());
-            // root node does not add the motors to the action motors list, because root cannot move
-            //c.actMotors.Add(spawnedSegmentGameObject.GetComponent<HingeJoint>());
         }
         
 
