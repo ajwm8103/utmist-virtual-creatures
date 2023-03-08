@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -60,6 +61,18 @@ public class MenuManager : MonoBehaviour
 
     public void LoadLocal()
     {
-        SceneManager.LoadScene("OceanEnv");
+        // Compile data from settings window into TrainingSettings
+        TrainingSettings ts = new TrainingSettings(new OptimizationSettings(), new OceanEnvSettings());
+        ts.optimizationSettings.num_envs = 10;
+
+        // Send to EvolutionSettingsPersist
+        if (EvolutionSettingsPersist.instance == null)
+        {
+            throw new Exception("No EvolutionSettingsPersist instance found.");
+        }
+        EvolutionSettingsPersist.instance.ts = ts;
+
+        // Load env runner
+        SceneManager.LoadScene("LocalEnvRunner");
     }
 }
