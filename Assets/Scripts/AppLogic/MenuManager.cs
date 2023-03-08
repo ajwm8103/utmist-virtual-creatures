@@ -4,13 +4,13 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-public enum CurrentMenu { MAIN, EVOLUTION_SETTINGS, EVOLUTION_LS, EVOLUTION_SERVER}
+//public enum CurrentMenu { MAIN, EVOLUTION_SETTINGS, EVOLUTION_LS, EVOLUTION_SERVER}
 public class MenuManager : MonoBehaviour
 {
-    [Header("Info")]
-    [SerializeField]
-    private CurrentMenu currentMenu = CurrentMenu.MAIN;
+    //[SerializeField]
+    //private CurrentMenu currentMenu = CurrentMenu.MAIN;
 
+    [Header("References")]
     public GameObject mainMenu;
     public GameObject evolutionSettingsMenu;
     public GameObject evolutionLSMenu;
