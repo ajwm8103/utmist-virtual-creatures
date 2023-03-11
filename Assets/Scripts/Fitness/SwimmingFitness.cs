@@ -23,7 +23,7 @@ public class SwimmingFitness : Fitness
 
     public override float GetFrameReward()
     {
-        Creature creature = myEnvironment.currentCreature;
+        //Creature creature = myEnvironment.currentCreature;
         float reward = 0f;
 	
 	prevCom = currCom;
@@ -43,6 +43,13 @@ public class SwimmingFitness : Fitness
 		reward *= pushPenaltyDiscount;
 	}
 
+
+        if(2*curr_speed < prev_speed){
+            reward *= (1-
+            // figure out where the origin of the environemnt is (likely myEnvironment.transform.position)
+        // Straight swimming is rewarded over circling by using the maximum distance from the initial center of mass
+        // Continuing movement is rewarded over that from a single initial push, by giving the velocities during the final phase of the test period a stronger relative weight in the total fitness value.
+        */
         return reward;
     }
 }
