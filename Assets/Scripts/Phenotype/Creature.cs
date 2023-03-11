@@ -353,4 +353,10 @@ public class Creature : MonoBehaviour
             sensors.Add(n);
         }
     }
+
+    public Vector3 GetCentreOfMass()
+    {
+	    //Please fix me
+	    return Vector3.zero;
+    }
 }
