@@ -44,6 +44,10 @@ public class TrainingManager : MonoBehaviour
     [SerializeField]
     private TrainingStage stage;
 
+    // References to components
+    [SerializeField]
+    private TrainingAlgorithm algo;
+
     private void Awake()
     {
         if (instance != null)
@@ -86,7 +90,10 @@ public class TrainingManager : MonoBehaviour
             // TODO lol
         }
 
+        if (stage == TrainingStage.KSS) {
+            algo = (TrainingAlgorithm)gameObject.AddComponent(typeof(KSS.KSSAlgorithm));
 
+        }
     }
 
     // Update is called once per frame

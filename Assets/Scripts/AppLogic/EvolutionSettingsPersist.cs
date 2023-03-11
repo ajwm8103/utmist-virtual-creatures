@@ -10,12 +10,7 @@ public class EvolutionSettingsPersist : MonoBehaviour
     public TrainingSettings ts;
     public CreatureGenotype cg;
     public TrainingStage stage = TrainingStage.KSS;
-
-    // KSS
-
-
-    // RL
-
+    public string savePath = null;
 
     private void Awake()
     {
