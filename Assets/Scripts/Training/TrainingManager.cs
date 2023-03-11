@@ -17,16 +17,19 @@ public class TrainingSettings {
 [System.Serializable]
 public class OptimizationSettings {
     public int num_envs = 1;
+    public abstract TrainingStage stage { get; }
 }
 
 [System.Serializable]
 public class RLSettings : OptimizationSettings {
-
+    public override TrainingStage stage { get {return TrainingStage.RL; }}
 }
 
 [System.Serializable]
 public class KSSSettings : OptimizationSettings {
-    
+    public override TrainingStage stage { get { return TrainingStage.KSS; } }
+    public int populationSize = 50;
+    public int totalGenerations = 10;
 }
 
 /// <summary>
@@ -57,13 +60,13 @@ public class TrainingManager : MonoBehaviour
     void Start()
     {
         EvolutionSettingsPersist esp = EvolutionSettingsPersist.instance;
-        if (esp= null)
+        if (esp == null)
         {
             throw new Exception("No EvolutionSettingsPersist instance found. Try launching from the Menu Scene!");
         }
         
         ts = esp.ts;
-        stage = esp.stage;
+        stage = ts.optimizationSettings.stage;
 
         GameObject envPrefab = Resources.Load<GameObject>("Prefabs/Envs/" + EnvironmentSettings.envString[ts.envSettings.envCode]);
 
@@ -79,8 +82,11 @@ public class TrainingManager : MonoBehaviour
                     Destroy(oneOff.gameObject);
                 }
             }
+        } else if (ts.envSettings.envArrangeType == EnvArrangeType.PLANAR){
+            // TODO lol
         }
-        
+
+
     }
 
     // Update is called once per frame

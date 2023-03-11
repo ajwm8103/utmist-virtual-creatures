@@ -62,7 +62,7 @@ public class MenuManager : MonoBehaviour
     public void LoadLocal()
     {
         // Compile data from settings window into TrainingSettings
-        TrainingSettings ts = new TrainingSettings(new OptimizationSettings(), new OceanEnvSettings());
+        TrainingSettings ts = new TrainingSettings(new KSSSettings(), new OceanEnvSettings());
         ts.optimizationSettings.num_envs = 10;
 
         // Send to EvolutionSettingsPersist
