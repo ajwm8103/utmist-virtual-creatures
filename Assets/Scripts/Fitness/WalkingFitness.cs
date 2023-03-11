@@ -26,12 +26,12 @@ public class WalkingFitness : Fitness
         Creature creature = myEnvironment.currentCreature;
         float reward = 0f;
 	
-	prev_com = currCom;
-       	curr_com = creature.GetCentreOfMass();
-	prev_speed = currSpeed;
+	prevCom = currCom;
+       	currCom = creature.GetCentreOfMass();
+	prevSpeed = currSpeed;
        	distance = Vector3.Distance(currCom,prevCom);
 
-	curr_speed = distance/Time.deltaTime;
+	currSpeed = distance/Time.deltaTime;
 	reward += currSpeed;
 	
 	// Continuing movement is rewarded over that from a single initial push, by giving the velocities during the final phase of the test period a stronger relative weight in the total fitness value
