@@ -18,6 +18,20 @@ public class CreatureSpawner : MonoBehaviour
     public CreatureGenotype creatureGenotype;
     public List<CreatureGenotype> creatureGenotypeHistory;
 
+    public static CreatureSpawner instance;
+
+    private void Awake()
+    {
+        if (instance != null)
+        {
+            Destroy(gameObject); // Can't have two spawners active at once
+        }
+        else
+        {
+            instance = this;
+        }
+    }
+
     // Start is called before the first frame update
     void Start()
     {

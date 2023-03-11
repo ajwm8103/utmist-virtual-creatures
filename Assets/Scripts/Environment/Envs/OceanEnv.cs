@@ -14,9 +14,9 @@ public class OceanEnvSettings : EnvironmentSettings {
 public class OceanEnv : Environment
 {
     // Start is called before the first frame update
-    void Start()
+    public new void Start()
     {
-        
+        base.Start();
     }
 
     // Update is called once per frame
@@ -26,6 +26,13 @@ public class OceanEnv : Environment
     }
 
     public override void ResetEnv(){
+        base.ResetEnv();
+    }
+    
+    public override void SpawnCreature(){
+        // Edit spawn transform if needed
+
+        base.SpawnCreature();
 
     }
 }
