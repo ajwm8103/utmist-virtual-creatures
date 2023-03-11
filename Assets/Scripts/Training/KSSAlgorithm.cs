@@ -2,7 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EvolutionAlgorithm : TrainingAlgorithm
+[System.Serializable]
+public class KSSSave {
+    
+}
+
+
+public class KSSAlgorithm : TrainingAlgorithm
 {
     // Start is called before the first frame update
     void Start()
