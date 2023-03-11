@@ -22,23 +22,23 @@ public class SwimmingFitness : Fitness
 
     public override float GetFrameReward()
     {
-        Creature creature = myEnvironment.currentCreature;
+        //Creature creature = myEnvironment.currentCreature;
         float reward = 0f;
-	
-	prev_com = curr_com;
-       	curr_com = creature.GetCentreOfMass();
-	prev_speed = curr_speed;
-       	distance = Vector3.Distance(curr_com,prev_com);
+        /*
+        prev_com = curr_com;
+            curr_com = creature.GetCentreOfMass();
+        prev_speed = curr_speed;
+            distance = Vector3.Distance(curr_com,prev_com);
 
-	curr_speed = distance/Time.deltaTime;
-	reward += curr_speed;
+        curr_speed = distance/Time.deltaTime;
+        reward += curr_speed;
 
-	if(2*curr_speed < prev_speed){
-		reward *= (1-
-        // figure out where the origin of the environemnt is (likely myEnvironment.transform.position)
-	// Straight swimming is rewarded over circling by using the maximum distance from the initial center of mass
-	// Continuing movement is rewarded over that from a single initial push, by giving the velocities during the final phase of the test period a stronger relative weight in the total fitness value.
-
+        if(2*curr_speed < prev_speed){
+            reward *= (1-
+            // figure out where the origin of the environemnt is (likely myEnvironment.transform.position)
+        // Straight swimming is rewarded over circling by using the maximum distance from the initial center of mass
+        // Continuing movement is rewarded over that from a single initial push, by giving the velocities during the final phase of the test period a stronger relative weight in the total fitness value.
+        */
         return reward;
     }
 }
