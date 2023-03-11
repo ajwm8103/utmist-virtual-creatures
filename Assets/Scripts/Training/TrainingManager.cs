@@ -64,7 +64,7 @@ public class TrainingManager : MonoBehaviour
         {
             throw new Exception("No EvolutionSettingsPersist instance found. Try launching from the Menu Scene!");
         }
-
+        
         ts = esp.ts;
         stage = ts.optimizationSettings.stage;
 
