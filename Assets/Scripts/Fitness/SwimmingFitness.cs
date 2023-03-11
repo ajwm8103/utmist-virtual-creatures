@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SwimmingFitness : MonoBehaviour
+public class SwimmingFitness : MonoBehaviour : IFitness
 {
     // Start is called before the first frame update
     void Start()
