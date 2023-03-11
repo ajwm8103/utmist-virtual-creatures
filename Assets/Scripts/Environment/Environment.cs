@@ -26,11 +26,32 @@ public abstract class Environment : MonoBehaviour
 {
     [Header("Stats")]
     public EnvCode envCode;
-    //public float
-    public Creature currentCreature;
-    public Fitness fitness;
+    public float totalReward;
 
+    // References to other Components
+    [SerializeField]
+    private Creature currentCreature;
+    [SerializeField]
+    private Fitness fitness;
+    [SerializeField]
+    private TrainingManager tm;
+    [SerializeField]
+    private CreatureSpawner cs;
+    [SerializeField]
+    private Transform spawnTransform;
 
-    public abstract void SpawnCreature();
-    public abstract void ResetEnv();
+    public void Start(){
+        fitness = GetComponent<Fitness>();
+        tm = TrainingManager.instance;
+        spawnTransform = transform.Find("Spawn Transform");
+        ResetEnv();
+    }
+
+    // Spawn creature by passing transform params to Scene CreatureSpawner
+    public virtual void SpawnCreature(){
+        
+    }
+    public virtual void ResetEnv() {
+        totalReward = 0;
+    }
 }
