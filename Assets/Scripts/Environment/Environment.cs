@@ -29,8 +29,7 @@ public abstract class Environment : MonoBehaviour
     public float totalReward;
 
     // References to other Components
-    [SerializeField]
-    private Creature currentCreature;
+    public Creature currentCreature;
     [SerializeField]
     private Fitness fitness;
     [SerializeField]
