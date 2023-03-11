@@ -252,7 +252,7 @@ public class CreatureSpawner : MonoBehaviour
             runTerminalOnly = true;
         }
 
-        if (creatureGenotype.stage == CreatureStage.KSS){
+        if (creatureGenotype.stage == TrainingStage.KSS){
             // Add neurons
             foreach (NeuronGenotype nm in currentSegmentGenotype.neurons)
             {
@@ -270,7 +270,7 @@ public class CreatureSpawner : MonoBehaviour
                     c.AddNeuron(nm, null, null);
                 }
             }
-        } else if (creatureGenotype.stage == CreatureStage.RL){
+        } else if (creatureGenotype.stage == TrainingStage.RL){
             // Add Segment and HingeJoint references
             c.segments.Add(spawnedSegmentGameObject.GetComponent<Segment>());
             c.actionMotors.Add(spawnedSegmentGameObject.GetComponent<HingeJoint>());
@@ -324,7 +324,7 @@ public class CreatureSpawner : MonoBehaviour
 
         List<byte> connectionPath = new List<byte>();
 
-        if (creatureGenotype.stage == CreatureStage.KSS){
+        if (creatureGenotype.stage == TrainingStage.KSS){
             // Add neurons
             foreach (NeuronGenotype nm in currentSegmentGenotype.neurons)
             {
@@ -343,7 +343,7 @@ public class CreatureSpawner : MonoBehaviour
                     c.AddNeuron(nm, null, null);
                 }
             }
-        } else if (creatureGenotype.stage == CreatureStage.RL){
+        } else if (creatureGenotype.stage == TrainingStage.RL){
             // Add Segment
             c.segments.Add(spawnedSegmentGameObject.GetComponent<Segment>());
         }
