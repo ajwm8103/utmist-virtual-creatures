@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class SwimmingFitness : Fitness
 {
-    public float
+    public float push_threshold = 2f;
+    public float push_penalty_discount = 0.9f;
     // Start is called before the first frame update
     void Start()
     {
@@ -32,12 +33,15 @@ public class SwimmingFitness : Fitness
 
 	curr_speed = distance/Time.deltaTime;
 	reward += curr_speed;
+	
+	// Continuing movement is rewarded over that from a single initial push, by giving the velocities during the final phase of the test period a stronger relative weight in the total fitness value
+	// We do not implement this because I am lazy
+	// Initial push <=> curr speed would be way slower than prev speed => apply discount to reward
 
-	if(2*curr_speed < prev_speed){
-		reward *= (1-
-        // figure out where the origin of the environemnt is (likely myEnvironment.transform.position)
-	// Straight swimming is rewarded over circling by using the maximum distance from the initial center of mass
-	// Continuing movement is rewarded over that from a single initial push, by giving the velocities during the final phase of the test period a stronger relative weight in the total fitness value.
+	if(2*curr_speed < prev_speed)
+	{
+		reward *= push_penalty_discount;
+	}
 
         return reward;
     }
