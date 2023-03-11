@@ -15,7 +15,7 @@ public class TrainingSettings {
 }
 
 [System.Serializable]
-public class OptimizationSettings {
+public abstract class OptimizationSettings {
     public int num_envs = 1;
     public abstract TrainingStage stage { get; }
 }
