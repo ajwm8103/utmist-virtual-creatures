@@ -24,6 +24,13 @@ public abstract class EnvironmentSettings {
 /// </summary>
 public abstract class Environment : MonoBehaviour
 {
+    [Header("Stats")]
     public EnvCode envCode;
+    //public float
+    public Creature currentCreature;
+    public Fitness fitness;
+
+
+    public abstract void SpawnCreature();
     public abstract void ResetEnv();
 }

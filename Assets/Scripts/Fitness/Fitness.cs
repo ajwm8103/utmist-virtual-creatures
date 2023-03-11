@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-interface IFitness
+public abstract class Fitness : MonoBehaviour
 {
+    public Environment myEnvironment;
+    public abstract float GetFrameReward();
 }
