@@ -1,24 +1,39 @@
+using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
+
+using Unity.MLAgents;
+using Unity.MLAgents.Actuators;
+using Unity.MLAgents.Sensors;
 
 // code example by mxu
 // REFERENCES:
 // https://docs.unity3d.com/ScriptReference/HingeJoint-motor.html
 // https://www2.gwu.edu/~phy21bio/Reading/Purcell_life_at_low_reynolds_number.pdf
 
-public class RLSwimmer : MonoBehaviour
+public class RLSwimmer : Agent
 {
     public GameObject leftSegment;
     public GameObject rightSegment;
 
     public float motorForce = 200f;
     public float speed = 90f;
-    public float eps = 2f;
-    int state = 0;
 
-    float[] targetLeftAngles = { 45f, 45f, -45f, -45f };
-    float[] targetRightAngles = { -45f, 45f, 45f, -45f };
+    public float t_left_angle_ = 0f;
+    public float t_right_angle_ = 0f;
+    Vector3 lastpos = new Vector3();
+
+    float timeout = 5f;
+    Stopwatch SW = new Stopwatch();
+
+    public override void OnEpisodeBegin() 
+    {
+        SW.Reset();
+        SW.Start();
+        return;
+    }
 
     private void SetJointToTargetAngle(HingeJoint hingeJoint, float targetAngle)
     {
@@ -30,43 +45,42 @@ public class RLSwimmer : MonoBehaviour
         hingeJoint.motor = motor;
     }
 
-    private bool IsCloseEnough(float currentAngle, float targetAngle)
+    public override void CollectObservations(VectorSensor sensor)
     {
-        if (Mathf.Abs(currentAngle - targetAngle) < eps)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    private void FixedUpdate()
-    {
-        /* 4 states
-         * 
-         * 0. Both Up
-         * 1. Left up Right down
-         * 2. Both down
-         * 3. Left down Right up
-         * 
-         */
-
 
         HingeJoint leftJoint = leftSegment.GetComponent<HingeJoint>();
         HingeJoint rightJoint = rightSegment.GetComponent<HingeJoint>();
+        Rigidbody rb = transform.GetComponent<Rigidbody>();
+        float mag_velocity = rb.velocity.magnitude;
+        Vector3 input = new Vector3(leftJoint.angle,rightJoint.angle,mag_velocity);
+        UnityEngine.Debug.Log(input);
+        sensor.AddObservation(input);
+    }
 
-        SetJointToTargetAngle(leftJoint, targetLeftAngles[state]);
-        SetJointToTargetAngle(rightJoint, targetRightAngles[state]);
+    public override void OnActionReceived(ActionBuffers actions)
+    {
+        float t_left_angle = actions.ContinuousActions[0];
+        float t_right_angle = actions.ContinuousActions[1];
 
-        if (IsCloseEnough(leftJoint.angle, targetLeftAngles[state]) && IsCloseEnough(rightJoint.angle, targetRightAngles[state]))
+        UnityEngine.Debug.Log(t_left_angle);
+        UnityEngine.Debug.Log(t_right_angle);
+
+    }
+
+
+    private void FixedUpdate()
+    {
+        HingeJoint leftJoint = leftSegment.GetComponent<HingeJoint>();
+        HingeJoint rightJoint = rightSegment.GetComponent<HingeJoint>();
+        SW.Stop();
+        if (SW.ElapsedMilliseconds >= timeout*1000f)
         {
-            state += 1;
-            if (state > 3)
-            {
-                state = 0;
-            }
+
+            EndEpisode();
         }
+        SW.Start();
+
+        SetJointToTargetAngle(leftJoint, t_left_angle_*360);
+        SetJointToTargetAngle(rightJoint, t_right_angle_*360);
     }
 }
