@@ -28,27 +28,25 @@ public class SwimmingFitness : Fitness
         //Creature creature = myEnvironment.currentCreature;
         float reward = 0f;
 	
-	    prevCom = currCom;
+	prevCom = currCom;
        	currCom = creature.GetCentreOfMass();
-	    prevSpeed = currSpeed;
+	prevSpeed = currSpeed;
        	distance = Vector3.Distance(currCom,prevCom);
 
-	    currSpeed = distance/Time.deltaTime;
-	    reward += currSpeed;
+	currSpeed = distance/Time.deltaTime;
+	reward += currSpeed;
 	
 	// Continuing movement is rewarded over that from a single initial push, by giving the velocities during the final phase of the test period a stronger relative weight in the total fitness value
 	// We do not implement this because I am lazy
 	// Initial push <=> curr speed would be way slower than prev speed => apply discount to reward
 
-	    if(2*currSpeed < prevSpeed)
-	    {
-	    	reward *= pushPenaltyDiscount;
-	    }
+	if(2*currSpeed < prevSpeed)
+	{
+		reward *= pushPenaltyDiscount;
+	}
 
 
-        if (2 * currSpeed < prevSpeed) { }
-            //reward *= (1-
-            // figure out where the origin of the environemnt is (likely myEnvironment.transform.position)
+        // figure out where the origin of the environemnt is (likely myEnvironment.transform.position)
         // Straight swimming is rewarded over circling by using the maximum distance from the initial center of mass
         // Continuing movement is rewarded over that from a single initial push, by giving the velocities during the final phase of the test period a stronger relative weight in the total fitness value.
         
