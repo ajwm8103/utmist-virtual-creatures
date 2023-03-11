@@ -80,7 +80,7 @@ public class CreatureSpawner : MonoBehaviour
     }
 
     // Creature & GHOST (ID 0)
-    void SpawnCreature(CreatureGenotype cm, Vector3 position)
+    public void SpawnCreature(CreatureGenotype cm, Vector3 position)
     {
         // Verify
         if (!VerifyCreatureGenotypeIntegrity(cm))

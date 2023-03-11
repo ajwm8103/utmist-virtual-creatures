@@ -4,14 +4,13 @@ using UnityEngine;
 
 public class SwimmingFitness : Fitness
 {
-    public float
     // Start is called before the first frame update
     void Start()
     {
-        Vector3 curr_com = creature.GetCentreOfMass();
-	Vector3 prev_com;
-	float distance, prev_speed;
-	float curr_speed = 0f;
+        //Vector3 curr_com = creature.GetCentreOfMass();
+	    Vector3 prev_com;
+	    float distance, prev_speed;
+	    float curr_speed = 0f;
     }
 
     // Update is called once per frame

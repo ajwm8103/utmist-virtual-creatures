@@ -135,7 +135,7 @@ public enum JointType
 }
 
 [System.Serializable]
-public enum CreatureStage
+public enum TrainingStage
 {
     KSS,
     RL,
@@ -207,7 +207,7 @@ public class SegmentGenotype
 public class CreatureGenotype
 {
     public string name;
-    public CreatureStage stage;
+    public TrainingStage stage;
     public List<SegmentGenotype> segments;
 
     public int obsDim;

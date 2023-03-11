@@ -66,11 +66,13 @@ public class MenuManager : MonoBehaviour
         ts.optimizationSettings.num_envs = 10;
 
         // Send to EvolutionSettingsPersist
-        if (EvolutionSettingsPersist.instance == null)
+        EvolutionSettingsPersist esp = EvolutionSettingsPersist.instance;
+        if (esp == null)
         {
             throw new Exception("No EvolutionSettingsPersist instance found.");
         }
-        EvolutionSettingsPersist.instance.ts = ts;
+        esp.ts = ts;
+        esp.cg = null; // null means start w/ random creatures. TODO: Non-null will mean spawn that with mutations!
 
         // Load env runner
         SceneManager.LoadScene("LocalEnvRunner");

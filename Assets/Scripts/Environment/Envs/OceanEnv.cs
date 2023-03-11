@@ -29,10 +29,11 @@ public class OceanEnv : Environment
         base.ResetEnv();
     }
     
-    public override void SpawnCreature(){
+    public override void SpawnCreature(CreatureGenotype cg)
+    {
         // Edit spawn transform if needed
 
-        base.SpawnCreature();
+        base.SpawnCreature(cg);
 
     }
 }

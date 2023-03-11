@@ -48,8 +48,8 @@ public abstract class Environment : MonoBehaviour
     }
 
     // Spawn creature by passing transform params to Scene CreatureSpawner
-    public virtual void SpawnCreature(){
-        
+    public virtual void SpawnCreature(CreatureGenotype cg){
+        cs.SpawnCreature(cg, spawnTransform.position);
     }
     public virtual void ResetEnv() {
         totalReward = 0;

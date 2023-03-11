@@ -38,6 +38,8 @@ public class TrainingManager : MonoBehaviour
 
     [SerializeField]
     private TrainingSettings ts;
+    [SerializeField]
+    private TrainingStage stage;
 
     private void Awake()
     {
@@ -54,12 +56,14 @@ public class TrainingManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        if (EvolutionSettingsPersist.instance == null)
+        EvolutionSettingsPersist esp = EvolutionSettingsPersist.instance;
+        if (esp= null)
         {
             throw new Exception("No EvolutionSettingsPersist instance found. Try launching from the Menu Scene!");
         }
 
-        ts = EvolutionSettingsPersist.instance.ts;
+        ts = esp.ts;
+        stage = esp.stage;
 
         GameObject envPrefab = Resources.Load<GameObject>("Prefabs/Envs/" + EnvironmentSettings.envString[ts.envSettings.envCode]);
 
