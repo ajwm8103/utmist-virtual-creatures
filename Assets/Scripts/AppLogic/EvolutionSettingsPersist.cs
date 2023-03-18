@@ -8,8 +8,6 @@ public class EvolutionSettingsPersist : MonoBehaviour
 
     // Vars here
     public TrainingSettings ts;
-    public CreatureGenotype cg;
-    public TrainingStage stage = TrainingStage.KSS;
     public string savePath = null;
 
     private void Awake()

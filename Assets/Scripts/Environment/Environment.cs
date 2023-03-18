@@ -27,6 +27,7 @@ public abstract class Environment : MonoBehaviour
     [Header("Stats")]
     public EnvCode envCode;
     public float totalReward;
+    public bool busy;
 
     // References to other Components
     [SerializeField]
@@ -40,7 +41,10 @@ public abstract class Environment : MonoBehaviour
     [SerializeField]
     private Transform spawnTransform;
 
-    public void Start(){
+    private EnvironmentSettings es;
+
+    public void Setup(EnvironmentSettings es){
+        this.es = es;
         fitness = GetComponent<Fitness>();
         tm = TrainingManager.instance;
         spawnTransform = transform.Find("Spawn Transform");
@@ -53,5 +57,12 @@ public abstract class Environment : MonoBehaviour
     }
     public virtual void ResetEnv() {
         totalReward = 0;
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        // Draw a yellow cube at the transform position
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireCube(transform.position, new Vector3(es.sizeX, 1, es.sizeZ));
     }
 }

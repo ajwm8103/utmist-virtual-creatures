@@ -64,6 +64,7 @@ public class MenuManager : MonoBehaviour
         // Compile data from settings window into TrainingSettings
         TrainingSettings ts = new TrainingSettings(new KSSSettings(), new OceanEnvSettings());
         ts.optimizationSettings.num_envs = 10;
+        ts.optimizationSettings.initialGenotype = null; // null means start w/ random creatures. TODO: Non-null will mean spawn that with mutations!
 
         // Send to EvolutionSettingsPersist
         EvolutionSettingsPersist esp = EvolutionSettingsPersist.instance;
@@ -72,7 +73,6 @@ public class MenuManager : MonoBehaviour
             throw new Exception("No EvolutionSettingsPersist instance found.");
         }
         esp.ts = ts;
-        esp.cg = null; // null means start w/ random creatures. TODO: Non-null will mean spawn that with mutations!
 
         // Load env runner
         SceneManager.LoadScene("LocalEnvRunner");

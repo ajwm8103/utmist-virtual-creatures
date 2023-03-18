@@ -17,6 +17,7 @@ public class TrainingSettings {
 [System.Serializable]
 public abstract class OptimizationSettings {
     public int num_envs = 1;
+    public CreatureGenotype initialGenotype;
     public abstract TrainingStage stage { get; }
 }
 
@@ -30,6 +31,7 @@ public class KSSSettings : OptimizationSettings {
     public override TrainingStage stage { get { return TrainingStage.KSS; } }
     public int populationSize = 50;
     public int totalGenerations = 10;
+    public MutateGenotype.MutationPreferenceSetting mp;
 }
 
 /// <summary>
@@ -79,8 +81,8 @@ public class TrainingManager : MonoBehaviour
             int l = ts.optimizationSettings.num_envs;
             for (int i = 0; i < l; i++)
             {
-                GameObject instantiatedEnv = Instantiate(envPrefab, Vector3.right * i * sizeX, envPrefab.transform.rotation);
-
+                Environment instantiatedEnv = Instantiate(envPrefab, Vector3.right * i * sizeX, envPrefab.transform.rotation).GetComponent<Environment>();
+                instantiatedEnv.Setup(ts.envSettings);
                 Transform oneOff = instantiatedEnv.transform.Find("OneOffHolder");
                 if (oneOff != null && i != 0) {
                     Destroy(oneOff.gameObject);

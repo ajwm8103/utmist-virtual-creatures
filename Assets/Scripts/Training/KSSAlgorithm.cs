@@ -19,12 +19,44 @@ namespace KSS
     [System.Serializable]
     public class Generation {
         public List<CreatureGenotypeEval> cgEvals;
+
+        /// <summary>
+        /// Creates a new generation w/ size and mutation
+        /// </summary>
+        /// <param name="size"></param>
+        /// <param name="initialGenotype"></param>
+        /// <param name="mps"></param>
+        public Generation(int size, CreatureGenotype initialGenotype, MutateGenotype.MutationPreferenceSetting mp){
+            cgEvals = new List<CreatureGenotypeEval>();
+            if (initialGenotype == null){
+                // Random generation
+                for (int i = 0; i < size; i++)
+                {
+                    CreatureGenotypeEval cgEval = new CreatureGenotypeEval(MutateGenotype.GenerateRandomCreatureGenotype());
+                    cgEvals.Add(cgEval);
+                }
+            } else {
+                // Mutated generation
+                for (int i = 0; i < size; i++)
+                {
+                    CreatureGenotypeEval cgEval = new CreatureGenotypeEval(MutateGenotype.MutateCreatureGenotype(initialGenotype, mp));
+                    cgEvals.Add(cgEval);
+                }
+            }
+        }
     }
 
     [System.Serializable]
     public class CreatureGenotypeEval {
         public CreatureGenotype cg;
         public float fitness; // total reward
+        public bool evaluated;
+
+        public CreatureGenotypeEval(CreatureGenotype cg){
+            this.cg = cg;
+            fitness = 0;
+            evaluated = false;
+        }
     }
 
     public class KSSAlgorithm : TrainingAlgorithm
@@ -32,8 +64,7 @@ namespace KSS
 
         public KSSSave save;
 
-        // Start is called before the first frame update
-        void Start()
+        public override void Setup()
         {
 
         }
