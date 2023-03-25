@@ -34,8 +34,7 @@ public abstract class Environment : MonoBehaviour
     public bool busy { get { return currentCreature != null; } }
 
     // References to other Components
-    [SerializeField]
-    private Creature currentCreature;
+    public Creature currentCreature;
     [SerializeField]
     private Fitness fitness;
     [SerializeField]
