@@ -25,6 +25,9 @@ public class RLSwimmer : Agent
 
     public float t_left_angle_ = 0f;
     public float t_right_angle_ = 0f;
+
+    public GameObject Self;
+
     Vector3 lastpos_p = new Vector3();
     Vector3 lastpos_l = new Vector3();
     Vector3 lastpos_r = new Vector3();
@@ -43,23 +46,16 @@ public class RLSwimmer : Agent
 
     public override void OnEpisodeBegin() 
     {
-        
-        // transform.parent.transform.position = new Vector3(lastpos.x,lastpos.y,lastpos.z);
-        transform.parent.transform.position = lastpos_p;
-        leftSegment.transform.position = lastpos_l;
-        rightSegment.transform.position = lastpos_r;
-        transform.position = lastpos_m;
+        //transform.parent.transform.position = lastpos_p;
+        //leftSegment.transform.position = lastpos_l;
+        //rightSegment.transform.position = lastpos_r;
+        //transform.position = lastpos_m;
 
         Rigidbody rb = transform.GetComponent<Rigidbody>();
         float mag_velocity = rb.velocity.magnitude;
         UnityEngine.Debug.Log(mag_velocity);
-        // HingeJoint leftJoint = leftSegment.GetComponent<HingeJoint>();
-        // HingeJoint rightJoint = rightSegment.GetComponent<HingeJoint>();
-        // motorForce = 2000f;
-        // SetJointToTargetAngle(leftJoint, 0);
-        // SetJointToTargetAngle(rightJoint, 0);
-        // motorForce = 200f;
-
+        Instantiate(Self, lastpos_p, Quaternion.identity);
+        Destroy(transform.parent.gameObject);
         SW.Reset();
         SW.Start();
         return;
@@ -115,7 +111,7 @@ public class RLSwimmer : Agent
         Rigidbody rb = transform.GetComponent<Rigidbody>();
         float mag_velocity = rb.velocity.magnitude;
         AddReward(mag_velocity);
-        if (SW.ElapsedMilliseconds >= timeout*1000f) EndEpisode();
+        if (SW.ElapsedMilliseconds >= timeout * 1000f) EndEpisode();
         SW.Start();
 
         
