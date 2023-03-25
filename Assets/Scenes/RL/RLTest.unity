@@ -123,52 +123,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!114 &1873443179
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: defe3efb56c1bc943a6bfb504a00dc77, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  active: 1
-  startDistance:
-    m_OverrideState: 0
-    m_Value: 0
-  fogDensity:
-    m_OverrideState: 0
-    m_Value: 20
-  heightFogDepth:
-    m_OverrideState: 0
-    m_Value: 25
-  heightFogDensity:
-    m_OverrideState: 0
-    m_Value: 50
-  heightFogBrightness:
-    m_OverrideState: 0
-    m_Value: 0.6
-  fogBrightness:
-    m_OverrideState: 0
-    m_Value: 1
-  subsurfaceStrength:
-    m_OverrideState: 0
-    m_Value: 1
-  causticsStrength:
-    m_OverrideState: 0
-    m_Value: 1
-  distortionStrength:
-    m_OverrideState: 0
-    m_Value: 0.25
-  distortionFrequency:
-    m_OverrideState: 0
-    m_Value: 0.75
-  distortionSpeed:
-    m_OverrideState: 0
-    m_Value: 0.5
 --- !u!1 &863920233445330781
 GameObject:
   m_ObjectHideFlags: 0
@@ -578,163 +532,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &863920234079703651
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 863920234079703660}
-  - component: {fileID: 863920234079703661}
-  m_Layer: 0
-  m_Name: CreatureSpawner
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &863920234079703660
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 863920234079703651}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2275059035598841902}
-  m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &863920234079703661
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 863920234079703651}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 995ffbf13ae25dd4282f4ad0f04a3e25, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  creaturePrefab: {fileID: 5168623450832129693, guid: f57b33118f5715c428887d11a1b04801, type: 3}
-  segmentPrefab: {fileID: 6837624401485191407, guid: 56ac4567187132f4f921d8ae50078f2e, type: 3}
-  spawnPos: {x: 0, y: 4.5, z: 0}
-  creatureGenotype:
-    name: Test
-    stage: 0
-    segments:
-    - r: 255
-      g: 0
-      b: 0
-      id: 1
-      connections:
-      - id: 0
-        destination: 2
-        anchorX: 0.5
-        anchorY: 0
-        anchorZ: 0
-        orientationX: 0
-        orientationY: 0
-        orientationZ: 0
-        orientationW: 0
-        eulerX: 0
-        eulerY: 0
-        eulerZ: -90
-        scale: 1
-        reflected: 0
-        terminalOnly: 0
-      neurons:
-      - type: 0
-        inputs: []
-        weights: []
-        nr:
-          isGhost: 0
-          isParent: 0
-          isSelf: 0
-          connectionPath: 
-          id: 3
-      recursiveLimit: 1
-      dimensionX: 1
-      dimensionY: 1
-      dimensionZ: 1
-      jointType: 0
-    - r: 0
-      g: 0
-      b: 125
-      id: 2
-      connections:
-      - id: 0
-        destination: 2
-        anchorX: 0
-        anchorY: 0.5
-        anchorZ: 0
-        orientationX: 0
-        orientationY: 0
-        orientationZ: 0
-        orientationW: 0
-        eulerX: 0
-        eulerY: 0
-        eulerZ: 0
-        scale: 1
-        reflected: 0
-        terminalOnly: 0
-      neurons:
-      - type: 21
-        inputs:
-        - isGhost: 0
-          isParent: 1
-          isSelf: 0
-          connectionPath: 
-          id: 3
-        - isGhost: 0
-          isParent: 1
-          isSelf: 0
-          connectionPath: 
-          id: 3
-        - isGhost: 0
-          isParent: 1
-          isSelf: 0
-          connectionPath: 
-          id: 3
-        weights:
-        - 1
-        - 1
-        - 0
-        nr:
-          isGhost: 0
-          isParent: 0
-          isSelf: 0
-          connectionPath: 
-          id: 13
-      - type: 0
-        inputs:
-        - isGhost: 0
-          isParent: 0
-          isSelf: 1
-          connectionPath: 00
-          id: 13
-        weights:
-        - 350
-        nr:
-          isGhost: 0
-          isParent: 0
-          isSelf: 0
-          connectionPath: 
-          id: 12
-      recursiveLimit: 1
-      dimensionX: 0.2
-      dimensionY: 2
-      dimensionZ: 1
-      jointType: 3
-    obsDim: 0
-    actDim: 0
-  creatureGenotypeHistory: []
 --- !u!1 &863920234225577029
 GameObject:
   m_ObjectHideFlags: 0
@@ -793,7 +590,7 @@ MonoBehaviour:
   waterLevelPadding: 0
   waterMaterial: {fileID: 2100000, guid: af1a77d4d4ac18743ba6f50fac4b7600, type: 2}
   dynamicMaterial: 0
-  settings: {fileID: 1873443179}
+  settings: {fileID: 0}
   useVolumeBlending: 0
   startDistance: 0
   fogDensity: 8
@@ -1055,7 +852,7 @@ Transform:
   m_Children:
   - {fileID: 863920234856628018}
   m_Father: {fileID: 2275059035598841902}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &863920234856628017
 GameObject:
@@ -1066,9 +863,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 863920234856628018}
-  - component: {fileID: 863920234856628019}
   m_Layer: 0
-  m_Name: PurcellSwimmer
+  m_Name: RLSwimmer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1092,23 +888,6 @@ Transform:
   m_Father: {fileID: 863920234811998315}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &863920234856628019
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 863920234856628017}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 98aa5105913c0a94d9fe4b08f26b955d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  leftSegment: {fileID: 863920233560391769}
-  rightSegment: {fileID: 863920234003857090}
-  motorForce: 200
-  speed: 360
-  eps: 10
 --- !u!4 &863920235446047624
 Transform:
   m_ObjectHideFlags: 0
@@ -1179,6 +958,9 @@ GameObject:
   - component: {fileID: 863920235446047627}
   - component: {fileID: 863920235446047626}
   - component: {fileID: 863920235446047625}
+  - component: {fileID: 863920235446047639}
+  - component: {fileID: 863920235446047638}
+  - component: {fileID: 863920235446047640}
   m_Layer: 6
   m_Name: Cube
   m_TagString: Untagged
@@ -1236,6 +1018,72 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 863920235446047631}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &863920235446047638
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 863920235446047631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d4a34d6b29191643937fbfd24646496, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agentParameters:
+    maxStep: 0
+  hasUpgradedFromAgentParameters: 1
+  MaxStep: 0
+  leftSegment: {fileID: 863920234003857090}
+  rightSegment: {fileID: 863920233560391769}
+  motorForce: 200
+  speed: 90
+  t_left_angle_: 0
+  t_right_angle_: 0
+--- !u!114 &863920235446047639
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 863920235446047631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d1c4e0b1822b495aa52bc52839ecb30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_BrainParameters:
+    VectorObservationSize: 3
+    NumStackedVectorObservations: 1
+    m_ActionSpec:
+      m_NumContinuousActions: 2
+      BranchSizes: 
+    VectorActionSize: 02000000
+    VectorActionDescriptions: []
+    VectorActionSpaceType: 1
+    hasUpgradedBrainParametersWithActionSpec: 1
+  m_Model: {fileID: 0}
+  m_InferenceDevice: 0
+  m_BehaviorType: 0
+  m_BehaviorName: Swim1
+  TeamId: 0
+  m_UseChildSensors: 0
+  m_UseChildActuators: 1
+  m_ObservableAttributeHandling: 0
+--- !u!114 &863920235446047640
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 863920235446047631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a5c9d521e5ef4759a8246a07d52221e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DecisionPeriod: 10
+  TakeActionsBetweenDecisions: 0
 --- !u!23 &1491271529038491028
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1348,7 +1196,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2275059037010863714}
-  - {fileID: 863920234079703660}
   - {fileID: 863920234811998315}
   m_Father: {fileID: 0}
   m_RootOrder: 0

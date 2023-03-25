@@ -18,6 +18,8 @@ public class RLSwimmer : Agent
     public GameObject leftSegment;
     public GameObject rightSegment;
 
+    public Vector3 start_loc;
+
     public float motorForce = 200f;
     public float speed = 90f;
 
@@ -25,11 +27,31 @@ public class RLSwimmer : Agent
     public float t_right_angle_ = 0f;
     Vector3 lastpos = new Vector3();
 
-    float timeout = 5f;
+    float timeout = 20f;
     Stopwatch SW = new Stopwatch();
+
+    void Start()
+    {
+        lastpos = transform.parent.transform.position;
+        UnityEngine.Debug.Log(lastpos);
+    }
 
     public override void OnEpisodeBegin() 
     {
+        
+        transform.parent.transform.position = new Vector3(lastpos.x,lastpos.y,lastpos.z);
+        UnityEngine.Debug.Log(transform.parent.transform.position);
+
+        Rigidbody rb = transform.GetComponent<Rigidbody>();
+        float mag_velocity = rb.velocity.magnitude;
+        UnityEngine.Debug.Log(mag_velocity);
+        // HingeJoint leftJoint = leftSegment.GetComponent<HingeJoint>();
+        // HingeJoint rightJoint = rightSegment.GetComponent<HingeJoint>();
+        // motorForce = 2000f;
+        // SetJointToTargetAngle(leftJoint, 0);
+        // SetJointToTargetAngle(rightJoint, 0);
+        // motorForce = 200f;
+
         SW.Reset();
         SW.Start();
         return;
@@ -53,34 +75,41 @@ public class RLSwimmer : Agent
         Rigidbody rb = transform.GetComponent<Rigidbody>();
         float mag_velocity = rb.velocity.magnitude;
         Vector3 input = new Vector3(leftJoint.angle,rightJoint.angle,mag_velocity);
-        UnityEngine.Debug.Log(input);
+        // UnityEngine.Debug.Log(input);
         sensor.AddObservation(input);
     }
 
     public override void OnActionReceived(ActionBuffers actions)
     {
-        float t_left_angle = actions.ContinuousActions[0];
-        float t_right_angle = actions.ContinuousActions[1];
-
-        UnityEngine.Debug.Log(t_left_angle);
-        UnityEngine.Debug.Log(t_right_angle);
-
+        t_left_angle_ = actions.ContinuousActions[0] + 1;
+        t_right_angle_ = actions.ContinuousActions[1] + 1;
+        HingeJoint leftJoint = leftSegment.GetComponent<HingeJoint>();
+        HingeJoint rightJoint = rightSegment.GetComponent<HingeJoint>();
+        // UnityEngine.Debug.Log(t_left_angle_);
+        // UnityEngine.Debug.Log(t_right_angle_);
+        SetJointToTargetAngle(leftJoint, t_left_angle_*180);
+        SetJointToTargetAngle(rightJoint, t_right_angle_*180);
+        
     }
+
+    // public override void Heuristic(in ActionBuffers actionsOut)
+    // {
+    //     ActionSegment<float> continuousActions = actionsOut.ContinuousActions;
+    //     continuousActions[0] = Random.Range(-1f,1f);
+    //     continuousActions[1] = Random.Range(-1f,1f);
+    // }
 
 
     private void FixedUpdate()
     {
-        HingeJoint leftJoint = leftSegment.GetComponent<HingeJoint>();
-        HingeJoint rightJoint = rightSegment.GetComponent<HingeJoint>();
+        // UnityEngine.Debug.Log(SW.ElapsedMilliseconds);
         SW.Stop();
-        if (SW.ElapsedMilliseconds >= timeout*1000f)
-        {
-
-            EndEpisode();
-        }
+        Rigidbody rb = transform.GetComponent<Rigidbody>();
+        float mag_velocity = rb.velocity.magnitude;
+        AddReward(mag_velocity);
+        if (SW.ElapsedMilliseconds >= timeout*1000f) EndEpisode();
         SW.Start();
 
-        SetJointToTargetAngle(leftJoint, t_left_angle_*360);
-        SetJointToTargetAngle(rightJoint, t_right_angle_*360);
+        
     }
 }
