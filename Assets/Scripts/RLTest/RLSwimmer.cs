@@ -25,22 +25,30 @@ public class RLSwimmer : Agent
 
     public float t_left_angle_ = 0f;
     public float t_right_angle_ = 0f;
-    Vector3 lastpos = new Vector3();
+    Vector3 lastpos_p = new Vector3();
+    Vector3 lastpos_l = new Vector3();
+    Vector3 lastpos_r = new Vector3();
+    Vector3 lastpos_m = new Vector3();
 
     float timeout = 20f;
     Stopwatch SW = new Stopwatch();
 
     void Start()
     {
-        lastpos = transform.parent.transform.position;
-        UnityEngine.Debug.Log(lastpos);
+        lastpos_p = transform.parent.transform.position;
+        lastpos_l = leftSegment.transform.position;
+        lastpos_r = rightSegment.transform.position;
+        lastpos_m = transform.position;
     }
 
     public override void OnEpisodeBegin() 
     {
         
-        transform.parent.transform.position = new Vector3(lastpos.x,lastpos.y,lastpos.z);
-        UnityEngine.Debug.Log(transform.parent.transform.position);
+        // transform.parent.transform.position = new Vector3(lastpos.x,lastpos.y,lastpos.z);
+        transform.parent.transform.position = lastpos_p;
+        leftSegment.transform.position = lastpos_l;
+        rightSegment.transform.position = lastpos_r;
+        transform.position = lastpos_m;
 
         Rigidbody rb = transform.GetComponent<Rigidbody>();
         float mag_velocity = rb.velocity.magnitude;
