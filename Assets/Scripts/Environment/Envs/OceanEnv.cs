@@ -10,10 +10,12 @@ public class OceanEnvSettings : EnvironmentSettings {
     public override EnvArrangeType envArrangeType { get {return EnvArrangeType.LINEAR; } }
     public override float sizeX { get { return 5; } }
     public override float sizeZ { get { return 5; } }
+    public override float maxTime { get { return 3; } }
 }
 
 public class OceanEnv : Environment
 {
+    public float sus;
     public override void Setup(EnvironmentSettings es)
     {
         base.Setup(es);
@@ -22,20 +24,21 @@ public class OceanEnv : Environment
     }
 
     // Update is called once per frame
-    void Update()
+    public override void FixedUpdate()
     {
-        
+        base.FixedUpdate();
+        sus = timePassed;
     }
 
     public override void ResetEnv(){
         base.ResetEnv();
     }
     
-    public override void SpawnCreature(CreatureGenotype cg)
+    public override void StartEnv(CreatureGenotype cg)
     {
         // Edit spawn transform if needed
 
-        base.SpawnCreature(cg);
+        base.StartEnv(cg);
 
     }
 }

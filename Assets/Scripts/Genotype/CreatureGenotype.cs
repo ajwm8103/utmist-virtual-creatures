@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 [System.Serializable]
 public class NeuronGenotype
@@ -232,6 +234,38 @@ public class CreatureGenotype
         cg.name = name;
         cg.segments = segments.Select(item => item.Clone()).ToList();
         return cg;
+    }
+
+    public void SaveData(string path){
+        BinaryFormatter formatter = new BinaryFormatter();
+        string fullPath = Application.persistentDataPath + path;
+
+        FileStream stream = new FileStream(fullPath, FileMode.Create);
+
+        formatter.Serialize(stream, this);
+        stream.Close();
+    }
+
+    public static CreatureGenotype LoadData(string path)
+    {
+        string fullPath = Application.persistentDataPath + path;
+
+        if (File.Exists(fullPath))
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            FileStream stream = new FileStream(fullPath, FileMode.Open);
+
+            CreatureGenotype data = formatter.Deserialize(stream) as CreatureGenotype;
+
+            stream.Close();
+
+            return data;
+        }
+        else
+        {
+            Debug.LogError("Error: Save file not found in " + fullPath);
+            return null;
+        }
     }
 
     /// <summary>

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEditor;
 using static MutateGenotype;
 
 public class CreatureSpawner : MonoBehaviour
@@ -66,12 +67,6 @@ public class CreatureSpawner : MonoBehaviour
             creatureGenotypeHistory.Add(creatureGenotype.Clone());
         }
         SpawnCreature(creatureGenotype, (Vector3.up + Vector3.right) * 2);*/
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
 
     bool VerifyCreatureGenotypeIntegrity(CreatureGenotype cm)
@@ -373,4 +368,22 @@ public class CreatureSpawner : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position + spawnPos, 0.1f);
     }
 
+}
+
+[CustomEditor(typeof(CreatureSpawner))]
+public class CreatureSpawnerEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        DrawDefaultInspector();
+        CreatureSpawner spawner = target as CreatureSpawner;
+
+        if (GUILayout.Button("Save Current Creature"))
+        {
+            Debug.Log("Saving Current Creature");
+            CreatureGenotype cg = spawner.creatureGenotype;
+            cg.SaveData("/" + cg.name + ".creature");
+            Debug.Log(Application.persistentDataPath);
+        }
+    }
 }

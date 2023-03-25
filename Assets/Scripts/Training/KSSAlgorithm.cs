@@ -37,7 +37,8 @@ namespace KSS
                 // Mutated generation
                 for (int i = 0; i < size; i++)
                 {
-                    CreatureGenotypeEval cgEval = new CreatureGenotypeEval(MutateGenotype.MutateCreatureGenotype(initialGenotype, mp));
+                    CreatureGenotypeEval cgEval = new CreatureGenotypeEval(initialGenotype);
+                    // CreatureGenotypeEval cgEval = new CreatureGenotypeEval(MutateGenotype.MutateCreatureGenotype(initialGenotype, mp));
                     cgEvals.Add(cgEval);
                 }
             }
@@ -75,9 +76,11 @@ namespace KSS
 
         private int currentGenotypeIndex = 0;
         private int currentGenerationIndex = 0;
+        [SerializeField]
+        private int untestedRemaining;
         private Generation currentGeneration;
-        private int currentGenerationSize;
         private List<EnvTracker> trackers;
+        private bool isSetup = false;
         //private bool generationInProgress = false;
 
         public override void Setup(TrainingManager tm)
@@ -86,18 +89,29 @@ namespace KSS
             saveK = (KSSSave)save;
             optimizationSettings = (KSSSettings)saveK.ts.optimizationSettings;
 
+
+            if (saveK.isNew){
+                Debug.Log("New save, first generation...");
+                CreateNextGeneration(true);
+            } else {
+                // setup indexes, TODO
+                // CreateNextGeneration(false); probably not this actually
+            }
+
             trackers = new List<EnvTracker>();
             foreach (Environment env in tm.environments)
             {
                 trackers.Add(new EnvTracker(env, null));
             }
+
+            isSetup = true;
         }
 
         // Update is called once per frame
         void Update()
         {
-            //if (generationInProgress)
-            //    return;
+            if (!isSetup)
+                return;
 
             if (currentGenotypeIndex < optimizationSettings.populationSize)
             {
@@ -105,12 +119,12 @@ namespace KSS
                 bool completed = true;
                 for (int i = currentGenotypeIndex; i < optimizationSettings.populationSize; i++)
                 {
-                    CreatureGenotypeEval currentEval = currentGeneration.cgEvals[currentGenotypeIndex];
+                    CreatureGenotypeEval currentEval = currentGeneration.cgEvals[i];
                     EnvTracker envTracker = FindAvailableEnvironment();
                     if (envTracker != null)
                     {
                         envTracker.idx = i; // Storing genotype index
-                        envTracker.env.SpawnCreature(currentEval.cg);
+                        envTracker.env.StartEnv(currentEval.cg);
                         envTracker.env.PingReset(this);
                     } else {
                         // All envs are full, set currentGenotypeIndex and wait until next Update() call
@@ -124,9 +138,9 @@ namespace KSS
                     currentGenotypeIndex = optimizationSettings.populationSize;
                 }
             }
-            else
+            else if (untestedRemaining <= 0)
             {
-                CreateNextGeneration();
+                CreateNextGeneration(false);
             }
         }
 
@@ -137,6 +151,7 @@ namespace KSS
                 throw new System.Exception();
             }
             currentGeneration.cgEvals[(int)result.idx].fitness = fitness;
+            untestedRemaining--;
         }
 
         private EnvTracker FindAvailableEnvironment()
@@ -151,14 +166,22 @@ namespace KSS
             return null;
         }
 
-        private void CreateNextGeneration()
+        private void CreateNextGeneration(bool first)
         {
             currentGenotypeIndex = 0;
-            currentGenerationIndex++;
-            CreatureGenotype bestGenotype = SelectBestGenotype();
-            MutateGenotype.MutationPreferenceSetting mp = new MutateGenotype.MutationPreferenceSetting(); // Set your mutation preferences
-            Generation nextGeneration = new Generation(saveK.ts.generationSize, bestGenotype, mp);
-            saveK.generations.Add(nextGeneration);
+            
+            untestedRemaining = optimizationSettings.populationSize;
+            if (first){
+                currentGenerationIndex = 0;
+                currentGeneration = new Generation(optimizationSettings.populationSize, optimizationSettings.initialGenotype, optimizationSettings.mp);
+                saveK.generations = new List<Generation>();
+                saveK.generations.Add(currentGeneration);
+            } else {
+                currentGenerationIndex++;
+                CreatureGenotype bestGenotype = SelectBestGenotype();
+                currentGeneration = new Generation(optimizationSettings.populationSize, bestGenotype, optimizationSettings.mp);
+                saveK.generations.Add(currentGeneration);
+            }
         }
 
         private CreatureGenotype SelectBestGenotype()

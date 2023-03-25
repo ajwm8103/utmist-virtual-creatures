@@ -8,6 +8,7 @@ using UnityEngine;
 public class TrainingSave {
     public string saveName = "Unnamed Save";
     public string savePath;
+    public bool isNew;
     public TrainingSettings ts;
 }
 
@@ -84,6 +85,7 @@ public class TrainingManager : MonoBehaviour
         }
 
         save = esp.save;
+        Debug.Log(save);
         ts = save.ts;
         stage = ts.optimizationSettings.stage;
         envHolder = transform.Find("EnvHolder");

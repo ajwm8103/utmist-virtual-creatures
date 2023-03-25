@@ -295,6 +295,60 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
+--- !u!1 &1608879591
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1608879593}
+  - component: {fileID: 1608879592}
+  m_Layer: 0
+  m_Name: CreatureSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1608879592
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1608879591}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 995ffbf13ae25dd4282f4ad0f04a3e25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  creaturePrefab: {fileID: 5168623450832129693, guid: f57b33118f5715c428887d11a1b04801, type: 3}
+  segmentPrefab: {fileID: 6837624401485191407, guid: 56ac4567187132f4f921d8ae50078f2e, type: 3}
+  spawnPos: {x: 0, y: 0, z: 0}
+  creatureGenotype:
+    name: 
+    stage: 0
+    segments: []
+    obsDim: 0
+    actDim: 0
+  creatureGenotypeHistory: []
+--- !u!4 &1608879593
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1608879591}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.4088595, y: -0.794171, z: -8.450605}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1892692580
 GameObject:
   m_ObjectHideFlags: 0
@@ -324,9 +378,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9e81d70bfc739b43a52946437f4bfa4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ts:
-    optimizationSettings:
-      num_envs: 1
+  stage: 0
+  algo: {fileID: 0}
 --- !u!4 &1892692582
 Transform:
   m_ObjectHideFlags: 0
