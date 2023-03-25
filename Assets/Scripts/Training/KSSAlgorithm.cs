@@ -63,9 +63,10 @@ namespace KSS
     {
 
         public KSSSave save;
-
-        public override void Setup()
+                                                                      
+        public override void Setup(TrainingManager tm)
         {
+            base.Setup(tm);
 
         }
 

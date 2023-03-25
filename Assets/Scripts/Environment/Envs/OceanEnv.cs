@@ -14,10 +14,11 @@ public class OceanEnvSettings : EnvironmentSettings {
 
 public class OceanEnv : Environment
 {
-    // Start is called before the first frame update
-    public new void Start()
+    public override void Setup(EnvironmentSettings es)
     {
-        base.Start();
+        base.Setup(es);
+
+        ResetEnv();
     }
 
     // Update is called once per frame

@@ -41,6 +41,8 @@ public class TrainingManager : MonoBehaviour
 {
     public static TrainingManager instance;
 
+    public List<Environment> environments { get; private set; }
+
     [SerializeField]
     private TrainingSettings ts;
     [SerializeField]
@@ -49,6 +51,7 @@ public class TrainingManager : MonoBehaviour
     // References to components
     [SerializeField]
     private TrainingAlgorithm algo;
+    private Transform envHolder;
 
     private void Awake()
     {
@@ -73,8 +76,16 @@ public class TrainingManager : MonoBehaviour
         
         ts = esp.ts;
         stage = ts.optimizationSettings.stage;
+        envHolder = transform.Find("EnvHolder");
+        if (envHolder == null){
+            envHolder = new GameObject().transform;
+            envHolder.transform.parent = transform;
+            envHolder.transform.localPosition = Vector3.zero;
+            envHolder.name = "EnvHolder";
+        }
 
         GameObject envPrefab = Resources.Load<GameObject>("Prefabs/Envs/" + EnvironmentSettings.envString[ts.envSettings.envCode]);
+        environments = new List<Environment>();
 
         if (ts.envSettings.envArrangeType == EnvArrangeType.LINEAR){
             float sizeX = ts.envSettings.sizeX;
@@ -83,6 +94,8 @@ public class TrainingManager : MonoBehaviour
             {
                 Environment instantiatedEnv = Instantiate(envPrefab, Vector3.right * i * sizeX, envPrefab.transform.rotation).GetComponent<Environment>();
                 instantiatedEnv.Setup(ts.envSettings);
+                instantiatedEnv.transform.parent = envHolder;
+                environments.Add(instantiatedEnv);
                 Transform oneOff = instantiatedEnv.transform.Find("OneOffHolder");
                 if (oneOff != null && i != 0) {
                     Destroy(oneOff.gameObject);
@@ -94,7 +107,7 @@ public class TrainingManager : MonoBehaviour
 
         if (stage == TrainingStage.KSS) {
             algo = (TrainingAlgorithm)gameObject.AddComponent(typeof(KSS.KSSAlgorithm));
-
+            algo.Setup(this);
         }
     }
 

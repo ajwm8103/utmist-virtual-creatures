@@ -80,12 +80,12 @@ public class CreatureSpawner : MonoBehaviour
     }
 
     // Creature & GHOST (ID 0)
-    public void SpawnCreature(CreatureGenotype cm, Vector3 position)
+    public Creature SpawnCreature(CreatureGenotype cm, Vector3 position)
     {
         // Verify
         if (!VerifyCreatureGenotypeIntegrity(cm))
         {
-            return;
+            return null;
         }
 
         // Create recursive limit dict
@@ -111,6 +111,7 @@ public class CreatureSpawner : MonoBehaviour
 
         SpawnSegment(cm, c, recursiveLimitInitial, position);
         c.InitializeCreature();
+        return c;
     }
 
 

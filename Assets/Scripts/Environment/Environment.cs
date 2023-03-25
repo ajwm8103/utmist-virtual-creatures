@@ -27,7 +27,7 @@ public abstract class Environment : MonoBehaviour
     [Header("Stats")]
     public EnvCode envCode;
     public float totalReward;
-    public bool busy;
+    public bool busy { get { return currentCreature != null;  } }
 
     // References to other Components
     [SerializeField]
@@ -40,20 +40,29 @@ public abstract class Environment : MonoBehaviour
     private CreatureSpawner cs;
     [SerializeField]
     private Transform spawnTransform;
+    [SerializeField]
+    private Transform creatureHolder;
 
     private EnvironmentSettings es;
 
-    public void Setup(EnvironmentSettings es){
+    public virtual void Setup(EnvironmentSettings es){
         this.es = es;
         fitness = GetComponent<Fitness>();
         tm = TrainingManager.instance;
-        spawnTransform = transform.Find("Spawn Transform");
-        ResetEnv();
+        cs = CreatureSpawner.instance;
+        spawnTransform = transform.Find("SpawnTransform");
+        creatureHolder = transform.Find("CreatureHolder");
     }
 
     // Spawn creature by passing transform params to Scene CreatureSpawner
     public virtual void SpawnCreature(CreatureGenotype cg){
-        cs.SpawnCreature(cg, spawnTransform.position);
+        if (busy) {
+            Debug.Log("Deleting current crerature...");
+            Destroy(currentCreature.gameObject);
+            currentCreature = null;
+        }
+        currentCreature = cs.SpawnCreature(cg, spawnTransform.position);
+        currentCreature.transform.parent = creatureHolder;
     }
     public virtual void ResetEnv() {
         totalReward = 0;
@@ -62,7 +71,10 @@ public abstract class Environment : MonoBehaviour
     void OnDrawGizmosSelected()
     {
         // Draw a yellow cube at the transform position
+        if (es == null){
+            return;
+        }
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireCube(transform.position, new Vector3(es.sizeX, 1, es.sizeZ));
+        Gizmos.DrawWireCube(transform.position, new Vector3(es.sizeX, 10, es.sizeZ));
     }
 }
