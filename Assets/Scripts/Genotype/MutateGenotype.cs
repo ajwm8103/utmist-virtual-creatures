@@ -144,7 +144,7 @@ public class MutateGenotype
         }
     }
 
-    public void SimplifyCreatureGenotype(CreatureGenotype cg)
+    public static void SimplifyCreatureGenotype(ref CreatureGenotype cg)
     {
         /// Remove all unconnected segments
 
@@ -231,7 +231,7 @@ public class MutateGenotype
         }
     }
 
-    public void TraceConnections(CreatureGenotype cg, Dictionary<byte, byte> recursiveLimitValues,
+    public static void TraceConnections(CreatureGenotype cg, Dictionary<byte, byte> recursiveLimitValues,
 		    SegmentConnectionGenotype myConnection, List<byte> connectionPath, List<byte> segmentIds,
 		    List<List<byte>> connectionPaths, List<NeuronReference> neuronReferences)
     {
@@ -341,8 +341,12 @@ public class MutateGenotype
 
     }
 
+    public static CreatureGenotype GenerateRandomCreatureGenotype(){
+        // TODO: May need reference to MutationPreferenceSetting?
+        return null;
+    }
 
-    public bool GenerateRandomSegmentGenotype(CreatureGenotype cg)
+    public static bool GenerateRandomSegmentGenotype(ref CreatureGenotype cg)
     {
         for (byte i = 1; i < 255; i++)
         {
@@ -369,7 +373,7 @@ public class MutateGenotype
         return false;
     }
 
-    public void GenerateRandomNeuronGenotype(CreatureGenotype cg, List<List<byte>> connectionPaths, List<byte> segmentIds, List<NeuronReference> neuronReferences)
+    public static void GenerateRandomNeuronGenotype(ref CreatureGenotype cg, List<List<byte>> connectionPaths, List<byte> segmentIds, List<NeuronReference> neuronReferences)
     {
         // Pick a random segment path
         int segmentSelectionId = Random.Range(0, connectionPaths.Count);
@@ -529,7 +533,7 @@ public class MutateGenotype
     public List<List<byte>> cp1 = new List<List<byte>>();
     public List<NeuronReference> nr1 = new List<NeuronReference>();
 
-    public CreatureGenotype MutateCreatureGenotype(CreatureGenotype cg, MutationPreferenceSetting mp)
+    public static CreatureGenotype MutateCreatureGenotype(CreatureGenotype cg, MutationPreferenceSetting mp)
     {
         Debug.Log("----MUTATING CREATURE----");
         // Get list of segment connection paths and all neuron connection paths for random selection
@@ -546,8 +550,8 @@ public class MutateGenotype
         }
 
         TraceConnections(cg, recursiveLimitInitial, null, new List<byte>(), segmentIds, connectionPaths, neuronReferences);
-        cp1 = connectionPaths;
-        nr1 = neuronReferences;
+        //cp1 = connectionPaths;
+        //nr1 = neuronReferences;
 
 
         // Mutations are performed on a per element basis
@@ -607,7 +611,7 @@ public class MutateGenotype
             }
 
             // 2. New random node added to graph.
-            GenerateRandomSegmentGenotype(cg);
+            GenerateRandomSegmentGenotype(ref cg);
 
 
             // 3. Connection parameters subjected to mutation.
@@ -721,7 +725,7 @@ public class MutateGenotype
 
             // 5. Unconnected elements are garbage collected / simplified
             // Look for all
-            SimplifyCreatureGenotype(cg);
+            SimplifyCreatureGenotype(ref cg);
         }
         if (mp.mutateNeural)
         {
@@ -776,7 +780,7 @@ public class MutateGenotype
 
 
             // 2. New random node added to graph.
-            GenerateRandomNeuronGenotype(cg, connectionPaths, segmentIds, neuronReferences); // please work please
+            GenerateRandomNeuronGenotype(ref cg, connectionPaths, segmentIds, neuronReferences); // please work please
 
             // 3. Connection parameters subjected to mutation.
             // Sometimes pointer moved to point to a different node at random.
@@ -795,7 +799,7 @@ public class MutateGenotype
             }
         }
         // 5. Unconnected elements are garbage collected / simplified
-        SimplifyCreatureGenotype(cg);
+        SimplifyCreatureGenotype(ref cg);
 
         return cg;
     }

@@ -8,10 +8,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Menus/Menu.unity
     guid: 78316df126b465542a28c4d883f956bc
-  - enabled: 1
-    path: Assets/Scenes/Menus/EvolutionMenu.unity
-    guid: 98bfb1bacecbd4901a7696ef2e2b7003
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Env Templates/OceanEnv.unity
     guid: 64bb6e86a48f85844ae0382c3886cb99
+  - enabled: 1
+    path: Assets/Scenes/Env Runners/LocalEnvRunner.unity
+    guid: 64fba3dd6f3f7a0458c583ec3f37ac93
   m_configObjects: {}
