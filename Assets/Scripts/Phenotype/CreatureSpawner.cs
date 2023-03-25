@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEditor;
 using static MutateGenotype;
 
 public class CreatureSpawner : MonoBehaviour
@@ -68,24 +69,18 @@ public class CreatureSpawner : MonoBehaviour
         SpawnCreature(creatureGenotype, (Vector3.up + Vector3.right) * 2);*/
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
     bool VerifyCreatureGenotypeIntegrity(CreatureGenotype cm)
     {
         return true;
     }
 
     // Creature & GHOST (ID 0)
-    void SpawnCreature(CreatureGenotype cm, Vector3 position)
+    public Creature SpawnCreature(CreatureGenotype cm, Vector3 position)
     {
         // Verify
         if (!VerifyCreatureGenotypeIntegrity(cm))
         {
-            return;
+            return null;
         }
 
         // Create recursive limit dict
@@ -111,6 +106,7 @@ public class CreatureSpawner : MonoBehaviour
 
         SpawnSegment(cm, c, recursiveLimitInitial, position);
         c.InitializeCreature();
+        return c;
     }
 
 
@@ -252,7 +248,7 @@ public class CreatureSpawner : MonoBehaviour
             runTerminalOnly = true;
         }
 
-        if (creatureGenotype.stage == CreatureStage.KSS){
+        if (creatureGenotype.stage == TrainingStage.KSS){
             // Add neurons
             foreach (NeuronGenotype nm in currentSegmentGenotype.neurons)
             {
@@ -270,7 +266,7 @@ public class CreatureSpawner : MonoBehaviour
                     c.AddNeuron(nm, null, null);
                 }
             }
-        } else if (creatureGenotype.stage == CreatureStage.RL){
+        } else if (creatureGenotype.stage == TrainingStage.RL){
             // Add Segment and HingeJoint references
             c.segments.Add(spawnedSegmentGameObject.GetComponent<Segment>());
             c.actionMotors.Add(spawnedSegmentGameObject.GetComponent<HingeJoint>());
@@ -324,7 +320,7 @@ public class CreatureSpawner : MonoBehaviour
 
         List<byte> connectionPath = new List<byte>();
 
-        if (creatureGenotype.stage == CreatureStage.KSS){
+        if (creatureGenotype.stage == TrainingStage.KSS){
             // Add neurons
             foreach (NeuronGenotype nm in currentSegmentGenotype.neurons)
             {
@@ -343,7 +339,7 @@ public class CreatureSpawner : MonoBehaviour
                     c.AddNeuron(nm, null, null);
                 }
             }
-        } else if (creatureGenotype.stage == CreatureStage.RL){
+        } else if (creatureGenotype.stage == TrainingStage.RL){
             // Add Segment
             c.segments.Add(spawnedSegmentGameObject.GetComponent<Segment>());
         }
@@ -372,4 +368,22 @@ public class CreatureSpawner : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position + spawnPos, 0.1f);
     }
 
+}
+
+[CustomEditor(typeof(CreatureSpawner))]
+public class CreatureSpawnerEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        DrawDefaultInspector();
+        CreatureSpawner spawner = target as CreatureSpawner;
+
+        if (GUILayout.Button("Save Current Creature"))
+        {
+            Debug.Log("Saving Current Creature");
+            CreatureGenotype cg = spawner.creatureGenotype;
+            cg.SaveData("/" + cg.name + ".creature");
+            Debug.Log(Application.persistentDataPath);
+        }
+    }
 }

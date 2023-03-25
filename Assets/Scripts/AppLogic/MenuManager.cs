@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using KSS;
 
 //public enum CurrentMenu { MAIN, EVOLUTION_SETTINGS, EVOLUTION_LS, EVOLUTION_SERVER}
 public class MenuManager : MonoBehaviour
@@ -62,15 +63,20 @@ public class MenuManager : MonoBehaviour
     public void LoadLocal()
     {
         // Compile data from settings window into TrainingSettings
-        TrainingSettings ts = new TrainingSettings(new OptimizationSettings(), new OceanEnvSettings());
+        TrainingSettings ts = new TrainingSettings(new KSSSettings(), new OceanEnvSettings());
+        KSSSave save = new KSSSave();
+        save.isNew = true;
+        save.ts = ts;
         ts.optimizationSettings.num_envs = 10;
+        ts.optimizationSettings.initialGenotype = CreatureGenotype.LoadData("/Fish.creature"); // null means start w/ random creatures. TODO: Non-null will mean spawn that with mutations!
 
         // Send to EvolutionSettingsPersist
-        if (EvolutionSettingsPersist.instance == null)
+        EvolutionSettingsPersist esp = EvolutionSettingsPersist.instance;
+        if (esp == null)
         {
             throw new Exception("No EvolutionSettingsPersist instance found.");
         }
-        EvolutionSettingsPersist.instance.ts = ts;
+        esp.save = save;
 
         // Load env runner
         SceneManager.LoadScene("LocalEnvRunner");
