@@ -52,6 +52,7 @@ Temporary Items
 
 # Visual Studio cache directory
 .vs/
+.plastic/
 
 # Gradle cache directory
 .gradle/
