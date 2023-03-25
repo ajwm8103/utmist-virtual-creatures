@@ -1,7 +1,15 @@
 using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
+[System.Serializable]
+public class TrainingSave {
+    public string saveName = "Unnamed Save";
+    public string savePath;
+    public TrainingSettings ts;
+}
 
 [System.Serializable]
 public class TrainingSettings {
@@ -43,6 +51,7 @@ public class TrainingManager : MonoBehaviour
 
     public List<Environment> environments { get; private set; }
 
+    public TrainingSave save { get; private set; }
     [SerializeField]
     private TrainingSettings ts;
     [SerializeField]
@@ -73,8 +82,9 @@ public class TrainingManager : MonoBehaviour
         {
             throw new Exception("No EvolutionSettingsPersist instance found. Try launching from the Menu Scene!");
         }
-        
-        ts = esp.ts;
+
+        save = esp.save;
+        ts = save.ts;
         stage = ts.optimizationSettings.stage;
         envHolder = transform.Find("EnvHolder");
         if (envHolder == null){

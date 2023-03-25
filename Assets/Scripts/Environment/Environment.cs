@@ -27,7 +27,7 @@ public abstract class Environment : MonoBehaviour
     [Header("Stats")]
     public EnvCode envCode;
     public float totalReward;
-    public bool busy { get { return currentCreature != null;  } }
+    public bool busy { get { return currentCreature != null; } }
 
     // References to other Components
     [SerializeField]
@@ -44,34 +44,52 @@ public abstract class Environment : MonoBehaviour
     private Transform creatureHolder;
 
     private EnvironmentSettings es;
+    private List<TrainingAlgorithm> tas;
 
-    public virtual void Setup(EnvironmentSettings es){
+    public virtual void Setup(EnvironmentSettings es)
+    {
         this.es = es;
         fitness = GetComponent<Fitness>();
         tm = TrainingManager.instance;
         cs = CreatureSpawner.instance;
         spawnTransform = transform.Find("SpawnTransform");
         creatureHolder = transform.Find("CreatureHolder");
+
+        ResetEnv();
     }
 
     // Spawn creature by passing transform params to Scene CreatureSpawner
-    public virtual void SpawnCreature(CreatureGenotype cg){
-        if (busy) {
-            Debug.Log("Deleting current crerature...");
+    public virtual void SpawnCreature(CreatureGenotype cg)
+    {
+        if (busy)
+        {
+            Debug.Log("Deleting current creature...");
             Destroy(currentCreature.gameObject);
             currentCreature = null;
         }
         currentCreature = cs.SpawnCreature(cg, spawnTransform.position);
         currentCreature.transform.parent = creatureHolder;
     }
-    public virtual void ResetEnv() {
+    public virtual void ResetEnv()
+    {
+        foreach (TrainingAlgorithm ta in tas)
+        {
+            ta.ResetPing(this, totalReward);
+        }
+
+        tas = new List<TrainingAlgorithm>();
         totalReward = 0;
+    }
+
+    public void PingReset(TrainingAlgorithm ta){
+        tas.Add(ta);
     }
 
     void OnDrawGizmosSelected()
     {
         // Draw a yellow cube at the transform position
-        if (es == null){
+        if (es == null)
+        {
             return;
         }
         Gizmos.color = Color.yellow;

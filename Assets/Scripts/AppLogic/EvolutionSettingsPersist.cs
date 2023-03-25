@@ -7,8 +7,7 @@ public class EvolutionSettingsPersist : MonoBehaviour
     public static EvolutionSettingsPersist instance;
 
     // Vars here
-    public TrainingSettings ts;
-    public string savePath = null;
+    public TrainingSave save;
 
     private void Awake()
     {
