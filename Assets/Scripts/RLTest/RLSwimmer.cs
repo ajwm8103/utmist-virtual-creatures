@@ -27,6 +27,7 @@ public class RLSwimmer : Agent
     public float t_right_angle_ = 0f;
 
     public GameObject self_dup;
+    public GameObject target;
 
     Vector3 lastpos_p = new Vector3();
     Vector3 lastpos_l = new Vector3();
@@ -80,6 +81,8 @@ public class RLSwimmer : Agent
         Vector3 input = new Vector3(leftJoint.angle,rightJoint.angle,mag_velocity);
         // UnityEngine.Debug.Log(input);
         sensor.AddObservation(input);
+        sensor.AddObservation(target.transform.position);
+        sensor.AddObservation(transform.position);
     }
 
     public override void OnActionReceived(ActionBuffers actions)
@@ -109,7 +112,7 @@ public class RLSwimmer : Agent
         SW.Stop();
         Rigidbody rb = transform.GetComponent<Rigidbody>();
         float mag_velocity = rb.velocity.magnitude;
-        AddReward(mag_velocity);
+        AddReward(1f / (Vector3.Distance(target.transform.position, transform.position) + 1f));
         if (SW.ElapsedMilliseconds >= timeout * 1000f)
         {
             EndEpisode();
