@@ -35,11 +35,11 @@ public class Muscle
     {
         if (contractileVelocity < 0)
         {
-            return (mps.maxVelocity - contractileVelocity)/(mps.maxVelocity + contractileVelocity);
+            return (mps.maxVelocity - contractileVelocity)/(mps.maxVelocity + mps.curvatureConst * contractileVelocity);
         }
         else
         {
-            return eccentricForceEnhancement + (mps.eccentricForceEnhancement - 1) * (mps.maxVelocity + contractileVelocity) / (7.56 * mps.curvatureConst * contractileVelocity - mps.maxVelocity);
+            return mps.eccentricForceEnhancement + (mps.eccentricForceEnhancement - 1) * (mps.maxVelocity + contractileVelocity) / (7.56 * mps.curvatureConst * contractileVelocity - mps.maxVelocity);
         }
     }
 
@@ -56,6 +56,19 @@ public class Muscle
             return (epsilon/mps.refStrain)^2;
         }
         return 0f;
+    }
+
+
+
+
+
+
+
+
+
+    public float ForcePEE(contractileLength, contractileVelocity, mps)
+    {
+        return (maxForce * ((contractileLength - optLength) / (optLength * 0.56 * optLength))^2) * ForceVelocity(contractileVelocity, mps);
     }
 
 }
