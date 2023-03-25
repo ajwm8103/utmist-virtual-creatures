@@ -1,4 +1,5 @@
 using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.MLAgents;
@@ -17,6 +18,7 @@ public abstract class EnvironmentSettings {
 
     public virtual float sizeX { get { return 5; } }
     public virtual float sizeZ { get { return 5; } }
+    public virtual float maxTime { get { return 3; } }
 }
 
 /// <summary>
@@ -24,9 +26,12 @@ public abstract class EnvironmentSettings {
 /// </summary>
 public abstract class Environment : MonoBehaviour
 {
+
     [Header("Stats")]
     public EnvCode envCode;
     public float totalReward;
+    public float timePassed;
+    public bool busy { get { return currentCreature != null; } }
 
     // References to other Components
     public Creature currentCreature;
@@ -38,19 +43,83 @@ public abstract class Environment : MonoBehaviour
     private CreatureSpawner cs;
     [SerializeField]
     private Transform spawnTransform;
+    [SerializeField]
+    private Transform creatureHolder;
 
-    public void Start(){
+    private EnvironmentSettings es;
+    public List<TrainingAlgorithm> tas;
+
+    public virtual void Setup(EnvironmentSettings es)
+    {
+        this.es = es;
         fitness = GetComponent<Fitness>();
         tm = TrainingManager.instance;
-        spawnTransform = transform.Find("Spawn Transform");
+        cs = CreatureSpawner.instance;
+        spawnTransform = transform.Find("SpawnTransform");
+        creatureHolder = transform.Find("CreatureHolder");
+
         ResetEnv();
     }
 
-    // Spawn creature by passing transform params to Scene CreatureSpawner
-    public virtual void SpawnCreature(){
+    public virtual void FixedUpdate()
+    {
         
+        timePassed += Time.fixedDeltaTime;
+
+        if (timePassed >= es.maxTime && es.maxTime > 0)
+        {
+            //m_BlueAgentGroup.GroupEpisodeInterrupted();
+            //m_RedAgentGroup.GroupEpisodeInterrupted();
+
+            //m_blueAgent.agent.EpisodeInterrupted();
+            //m_redAgent.agent.EpisodeInterrupted();
+            ResetEnv();
+        }
     }
-    public virtual void ResetEnv() {
+
+    // Spawn creature by passing transform params to Scene CreatureSpawner
+    public virtual void StartEnv(CreatureGenotype cg)
+    {
+        if (busy)
+        {
+            ResetEnv();
+        }
+        currentCreature = cs.SpawnCreature(cg, spawnTransform.position);
+        currentCreature.transform.parent = creatureHolder;
+    }
+    public virtual void ResetEnv()
+    {
+        if (tas != null){
+            foreach (TrainingAlgorithm ta in tas)
+            {
+                Debug.Log("Pinging training algorithm.");
+                ta.ResetPing(this, totalReward);
+            }
+        }
+
+        tas = new List<TrainingAlgorithm>();
+
+        if (busy) {
+            Destroy(currentCreature.gameObject);
+            currentCreature = null;
+        }
+
+        timePassed = 0;
         totalReward = 0;
+    }
+
+    public void PingReset(TrainingAlgorithm ta){
+        tas.Add(ta);
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        // Draw a yellow cube at the transform position
+        if (es == null)
+        {
+            return;
+        }
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireCube(transform.position, new Vector3(es.sizeX, 10, es.sizeZ));
     }
 }

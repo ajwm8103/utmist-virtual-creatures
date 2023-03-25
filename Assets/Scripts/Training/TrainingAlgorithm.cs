@@ -2,17 +2,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TrainingAlgorithm : MonoBehaviour
+public abstract class TrainingAlgorithm : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
+    [SerializeField]
+    private TrainingManager tm;
+    [SerializeField]
+    protected TrainingSave save;
+    
+    // Setup is called after all vars are updated and sent to the TrainingAlgorithm
+    public virtual void Setup(TrainingManager tm){
+        this.tm = tm;
+        save = tm.save;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public abstract void ResetPing(Environment env, float fitness);
 }
