@@ -26,7 +26,7 @@ public class RLSwimmer : Agent
     public float t_left_angle_ = 0f;
     public float t_right_angle_ = 0f;
 
-    public GameObject Self;
+    public GameObject self_dup;
 
     Vector3 lastpos_p = new Vector3();
     Vector3 lastpos_l = new Vector3();
@@ -34,7 +34,7 @@ public class RLSwimmer : Agent
     Vector3 lastpos_m = new Vector3();
 
     float timeout = 20f;
-    Stopwatch SW = new Stopwatch();
+    private Stopwatch SW = new Stopwatch();
 
     void Start()
     {
@@ -54,10 +54,9 @@ public class RLSwimmer : Agent
         Rigidbody rb = transform.GetComponent<Rigidbody>();
         float mag_velocity = rb.velocity.magnitude;
         UnityEngine.Debug.Log(mag_velocity);
-        Instantiate(Self, lastpos_p, Quaternion.identity);
-        Destroy(transform.parent.gameObject);
         SW.Reset();
         SW.Start();
+        // Instantiate(self_dup, lastpos_p, Quaternion.identity);
         return;
     }
 
@@ -111,9 +110,11 @@ public class RLSwimmer : Agent
         Rigidbody rb = transform.GetComponent<Rigidbody>();
         float mag_velocity = rb.velocity.magnitude;
         AddReward(mag_velocity);
-        if (SW.ElapsedMilliseconds >= timeout * 1000f) EndEpisode();
+        if (SW.ElapsedMilliseconds >= timeout * 1000f)
+        {
+            EndEpisode();
+            Destroy(transform.parent.gameObject);
+        }
         SW.Start();
-
-        
     }
 }
