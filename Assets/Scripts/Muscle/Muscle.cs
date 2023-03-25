@@ -20,18 +20,36 @@ public class MusclePreferenceSetting
     public float refStrain = 0.04 * restLength; // epsilon_ref
     public float couplingConst = 0.01f; // tau
     public float timeDelay = 0.015f; // delta_P
+    public float contractileVelocity = 0; // initial value
+    public float contractileLength = optLength;
 }
 
 public class Muscle
-{
+{   
+
+    // Start is called before the first frame update
+    void Start()
+    {
+
+    }
+
+    // Update is called once per frame
+    void FixedUpdate()
+    {
+        float tempVelocity = UpdateContractileVelocity(muscleActivation, contractileLength, contractileVelocity, mps);
+        float tempLength = UpdateContractileLength(muscleActivation, contractileLength, contractileVelocity, mps);
+        contractileVelocity = tempVelocity;
+        contractileLength = tempLength;
+    }
+
     public MusclePreferenceSetting mps;
 
-    public float ForceLength(contractileLength, mps)
+    public float ForceLength(float contractileLength, MusclePreferenceSetting mps)
     {
         return Math.Exp(Math.Log(0.05) * (Math.Abs((contractileLength - mps.optLength) / (mps.optLength * width))^3));
     }
     
-    public float ForceVelocity(contractileVelocity, mps)
+    public float ForceVelocity(float contractileVelocity, MusclePreferenceSetting mps)
     {
         if (contractileVelocity < 0)
         {
@@ -43,12 +61,12 @@ public class Muscle
         }
     }
 
-    public float ForceContractileElement(muscleActivation, contractileLength, contractileVelocity, mps)
+    public float ForceContractileElement(float muscleActivation, float contractileLength, float contractileVelocity, MusclePreferenceSetting mps)
     {
         return muscleActivation * mps.maxForce * ForceLength(contractileLength, mps) * ForceVelocity(contractileVelocity, mps);
     }
 
-    public float ForceSEE(lengthSEE, mps) // Serial Elastic Element
+    public float ForceSEE(float lengthSEE, MusclePreferenceSetting mps) // Serial Elastic Element
     {
         float epsilon = (lengthSEE - mps.restLength)/mps.restLength;
         if (epsilon > 0)
@@ -58,29 +76,19 @@ public class Muscle
         return 0f;
     }
 
-
-
-
-
-
-
-
-
-    public float ForcePEE(contractileLength, contractileVelocity, mps)
+    public float ForcePEE(float contractileLength, float contractileVelocity, MusclePreferenceSetting mps)
     {
         return (maxForce * ((contractileLength - optLength) / (optLength * 0.56 * optLength))^2) * ForceVelocity(contractileVelocity, mps);
     }
 
-}
-    // Start is called before the first frame update
-    void Start()
+    public float UpdateContractileVelocity(float muscleActivation, float contractileLength, float contractileVelocity, MusclePreferenceSetting mps)
     {
+        return muscleActivation * maxForce * ForceLength(contractileLength, mps) / ForceContractileElement(muscleActivation, contractileLength, contractileVelocity, mps);
     }
 
-    // Update is called once per frame
-    void Update()
+    public float UpdateContractileLength(float muscleActivation, float contractileLength, float contractileVelocity, MusclePreferenceSetting mps)
     {
-
+        return contractileLength + Time.fixedDeltaTime * (contractileVelocity + UpdateContractileVelocity(muscleActivation, contractileLength, contractileVelocity, mps)) / 2;
     }
 
 }
