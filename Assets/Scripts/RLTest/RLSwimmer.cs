@@ -53,8 +53,9 @@ public class RLSwimmer : Agent
         //transform.position = lastpos_m;
 
         Rigidbody rb = transform.GetComponent<Rigidbody>();
-        float mag_velocity = rb.velocity.magnitude;
-        UnityEngine.Debug.Log(mag_velocity);
+        //float mag_velocity = rb.velocity.magnitude;
+        float temp_reward = 1f / (Vector3.Distance(target.transform.position, transform.position) + 1f);
+        UnityEngine.Debug.Log(temp_reward);
         SW.Reset();
         SW.Start();
         // Instantiate(self_dup, lastpos_p, Quaternion.identity);
@@ -112,7 +113,8 @@ public class RLSwimmer : Agent
         SW.Stop();
         Rigidbody rb = transform.GetComponent<Rigidbody>();
         float mag_velocity = rb.velocity.magnitude;
-        AddReward(1f / (Vector3.Distance(target.transform.position, transform.position) + 1f));
+        float temp_reward = 1f / (Vector3.Distance(target.transform.position, transform.position) + 1f);
+        AddReward(temp_reward);
         if (SW.ElapsedMilliseconds >= timeout * 1000f)
         {
             EndEpisode();
