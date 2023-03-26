@@ -29,14 +29,16 @@ public abstract class Environment : MonoBehaviour
 
     [Header("Stats")]
     public EnvCode envCode;
-    public float totalReward;
     public float timePassed;
     public bool busy { get { return currentCreature != null; } }
+
+    private bool updatedFrameReward;
+    private float frameReward;
 
     // References to other Components
     public Creature currentCreature;
     [SerializeField]
-    private Fitness fitness;
+    protected Fitness fitness;
     [SerializeField]
     private TrainingManager tm;
     [SerializeField]
@@ -57,8 +59,6 @@ public abstract class Environment : MonoBehaviour
         cs = CreatureSpawner.instance;
         spawnTransform = transform.Find("SpawnTransform");
         creatureHolder = transform.Find("CreatureHolder");
-
-        ResetEnv();
     }
 
     public virtual void FixedUpdate()
@@ -85,7 +85,10 @@ public abstract class Environment : MonoBehaviour
             ResetEnv();
         }
         currentCreature = cs.SpawnCreature(cg, spawnTransform.position);
+        currentCreature.InitializeCreature(fitness);
         currentCreature.transform.parent = creatureHolder;
+
+        fitness.Reset();
     }
     public virtual void ResetEnv()
     {
@@ -93,6 +96,7 @@ public abstract class Environment : MonoBehaviour
             foreach (TrainingAlgorithm ta in tas)
             {
                 Debug.Log("Pinging training algorithm.");
+                float totalReward = busy ? currentCreature.totalReward : 0;
                 ta.ResetPing(this, totalReward);
             }
         }
@@ -105,7 +109,6 @@ public abstract class Environment : MonoBehaviour
         }
 
         timePassed = 0;
-        totalReward = 0;
     }
 
     public void PingReset(TrainingAlgorithm ta){

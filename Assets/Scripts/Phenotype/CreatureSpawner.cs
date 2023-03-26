@@ -105,7 +105,6 @@ public class CreatureSpawner : MonoBehaviour
         }
 
         SpawnSegment(cm, c, recursiveLimitInitial, position);
-        c.InitializeCreature();
         return c;
     }
 
@@ -266,11 +265,11 @@ public class CreatureSpawner : MonoBehaviour
                     c.AddNeuron(nm, null, null);
                 }
             }
-        } else if (creatureGenotype.stage == TrainingStage.RL){
-            // Add Segment and HingeJoint references
-            c.segments.Add(spawnedSegmentGameObject.GetComponent<Segment>());
-            c.actionMotors.Add(spawnedSegmentGameObject.GetComponent<HingeJoint>());
         }
+
+        // Add Segment and HingeJoint references
+        c.segments.Add(spawnedSegmentGameObject.GetComponent<Segment>());
+        c.actionMotors.Add(spawnedSegmentGameObject.GetComponent<HingeJoint>());
 
         foreach (SegmentConnectionGenotype connection in currentSegmentGenotype.connections)
         {

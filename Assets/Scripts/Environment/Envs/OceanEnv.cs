@@ -20,6 +20,11 @@ public class OceanEnv : Environment
     {
         base.Setup(es);
 
+        // likely change this later to a general fitness selecting option from the save
+        // this change should be in the Environment class TODO
+        fitness = gameObject.AddComponent<SwimmingFitness>();
+        fitness.myEnvironment = this;
+
         ResetEnv();
     }
 

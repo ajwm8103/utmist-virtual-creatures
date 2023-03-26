@@ -13,14 +13,15 @@ public class Segment : MonoBehaviour
     public bool isBackEmpty;
 
     public HingeJoint joint;
+    public Rigidbody myRigidbody;
     public float jointAxisX;
     public float jointAxisY;
     public float jointAxisZ;
 
-    // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         joint = GetComponent<HingeJoint>();
+        myRigidbody = GetComponent<Rigidbody>();
     }
 
     void FixedUpdate()

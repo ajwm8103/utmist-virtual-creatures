@@ -4,6 +4,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using Unity.MLAgents;
+using Unity.MLAgents.Actuators;
+using Unity.MLAgents.Sensors;
 
 [System.Serializable]
 public class Neuron
@@ -121,8 +124,40 @@ public class Neuron
     }
 }
 
+public class CreatureAgent : Agent {
+    public Creature creature;
+    public override void CollectObservations(VectorSensor sensor)
+    {
+        List<float> observations = creature.GetObservations();
+        foreach (float obs in observations)
+        {
+            sensor.AddObservation(obs);
+        }
+    }
+
+    public override void OnActionReceived(ActionBuffers actionBuffers)
+    {
+        List<float> actions = new List<float>();
+        foreach (float buffer in actionBuffers.DiscreteActions)
+        {
+            actions.Add(buffer);
+        }
+        creature.Act(actions);
+
+        // No condition needed as fitness being null will throw an error anyway
+        float frameReward = creature.fitness.UpdateFrameReward();
+        creature.totalReward += frameReward;
+        AddReward(frameReward);
+    }
+}
+
 public class Creature : MonoBehaviour
 {
+    private bool isAgent = false; // false => KSS, true => RL
+    private CreatureAgent agent;
+    private bool isAlive = true; // false => display mode
+    public Fitness fitness { get; private set; }
+    public float totalReward;
     public List<Neuron> sensors = new List<Neuron>();
     public List<Neuron> neurons = new List<Neuron>();
     public List<Neuron> effectors = new List<Neuron>();
@@ -131,14 +166,30 @@ public class Creature : MonoBehaviour
     public List<Segment> segments = new List<Segment>();
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
+        if (!isAlive) return;
+
+        // Feed forward twice per frame
         FeedForward();
+        FeedForward();
+
+        if (fitness != null && !isAgent){
+            totalReward += fitness.UpdateFrameReward();
+        }
     }
 
     public void InitializeCreature()
     {
         Debug.Log("----INITIALIZING CREATURE----");
+        ConnectNeurons(neurons);
+        ConnectNeurons(effectors);
+    }
+
+    public void InitializeCreature(Fitness fitness)
+    {
+        Debug.Log("----INITIALIZING CREATURE----");
+        this.fitness = fitness;
         ConnectNeurons(neurons);
         ConnectNeurons(effectors);
     }
@@ -167,6 +218,7 @@ public class Creature : MonoBehaviour
         }
     }
 
+    // bad name but GetObservations is already taken by Agent...
     public List<float> GetObservations()
     {   
         // Collects obs
@@ -356,7 +408,14 @@ public class Creature : MonoBehaviour
 
     public Vector3 GetCentreOfMass()
     {
-	    //Please fix me
-	    return Vector3.zero;
+        Vector3 com = Vector3.zero;
+        float totalMass = 0f;
+        foreach (Segment seg in segments)
+        {
+            float mass = seg.myRigidbody.mass;
+            com += seg.myRigidbody.worldCenterOfMass * mass;
+            totalMass += mass;
+        }
+        return com / totalMass;
     }
 }

@@ -150,7 +150,9 @@ namespace KSS
             if (result == null || result.idx == null){
                 throw new System.Exception();
             }
-            currentGeneration.cgEvals[(int)result.idx].fitness = fitness;
+            CreatureGenotypeEval eval = currentGeneration.cgEvals[(int)result.idx];
+            eval.fitness = fitness;
+            eval.evaluated = true;
             untestedRemaining--;
         }
 
