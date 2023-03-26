@@ -434,7 +434,7 @@ public class CreatureEditor : Editor
         {
             Debug.Log("Saving Current Creature");
             CreatureGenotype cg = creature.cg;
-            string path = EditorUtility.SaveFilePanel("Save Your Prefab", "C:", "Creature.creature", "creature");
+            string path = EditorUtility.SaveFilePanel("Save Your Creature", "C:", "Creature.creature", "creature");
             if (!string.IsNullOrEmpty(path))
             {
                 cg.SaveData(path, true);

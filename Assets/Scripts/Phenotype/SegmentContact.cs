@@ -20,6 +20,7 @@ public class SegmentContact : MonoBehaviour
         }
         else
         {
+            Debug.Log(gameObject.name + " " + other.gameObject.name);
             segment.HandleStay(other, gameObject.name);
         }
 

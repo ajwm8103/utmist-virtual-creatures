@@ -179,7 +179,14 @@ public class SegmentGenotype
     public SegmentGenotype(){
         connections = new List<SegmentConnectionGenotype>();
         neurons = new List<NeuronGenotype>();
-    }
+        recursiveLimit = 1;
+        dimensionX = 1;
+        dimensionY = 1;
+        dimensionZ = 1;
+        r = 1;
+        g = 1;
+        b = 1;
+}
 
     public NeuronGenotype GetNeuron(byte id)
     {

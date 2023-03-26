@@ -19,6 +19,12 @@ public abstract class EnvironmentSettings {
     public virtual float sizeX { get { return 5; } }
     public virtual float sizeZ { get { return 5; } }
     public virtual float maxTime { get { return 3; } }
+    public static EnvironmentSettings GetDefault(EnvCode code){
+        if (code == EnvCode.OCEAN) {
+            return new OceanEnvSettings();
+        }
+        return null;
+    }
 }
 
 /// <summary>
@@ -28,12 +34,13 @@ public abstract class Environment : MonoBehaviour
 {
 
     [Header("Stats")]
-    public EnvCode envCode;
     public float timePassed;
+    public abstract EnvCode envCode { get; }
     public bool busy { get { return currentCreature != null; } }
 
     private bool updatedFrameReward;
     private float frameReward;
+    private bool isStandalone; // true when just testing one
 
     // References to other Components
     public Creature currentCreature;
@@ -50,6 +57,15 @@ public abstract class Environment : MonoBehaviour
 
     private EnvironmentSettings es;
     public List<TrainingAlgorithm> tas;
+
+    public void Start()
+    {
+        tm = TrainingManager.instance;
+        isStandalone = tm == null;
+        if (isStandalone){
+            Setup(EnvironmentSettings.GetDefault(envCode));
+        }
+    }
 
     public virtual void Setup(EnvironmentSettings es)
     {

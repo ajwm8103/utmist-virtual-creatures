@@ -73,7 +73,7 @@ public class MutateGenotype
             {"s_r", new MutationPreference(0.25f, 0.25f)}, // Red (byte)
             {"s_g", new MutationPreference(0.25f, 0.25f)}, // Green (byte)
             {"s_b", new MutationPreference(0.25f, 0.25f)}, // Blue (byte)
-            {"s_rl", new MutationPreference(0.25f, 0.25f)}, // Recursive limit (byte, 0:15)
+            {"s_rl", new MutationPreference(0.25f, 0.25f)}, // Recursive limit (byte, 1:15)
             {"s_dx", new MutationPreference(0.25f, 0.25f)}, // Dimension X (float, 0.05f:1.2f)
             {"s_dy", new MutationPreference(0.25f, 0.25f)}, // Dimension Y (float, 0.05f:1.2f)
             {"s_dz", new MutationPreference(0.25f, 0.25f)}, // Dimension Z (float, 0.05f:1.2f)
@@ -108,7 +108,7 @@ public class MutateGenotype
             {"s_r", new byte[2]{0,255}},
             {"s_g", new byte[2]{0,255}},
             {"s_b", new byte[2]{0,255}},
-            {"s_rl", new byte[2]{0,3}}, // temporary fix, used to be max 15
+            {"s_rl", new byte[2]{1,3}}, // temporary fix, used to be max 15
             {"s_dest", new byte[2]{1,255}},
         };
 

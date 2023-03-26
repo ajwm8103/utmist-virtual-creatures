@@ -385,5 +385,13 @@ public class CreatureSpawnerEditor : Editor
             cg.SaveData("/" + cg.name + ".creature", false);
             Debug.Log(Application.persistentDataPath);
         }
+
+        if (GUILayout.Button("Load Creature Genotype"))
+        {
+            Debug.Log("Loading Creature");
+            string path = EditorUtility.OpenFilePanel("Creature.creature", "C:", "creature");
+            CreatureGenotype cg = CreatureGenotype.LoadData(path, true);
+            spawner.creatureGenotype = cg;
+        }
     }
 }

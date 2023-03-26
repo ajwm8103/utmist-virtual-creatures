@@ -15,7 +15,7 @@ public class OceanEnvSettings : EnvironmentSettings {
 
 public class OceanEnv : Environment
 {
-    public float sus;
+    public override EnvCode envCode { get { return EnvCode.OCEAN; } }
     public override void Setup(EnvironmentSettings es)
     {
         base.Setup(es);
@@ -32,7 +32,6 @@ public class OceanEnv : Environment
     public override void FixedUpdate()
     {
         base.FixedUpdate();
-        sus = timePassed;
     }
 
     public override void ResetEnv(){
