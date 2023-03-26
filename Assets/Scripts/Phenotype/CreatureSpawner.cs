@@ -69,33 +69,34 @@ public class CreatureSpawner : MonoBehaviour
         SpawnCreature(creatureGenotype, (Vector3.up + Vector3.right) * 2);*/
     }
 
-    bool VerifyCreatureGenotypeIntegrity(CreatureGenotype cm)
+    bool VerifyCreatureGenotypeIntegrity(CreatureGenotype cg)
     {
         return true;
     }
 
     // Creature & GHOST (ID 0)
-    public Creature SpawnCreature(CreatureGenotype cm, Vector3 position)
+    public Creature SpawnCreature(CreatureGenotype cg, Vector3 position)
     {
         // Verify
-        if (!VerifyCreatureGenotypeIntegrity(cm))
+        if (!VerifyCreatureGenotypeIntegrity(cg))
         {
             return null;
         }
 
         // Create recursive limit dict
         Dictionary<byte, byte> recursiveLimitInitial = new Dictionary<byte, byte>();
-        foreach (SegmentGenotype segment in cm.segments)
+        foreach (SegmentGenotype segment in cg.segments)
         {
             recursiveLimitInitial[segment.id] = segment.recursiveLimit;
         }
 
         Creature c = Instantiate(creaturePrefab, Vector3.zero, Quaternion.identity);
-        c.name = $"Creature ({cm.name})";
+        c.name = $"Creature ({cg.name})";
+        c.cg = cg.Clone();
         c.transform.parent = transform;
         
         // Add neurons
-        SegmentGenotype ghost = cm.GetSegment(0);
+        SegmentGenotype ghost = cg.GetSegment(0);
         if (ghost != null)
         {
             foreach (NeuronGenotype nm in ghost.neurons)
@@ -104,13 +105,13 @@ public class CreatureSpawner : MonoBehaviour
             }
         }
 
-        SpawnSegment(cm, c, recursiveLimitInitial, position);
+        SpawnSegment(cg, c, recursiveLimitInitial, position);
         return c;
     }
 
 
     // Non-root (ID 2>)
-    void SpawnSegment(CreatureGenotype cm, Creature c, Dictionary<byte, byte> recursiveLimitValues, SegmentConnectionGenotype myConnection, GameObject parentSegment, float parentGlobalScale, bool parentReflect, List<byte> connectionPath)
+    void SpawnSegment(CreatureGenotype cg, Creature c, Dictionary<byte, byte> recursiveLimitValues, SegmentConnectionGenotype myConnection, GameObject parentSegment, float parentGlobalScale, bool parentReflect, List<byte> connectionPath)
     {
         myConnection.EulerToQuat(); //Debug, remove later (this changes internal rotation storage stuff to make inspector editing easier.)
 
@@ -119,7 +120,7 @@ public class CreatureSpawner : MonoBehaviour
         //Debug.Log($"S: {myConnection.destination} ({recursiveLimitValues[id]})");
 
         // Find segmentGenotype
-        SegmentGenotype currentSegmentGenotype = cm.GetSegment(id);
+        SegmentGenotype currentSegmentGenotype = cg.GetSegment(id);
 
         if (currentSegmentGenotype == null)
             return;
@@ -242,7 +243,7 @@ public class CreatureSpawner : MonoBehaviour
         // Change recursiveLimit stuff
         bool runTerminalOnly = false;
         recursiveLimitValues[id]--;
-        if (recursiveLimitValues[id] == 0 || !currentSegmentGenotype.connections.Any(scm => scm.destination == currentSegmentGenotype.id))
+        if (recursiveLimitValues[id] == 0 || !currentSegmentGenotype.connections.Any(scg => scg.destination == currentSegmentGenotype.id))
         {
             runTerminalOnly = true;
         }
@@ -283,18 +284,18 @@ public class CreatureSpawner : MonoBehaviour
                 var recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
                 var connectionPathClone = connectionPath.Select(item => (byte)item).ToList();
                 connectionPathClone.Add(connection.id);
-                SpawnSegment(cm, c, recursiveLimitClone, connection, spawnedSegmentGameObject, parentGlobalScale * myConnection.scale, otherReflectBool, connectionPathClone);
+                SpawnSegment(cg, c, recursiveLimitClone, connection, spawnedSegmentGameObject, parentGlobalScale * myConnection.scale, otherReflectBool, connectionPathClone);
             }
         }
     }
 
     // Root (ID 1)
-    void SpawnSegment(CreatureGenotype cm, Creature c, Dictionary<byte, byte> recursiveLimitValues, Vector3 position)
+    void SpawnSegment(CreatureGenotype cg, Creature c, Dictionary<byte, byte> recursiveLimitValues, Vector3 position)
     {
         //Debug.Log("S: ROOT");
 
         // Find segmentGenotype
-        SegmentGenotype currentSegmentGenotype = cm.GetSegment(1);
+        SegmentGenotype currentSegmentGenotype = cg.GetSegment(1);
         if (currentSegmentGenotype == null)
             return;
 
@@ -312,7 +313,7 @@ public class CreatureSpawner : MonoBehaviour
         // Change recursiveLimit stuff
         bool runTerminalOnly = false;
         recursiveLimitValues[1]--;
-        if (recursiveLimitValues[1] == 0 || !currentSegmentGenotype.connections.Any(scm => scm.destination == currentSegmentGenotype.id))
+        if (recursiveLimitValues[1] == 0 || !currentSegmentGenotype.connections.Any(scg => scg.destination == currentSegmentGenotype.id))
         {
             runTerminalOnly = true;
         }
@@ -355,7 +356,7 @@ public class CreatureSpawner : MonoBehaviour
                     continue;
                 }
                 var recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
-                SpawnSegment(cm, c, recursiveLimitClone, connection, spawnedSegmentGameObject, 1, false, new List<byte>() { connection.id });
+                SpawnSegment(cg, c, recursiveLimitClone, connection, spawnedSegmentGameObject, 1, false, new List<byte>() { connection.id });
             }
         }
     }
@@ -381,7 +382,7 @@ public class CreatureSpawnerEditor : Editor
         {
             Debug.Log("Saving Current Creature");
             CreatureGenotype cg = spawner.creatureGenotype;
-            cg.SaveData("/" + cg.name + ".creature");
+            cg.SaveData("/" + cg.name + ".creature", false);
             Debug.Log(Application.persistentDataPath);
         }
     }

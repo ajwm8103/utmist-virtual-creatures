@@ -3,6 +3,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 using System.Linq;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
@@ -155,6 +156,7 @@ public class Creature : MonoBehaviour
 {
     private bool isAgent = false; // false => KSS, true => RL
     private CreatureAgent agent;
+    public CreatureGenotype cg;
     private bool isAlive = true; // false => display mode
     public Fitness fitness { get; private set; }
     public float totalReward;
@@ -417,5 +419,29 @@ public class Creature : MonoBehaviour
             totalMass += mass;
         }
         return com / totalMass;
+    }
+}
+
+[CustomEditor(typeof(Creature))]
+public class CreatureEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        DrawDefaultInspector();
+        Creature creature = target as Creature;
+
+        if (GUILayout.Button("Save Current Creature"))
+        {
+            Debug.Log("Saving Current Creature");
+            CreatureGenotype cg = creature.cg;
+            string path = EditorUtility.SaveFilePanel("Save Your Prefab", "C:", "Creature.creature", "creature");
+            if (!string.IsNullOrEmpty(path))
+            {
+                cg.SaveData(path, true);
+                Debug.Log("Saved to " + Application.persistentDataPath);
+            }
+        }
+
+
     }
 }

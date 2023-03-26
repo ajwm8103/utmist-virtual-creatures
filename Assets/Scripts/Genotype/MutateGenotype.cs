@@ -74,14 +74,14 @@ public class MutateGenotype
             {"s_g", new MutationPreference(0.25f, 0.25f)}, // Green (byte)
             {"s_b", new MutationPreference(0.25f, 0.25f)}, // Blue (byte)
             {"s_rl", new MutationPreference(0.25f, 0.25f)}, // Recursive limit (byte, 0:15)
-            {"s_dx", new MutationPreference(0.25f, 0.25f)}, // Dimension X (float, 0.05f:3f)
-            {"s_dy", new MutationPreference(0.25f, 0.25f)}, // Dimension Y (float, 0.05f:3f)
-            {"s_dz", new MutationPreference(0.25f, 0.25f)}, // Dimension Z (float, 0.05f:3f)
+            {"s_dx", new MutationPreference(0.25f, 0.25f)}, // Dimension X (float, 0.05f:1.2f)
+            {"s_dy", new MutationPreference(0.25f, 0.25f)}, // Dimension Y (float, 0.05f:1.2f)
+            {"s_dz", new MutationPreference(0.25f, 0.25f)}, // Dimension Z (float, 0.05f:1.2f)
             {"s_jt", new MutationPreference(0.25f, 0.25f)}, // JointType (enum, 0:3)
             {"s_dest", new MutationPreference(0.25f, 0.25f)}, // Destination (byte, 1:255)
             {"s_a", new MutationPreference(0.25f, 0.25f)}, // Anchor (sadness)
             {"s_o", new MutationPreference(0.25f, 0.25f)}, // Orientation (float, 0f:360f)
-            {"s_s", new MutationPreference(0.25f, 0.25f)}, // Scale (float, 0.2f:2f)
+            {"s_s", new MutationPreference(0.25f, 0.25f)}, // Scale (float, 0.2f:1.2f)
             {"s_reflected", new MutationPreference(0.25f, 0.25f)}, // Reflected (bool)
             {"s_t", new MutationPreference(0.25f, 0.25f)}, // Terminal-only (bool)
             {"s_addc", new MutationPreference(0.25f, 0.25f)}, // Add connection
@@ -94,11 +94,11 @@ public class MutateGenotype
         };
 
         public Dictionary<string, float[]> floatClamps = new Dictionary<string, float[]>() {
-            {"s_dx", new float[2]{0.05f,3f}},
-            {"s_dy", new float[2]{0.05f,3f}},
-            {"s_dz", new float[2]{0.05f,3f}},
+            {"s_dx", new float[2]{0.05f,1.2f}},
+            {"s_dy", new float[2]{0.05f,1.2f}},
+            {"s_dz", new float[2]{0.05f,1.2f}},
             {"s_o", new float[2]{0f,360f}},
-            {"s_s", new float[2]{0.2f,2f}},
+            {"s_s", new float[2]{0.2f,1.2f}},
             {"n_w1", new float[2]{-15f,15f}},
             {"n_w2", new float[2]{-15f,15f}},
             {"n_w3", new float[2]{-15f,15f}},
@@ -108,7 +108,7 @@ public class MutateGenotype
             {"s_r", new byte[2]{0,255}},
             {"s_g", new byte[2]{0,255}},
             {"s_b", new byte[2]{0,255}},
-            {"s_rl", new byte[2]{0,15}},
+            {"s_rl", new byte[2]{0,3}}, // temporary fix, used to be max 15
             {"s_dest", new byte[2]{1,255}},
         };
 
@@ -146,9 +146,14 @@ public class MutateGenotype
 
     public static void SimplifyCreatureGenotype(ref CreatureGenotype cg)
     {
-        /// Remove all unconnected segments
+        if (cg.GetSegment(0) == null){
+            
+            cg.segments.Insert(0, SegmentGenotype.ghost);
+            Debug.Log(cg.GetSegment(0));
+        }
+        // Remove all unconnected segments
 
-        /// List all connected segments
+        // List all connected segments
         Dictionary<byte, List<SegmentConnectionGenotype>> segmentConnectionsByDest = new Dictionary<byte, List<SegmentConnectionGenotype>>();
         /*foreach (SegmentGenotype sm in cm.segments)
         {
@@ -231,11 +236,20 @@ public class MutateGenotype
         }
     }
 
+    /// <summary>
+    /// Runs through entire creature genotype and fills out connectionPaths, segmentIds, neuronReferences
+    /// </summary>
+    /// <param name="cg"></param>
+    /// <param name="recursiveLimitValues"></param>
+    /// <param name="myConnection"></param>
+    /// <param name="connectionPath"></param>
+    /// <param name="segmentIds"></param>
+    /// <param name="connectionPaths"></param>
+    /// <param name="neuronReferences"></param>
     public static void TraceConnections(CreatureGenotype cg, Dictionary<byte, byte> recursiveLimitValues,
-		    SegmentConnectionGenotype myConnection, List<byte> connectionPath, List<byte> segmentIds,
-		    List<List<byte>> connectionPaths, List<NeuronReference> neuronReferences)
+		    SegmentConnectionGenotype myConnection, List<byte> connectionPath, ref List<byte> segmentIds,
+		    ref List<List<byte>> connectionPaths, ref List<NeuronReference> neuronReferences)
     {
-        /// Runs through entire creature genotype and fills out connectionPaths, segmentIds, neuronReferences
         
         // Find SegmentGenotype
         byte id;
@@ -292,7 +306,7 @@ public class MutateGenotype
                     Dictionary<byte, byte> recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
                     List<byte> connectionPathClone = connectionPath.Select(item => (byte)item).ToList();
                     connectionPathClone.Add(connection.id);
-                    TraceConnections(cg, recursiveLimitClone, connection, connectionPathClone, segmentIds, connectionPaths, neuronReferences);
+                    TraceConnections(cg, recursiveLimitClone, connection, connectionPathClone, ref segmentIds, ref connectionPaths, ref neuronReferences);
                 }
             }
         }
@@ -334,7 +348,7 @@ public class MutateGenotype
                     Dictionary<byte, byte> recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
                     List<byte> connectionPathClone = new List<byte>(connectionPath);
                     connectionPathClone.Add(connection.id);
-                    TraceConnections(cg, recursiveLimitClone, connection, connectionPathClone, segmentIds, connectionPaths, neuronReferences);
+                    TraceConnections(cg, recursiveLimitClone, connection, connectionPathClone, ref segmentIds, ref connectionPaths, ref neuronReferences);
                 }
             }
         }
@@ -346,7 +360,7 @@ public class MutateGenotype
         return null;
     }
 
-    public static bool GenerateRandomSegmentGenotype(ref CreatureGenotype cg)
+    public static SegmentGenotype GenerateRandomSegmentGenotype(ref CreatureGenotype cg)
     {
         for (byte i = 1; i < 255; i++)
         {
@@ -360,17 +374,17 @@ public class MutateGenotype
                 generatedSegmentGenotype.id = i;
                 generatedSegmentGenotype.connections = new List<SegmentConnectionGenotype>();
                 generatedSegmentGenotype.neurons = new List<NeuronGenotype>();
-                generatedSegmentGenotype.recursiveLimit = (byte)Random.Range(1, 16);
+                generatedSegmentGenotype.recursiveLimit = (byte)Random.Range(1, 3); // temp!
                 generatedSegmentGenotype.dimensionX = Random.Range(0.05f, 3f);
                 generatedSegmentGenotype.dimensionY = Random.Range(0.05f, 3f);
                 generatedSegmentGenotype.dimensionZ = Random.Range(0.05f, 3f);
                 generatedSegmentGenotype.jointType = (JointType)Random.Range(0, 4);
 
                 cg.segments.Add(generatedSegmentGenotype);
-                return true;
+                return generatedSegmentGenotype;
             }
         }
-        return false;
+        return null;
     }
 
     public static void GenerateRandomNeuronGenotype(ref CreatureGenotype cg, List<List<byte>> connectionPaths, List<byte> segmentIds, List<NeuronReference> neuronReferences)
@@ -536,6 +550,12 @@ public class MutateGenotype
     public static CreatureGenotype MutateCreatureGenotype(CreatureGenotype cg, MutationPreferenceSetting mp)
     {
         Debug.Log("----MUTATING CREATURE----");
+        cg = cg.Clone();
+        SimplifyCreatureGenotype(ref cg);
+
+        // test
+        cg.name += Random.Range(0, 100);
+
         // Get list of segment connection paths and all neuron connection paths for random selection
 
         List<List<byte>> connectionPaths = new List<List<byte>>();
@@ -549,7 +569,7 @@ public class MutateGenotype
             recursiveLimitInitial[segment.id] = segment.recursiveLimit;
         }
 
-        TraceConnections(cg, recursiveLimitInitial, null, new List<byte>(), segmentIds, connectionPaths, neuronReferences);
+        TraceConnections(cg, recursiveLimitInitial, null, new List<byte>(), ref segmentIds, ref connectionPaths, ref neuronReferences);
         //cp1 = connectionPaths;
         //nr1 = neuronReferences;
 
@@ -592,7 +612,7 @@ public class MutateGenotype
                 {
                     sg.recursiveLimit = mp.ModifyByte(sg.recursiveLimit, "s_rl");
                 }
-                if (mp.CoinFlip("s_dx"))
+                /*if (mp.CoinFlip("s_dx"))
                 {
                     sg.dimensionX = mp.ModifyFloat(sg.dimensionX, "s_dx");
                 }
@@ -603,21 +623,22 @@ public class MutateGenotype
                 if (mp.CoinFlip("s_dz"))
                 {
                     sg.dimensionZ = mp.ModifyFloat(sg.dimensionZ, "s_dz");
-                }
-                if (mp.CoinFlip("s_jt"))
+                }*/
+                /*if (mp.CoinFlip("s_jt"))
                 {
                     sg.jointType = (JointType)Random.Range(0, 4);
-                }
+                }*/
             }
 
             // 2. New random node added to graph.
-            GenerateRandomSegmentGenotype(ref cg);
+            SegmentGenotype generatedSegmentGenotype = GenerateRandomSegmentGenotype(ref cg);
 
+            // TODO: Bring back commented out - mutate connection params and add connection
 
             // 3. Connection parameters subjected to mutation.
             // Sometimes pointer moved to point to a different node at random.
             // This is how neural nodes stay - they become the input of another neuron
-            foreach (SegmentGenotype sg in cg.segments)
+            /*foreach (SegmentGenotype sg in cg.segments)
             {
                 foreach (SegmentConnectionGenotype scg in sg.connections)
                 {
@@ -652,7 +673,7 @@ public class MutateGenotype
                         scg.terminalOnly ^= true;
                     }
                 }
-            }
+            }*/
 
             // 4. New random connections added and existing are removed.
             // Morphographs only. Each existing node is subject to having a new connection added.
@@ -685,7 +706,8 @@ public class MutateGenotype
                             // Select random other node and connect to it
                             SegmentConnectionGenotype scg = new SegmentConnectionGenotype();
                             scg.id = i;
-                            scg.destination = cg.segments[Random.Range(0, cg.segments.Count)].id;
+                            scg.destination = (RandomBool() ? generatedSegmentGenotype : sg).id;
+                            //scg.destination = cg.segments[Random.Range(0, cg.segments.Count)].id;
 
                             // Anchors
                             switch (Random.Range(0, 3))
@@ -731,8 +753,8 @@ public class MutateGenotype
         {
             // Get list of segment connection paths and all neuron connection paths for random selection
 
-            connectionPaths = new List<List<byte>>();
             segmentIds = new List<byte>();
+            connectionPaths = new List<List<byte>>();
             neuronReferences = new List<NeuronReference>();
 
             // Create recursive limit dict
@@ -742,7 +764,7 @@ public class MutateGenotype
                 recursiveLimitInitial[segment.id] = segment.recursiveLimit;
             }
 
-            TraceConnections(cg, recursiveLimitInitial, null, new List<byte>(), segmentIds, connectionPaths, neuronReferences);
+            TraceConnections(cg, recursiveLimitInitial, null, new List<byte>(), ref segmentIds, ref connectionPaths, ref neuronReferences);
 
             // First mutate the outer graph, then the inner layer.
             // Legal values of inner depend on the topology of the outer.

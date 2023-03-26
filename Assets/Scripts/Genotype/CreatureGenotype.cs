@@ -162,6 +162,25 @@ public class SegmentGenotype
 
     public JointType jointType;
 
+    private static SegmentGenotype _ghost;
+    public static SegmentGenotype ghost
+    {
+        get
+        {
+            if (_ghost == null)
+            {
+                _ghost = new SegmentGenotype();
+                _ghost.id = 0;
+            }
+            return _ghost;
+        }
+    }
+
+    public SegmentGenotype(){
+        connections = new List<SegmentConnectionGenotype>();
+        neurons = new List<NeuronGenotype>();
+    }
+
     public NeuronGenotype GetNeuron(byte id)
     {
         foreach (NeuronGenotype nm in neurons)
@@ -215,7 +234,7 @@ public class CreatureGenotype
     public int obsDim;
 
     public int actDim;
-    
+
     public SegmentGenotype GetSegment(byte id)
     {
         foreach (SegmentGenotype segment in segments)
@@ -236,9 +255,10 @@ public class CreatureGenotype
         return cg;
     }
 
-    public void SaveData(string path){
+    public void SaveData(string path, bool isFullPath)
+    {
         BinaryFormatter formatter = new BinaryFormatter();
-        string fullPath = Application.persistentDataPath + path;
+        string fullPath = isFullPath ? path : Application.persistentDataPath + path;
 
         FileStream stream = new FileStream(fullPath, FileMode.Create);
 
@@ -246,9 +266,9 @@ public class CreatureGenotype
         stream.Close();
     }
 
-    public static CreatureGenotype LoadData(string path)
+    public static CreatureGenotype LoadData(string path, bool isFullPath)
     {
-        string fullPath = Application.persistentDataPath + path;
+        string fullPath = isFullPath ? path : Application.persistentDataPath + path;
 
         if (File.Exists(fullPath))
         {
@@ -276,7 +296,7 @@ public class CreatureGenotype
     /// <param name="myConnection"></param>
     /// <param name="connectionPath"></param>
     public void IterateSegment(CreatureGenotype cg, Dictionary<byte, byte> recursiveLimitValues,
-		    SegmentConnectionGenotype myConnection, List<byte> connectionPath, ref int segmentCount)
+            SegmentConnectionGenotype myConnection, List<byte> connectionPath, ref int segmentCount)
     {
         segmentCount++;
 
@@ -316,7 +336,8 @@ public class CreatureGenotype
     /// <summary>
     /// Calculates dimensions of observation and action vectors
     /// </summary>
-    void CalculateDims() {
+    void CalculateDims()
+    {
         // Initialize recurisve limit tracker
         Dictionary<byte, byte> recursiveLimitInitial = new Dictionary<byte, byte>();
         foreach (SegmentGenotype segment in segments) recursiveLimitInitial[segment.id] = segment.recursiveLimit;
@@ -331,3 +352,4 @@ public class CreatureGenotype
         obsDim = segmentCount * 12;
     }
 }
+

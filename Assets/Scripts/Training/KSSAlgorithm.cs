@@ -37,8 +37,9 @@ namespace KSS
                 // Mutated generation
                 for (int i = 0; i < size; i++)
                 {
-                    CreatureGenotypeEval cgEval = new CreatureGenotypeEval(initialGenotype);
-                    // CreatureGenotypeEval cgEval = new CreatureGenotypeEval(MutateGenotype.MutateCreatureGenotype(initialGenotype, mp));
+                    // CreatureGenotypeEval cgEval = new CreatureGenotypeEval(initialGenotype);
+                    CreatureGenotypeEval cgEval = new CreatureGenotypeEval(MutateGenotype.MutateCreatureGenotype(initialGenotype, mp));
+                    Debug.Log(cgEval.cg.segments.Count);
                     cgEvals.Add(cgEval);
                 }
             }
@@ -124,6 +125,7 @@ namespace KSS
                     if (envTracker != null)
                     {
                         envTracker.idx = i; // Storing genotype index
+                        Debug.Log(currentEval.cg.segments.Count);
                         envTracker.env.StartEnv(currentEval.cg);
                         envTracker.env.PingReset(this);
                     } else {
