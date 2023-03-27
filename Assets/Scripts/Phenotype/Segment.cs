@@ -41,6 +41,8 @@ public class Segment : MonoBehaviour
             jointAxisY = angles.y;
             jointAxisZ = angles.z;
 
+        } else {
+            joint = GetComponent<HingeJoint>();
         }
     }
 

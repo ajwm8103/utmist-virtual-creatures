@@ -9,7 +9,7 @@ public enum EnvArrangeType { LINEAR, PLANAR };
 public enum GraphicsLevel { LOW, MEDIUM, HIGH };
 public enum EnvCode { OCEAN };
 
-[System.Serializable]
+[Serializable]
 public abstract class EnvironmentSettings {
     public abstract EnvCode envCode { get; }
     public readonly static Dictionary<EnvCode, string> envString = new Dictionary<EnvCode, string>() { { EnvCode.OCEAN, "OceanEnv" } };
@@ -40,6 +40,7 @@ public abstract class Environment : MonoBehaviour
 
     private bool updatedFrameReward;
     private float frameReward;
+    private bool isDQ = false;
     private bool isStandalone; // true when just testing one
 
     // References to other Components
@@ -79,11 +80,16 @@ public abstract class Environment : MonoBehaviour
 
     public virtual void FixedUpdate()
     {
-        
-        timePassed += Time.fixedDeltaTime;
+        if (!busy) return;
 
-        if (timePassed >= es.maxTime && es.maxTime > 0)
+        timePassed += Time.fixedDeltaTime;
+        bool isOutOfTime = timePassed >= es.maxTime && es.maxTime > 0;
+        bool isExtremelyFar = currentCreature.GetCentreOfMass().sqrMagnitude >= 1000;
+        if (isOutOfTime || isExtremelyFar)
         {
+            if (isExtremelyFar){
+                isDQ = true;
+            }
             //m_BlueAgentGroup.GroupEpisodeInterrupted();
             //m_RedAgentGroup.GroupEpisodeInterrupted();
 
@@ -100,8 +106,7 @@ public abstract class Environment : MonoBehaviour
         {
             ResetEnv();
         }
-        currentCreature = cs.SpawnCreature(cg, spawnTransform.position);
-        currentCreature.InitializeCreature(fitness);
+        currentCreature = cs.SpawnCreature(cg, spawnTransform.position, fitness);
         currentCreature.transform.parent = creatureHolder;
 
         fitness.Reset();
@@ -111,9 +116,9 @@ public abstract class Environment : MonoBehaviour
         if (tas != null){
             foreach (TrainingAlgorithm ta in tas)
             {
-                Debug.Log("Pinging training algorithm.");
+                //Debug.Log("Pinging training algorithm.");
                 float totalReward = busy ? currentCreature.totalReward : 0;
-                ta.ResetPing(this, totalReward);
+                ta.ResetPing(this, totalReward, isDQ);
             }
         }
 
@@ -124,6 +129,7 @@ public abstract class Environment : MonoBehaviour
             currentCreature = null;
         }
 
+        isDQ = false;
         timePassed = 0;
     }
 

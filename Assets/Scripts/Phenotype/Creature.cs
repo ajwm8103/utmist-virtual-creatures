@@ -181,16 +181,9 @@ public class Creature : MonoBehaviour
         }
     }
 
-    public void InitializeCreature()
-    {
-        Debug.Log("----INITIALIZING CREATURE----");
-        ConnectNeurons(neurons);
-        ConnectNeurons(effectors);
-    }
-
     public void InitializeCreature(Fitness fitness)
     {
-        Debug.Log("----INITIALIZING CREATURE----");
+        // Debug.Log("----INITIALIZING CREATURE----");
         this.fitness = fitness;
         ConnectNeurons(neurons);
         ConnectNeurons(effectors);
@@ -441,7 +434,5 @@ public class CreatureEditor : Editor
                 Debug.Log("Saved to " + Application.persistentDataPath);
             }
         }
-
-
     }
 }

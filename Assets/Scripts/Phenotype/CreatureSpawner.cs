@@ -59,7 +59,7 @@ public class CreatureSpawner : MonoBehaviour
             scale = 0.5f
         };
 
-        SpawnCreature(creatureGenotype, (Vector3.up + Vector3.right));
+        SpawnCreature(creatureGenotype, (Vector3.up + Vector3.right), null);
         /*creatureGenotypeHistory.Add(creatureGenotype.Clone());
         for (int i = 0; i < 16; i++)
         {
@@ -75,9 +75,10 @@ public class CreatureSpawner : MonoBehaviour
     }
 
     // Creature & GHOST (ID 0)
-    public Creature SpawnCreature(CreatureGenotype cg, Vector3 position)
+    public Creature SpawnCreature(CreatureGenotype cg, Vector3 position, Fitness fitness)
     {
         // Verify
+        counter = 0;
         if (!VerifyCreatureGenotypeIntegrity(cg))
         {
             return null;
@@ -106,13 +107,24 @@ public class CreatureSpawner : MonoBehaviour
         }
 
         SpawnSegment(cg, c, recursiveLimitInitial, position);
+        c.InitializeCreature(fitness);
         return c;
     }
 
+    public int counter = 0;
 
     // Non-root (ID 2>)
     void SpawnSegment(CreatureGenotype cg, Creature c, Dictionary<byte, byte> recursiveLimitValues, SegmentConnectionGenotype myConnection, GameObject parentSegment, float parentGlobalScale, bool parentReflect, List<byte> connectionPath)
     {
+        counter++;
+        Debug.Log(counter);
+        if (counter == 20){
+            Debug.Log("Likely looping, save for debug.");
+            string name = "/debug_" + Random.Range(0, 100) + ".creature";
+            cg.SaveData(name, false);
+            Debug.Log("Saved to " + Application.persistentDataPath + name);
+        }
+
         myConnection.EulerToQuat(); //Debug, remove later (this changes internal rotation storage stuff to make inspector editing easier.)
 
 
@@ -239,6 +251,9 @@ public class CreatureSpawner : MonoBehaviour
             default:
                 return;
         }
+
+        // Check if self-intersecting TODO
+
 
         // Change recursiveLimit stuff
         bool runTerminalOnly = false;

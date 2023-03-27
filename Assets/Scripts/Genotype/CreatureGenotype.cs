@@ -36,12 +36,16 @@ public class NeuronGenotype
 
 }
 
+public enum NeuronReferenceRelativity { GHOST, RELATIVE, DIRECT };
+// GHOST => isGhost, RELATIVE => isParent, isSelf, or child, DIRECT => connectionPath
+
 [System.Serializable]
 public struct NeuronReference
 {
     //[Tooltip("-3:ghost\n-2:parent\n-1:self\n0>:child connection id")]
     //public int ownerSegment;
 
+    public NeuronReferenceRelativity relativity;
     public bool isGhost;
     public bool isParent;
     public bool isSelf;
