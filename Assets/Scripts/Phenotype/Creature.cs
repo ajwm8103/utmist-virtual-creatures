@@ -297,20 +297,20 @@ public class Creature : MonoBehaviour
         // requestingNeuronsNr is the nr of the neuron requesting this neuron
         //Debug.Log("Getting Neuron");
         //Debug.Log(nr.id);
-        if (nr.isGhost)
+        if (nr.relativity == NeuronReferenceRelativity.GHOST)
         {
             // Check all neurons in ghost and match the id
             foreach (Neuron n in neuronList)
             {
                 //Debug.Log(n.ng.nr.id);
-                if (n.ng.nr.isGhost && n.ng.nr.id == nr.id)
+                if (n.ng.nr.relativity == NeuronReferenceRelativity.GHOST && n.ng.nr.id == nr.id)
                 {
                     return n;
                 }
 
             }
         }
-        else if (nr.isParent)
+        else if (nr.relativity == NeuronReferenceRelativity.PARENT)
         {
             // this id will be in the Parent of the requesting neuron, so find all neurons there and match ids
             foreach (Neuron n in neuronList)
@@ -335,7 +335,7 @@ public class Creature : MonoBehaviour
 
             }
         }
-        else if (nr.isSelf)
+        else if (nr.relativity == NeuronReferenceRelativity.SELF)
         {
             // this id will be in the same neuron as the requesting neuron, so find all neurons there and match ids
             foreach (Neuron n in neuronList)

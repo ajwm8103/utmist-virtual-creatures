@@ -33,11 +33,42 @@ public class NeuronGenotype
         ng.weights = (float[])weights.Clone();
         return ng;
     }
-
+    public static byte GetTypeInputs(byte type)
+    {
+        byte typeInputs = type switch
+        {
+            0 => 2,
+            1 => 2,
+            2 => 2,
+            3 => 3,
+            4 => 2,
+            5 => 1,
+            6 => 2,
+            7 => 2,
+            8 => 1,
+            9 => 3,
+            10 => 3,
+            11 => 1,
+            12 => 1,
+            13 => 1,
+            14 => 1,
+            15 => 1,
+            16 => 1,
+            17 => 1,
+            18 => 1,
+            19 => 1,
+            20 => 1,
+            21 => 3,
+            22 => 3,
+            _ => 0
+        };
+        return typeInputs;
+    }
 }
 
-public enum NeuronReferenceRelativity { GHOST, RELATIVE, DIRECT };
-// GHOST => isGhost, RELATIVE => isParent, isSelf, or child, DIRECT => connectionPath
+public enum NeuronReferenceRelativity { GHOST, PARENT, SELF, CHILD, TRACED };
+// GHOST => isGhost, PARENT, SELF => isParent, isSelf, CHILD => connectionPath
+// TRACED => stored as the NeuronGenotype's self identifier
 
 [System.Serializable]
 public struct NeuronReference
@@ -45,11 +76,29 @@ public struct NeuronReference
     //[Tooltip("-3:ghost\n-2:parent\n-1:self\n0>:child connection id")]
     //public int ownerSegment;
 
-    public NeuronReferenceRelativity relativity;
-    public bool isGhost;
-    public bool isParent;
-    public bool isSelf;
-    public List<byte> connectionPath;
+    public NeuronReferenceRelativity? relativityNullable;
+    public NeuronReferenceRelativity relativity
+    {
+        get
+        {
+            if (relativityNullable == null) throw new System.Exception("Unexpected null relativity.");
+            return (NeuronReferenceRelativity)relativityNullable;
+        }
+    }
+    private byte? relativeLevelNullable; // Used for PARENT only
+    public byte relativeLevel
+    {
+        get
+        {
+            if (relativeLevelNullable == null) throw new System.Exception("Unexpected null relative level.");
+            return (byte)relativeLevelNullable;
+        }
+        set
+        {
+            relativeLevelNullable = value;
+        }
+    }
+    public List<byte> connectionPath; // Used for CHILD and TRACED only
     [Tooltip(
     "0-5:collider\n6-8:joint angle\n9-11:photosensors\n12:joint effector\n13>:other neurons"
     )]
