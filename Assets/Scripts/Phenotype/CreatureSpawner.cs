@@ -327,7 +327,9 @@ public class CreatureSpawner : MonoBehaviour
         if (currentSegmentGenotype == null)
             return;
 
-        GameObject spawnedSegmentGameObject = Instantiate(segmentPrefab, position, Quaternion.identity);
+        cg.EulerToQuat(); //Debug, remove later (this changes internal rotation storage stuff to make inspector editing easier.)
+        Quaternion spawnAngle = new Quaternion(cg.orientationX, cg.orientationY, cg.orientationZ, cg.orientationW);
+        GameObject spawnedSegmentGameObject = Instantiate(segmentPrefab, position, spawnAngle);
         spawnedSegmentGameObject.transform.parent = c.transform;
         spawnedSegmentGameObject.name = $"Segment {currentSegmentGenotype.id}";
 

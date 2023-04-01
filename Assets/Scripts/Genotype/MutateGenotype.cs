@@ -873,7 +873,7 @@ public class MutateGenotype
         SimplifyCreatureGenotype(ref cg);
 
         // test
-        //cg.name += Random.Range(0, 100);
+        cg.name += Random.Range(0, 100);
 
         // Get list of segment connection paths and all neuron connection paths for random selection
 

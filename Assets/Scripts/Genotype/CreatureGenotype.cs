@@ -12,6 +12,7 @@ public class NeuronGenotype
     public byte type; // 0,1,2,3..22
 
     public NeuronReference[] inputs;
+    [Range(-15f, 15f)]
     public float[] weights; // -15 - 15
     public NeuronReference nr;
 
@@ -118,14 +119,21 @@ public class SegmentConnectionGenotype
     public byte id; // 0-255
     public byte destination;
 
+    [Range(-0.5f, 0.5f)]
     public float anchorX; // -0.5 - 0.5
+    [Range(-0.5f, 0.5f)]
     public float anchorY;
+    [Range(-0.5f, 0.5f)]
     public float anchorZ;
 
     // Orientation four vars maybe...check Joint component vars.
+    [HideInInspector]
     public float orientationX;
+    [HideInInspector]
     public float orientationY;
+    [HideInInspector]
     public float orientationZ;
+    [HideInInspector]
     public float orientationW;
 
     // this is only used for player design
@@ -133,7 +141,8 @@ public class SegmentConnectionGenotype
     public float eulerY;
     public float eulerZ;
 
-    public float scale; // 0.20 - 2
+    [Range(0.20f, 2f)]
+    public float scale = 1; // 0.20 - 2
     public bool reflected;
     public bool terminalOnly;
 
@@ -210,8 +219,11 @@ public class SegmentGenotype
 
     public byte recursiveLimit; //1-15
 
+    [Range(0.05f, 3f)]
     public float dimensionX; // Random.Range(0.05f, 3f);
+    [Range(0.05f, 3f)]
     public float dimensionY; // Random.Range(0.05f, 3f);
+    [Range(0.05f, 3f)]
     public float dimensionZ; // Random.Range(0.05f, 3f);
 
     public JointType jointType;
@@ -288,6 +300,22 @@ public class CreatureGenotype
     public TrainingStage stage;
     public List<SegmentGenotype> segments;
 
+    // Orientation four vars maybe...check Joint component vars.
+    [HideInInspector]
+    public float orientationX;
+    [HideInInspector]
+    public float orientationY;
+    [HideInInspector]
+    public float orientationZ;
+    [HideInInspector]
+    public float orientationW;
+
+    // this is only used for player design
+    public float eulerX;
+    public float eulerY;
+    public float eulerZ;
+
+    // DEBUG
     public int counter = 0;
 
     public int obsDim;
@@ -304,6 +332,15 @@ public class CreatureGenotype
             }
         }
         return null;
+    }
+
+    public void EulerToQuat()
+    {
+        Quaternion q = Quaternion.Euler(eulerX, eulerY, eulerZ);
+        orientationX = q.x;
+        orientationY = q.y;
+        orientationZ = q.z;
+        orientationW = q.w;
     }
 
     public Dictionary<byte, byte> GetParentsDict(){
