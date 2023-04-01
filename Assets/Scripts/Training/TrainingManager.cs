@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using System.Runtime.Serialization.Formatters.Binary;
 
 [System.Serializable]
@@ -97,7 +98,7 @@ public class TrainingManager : MonoBehaviour
     public CreatureGenotype creatureGenotype;
 
     // References to components
-    [SerializeField]
+    public Text statsText;
     private TrainingAlgorithm algo;
     private Transform envHolder;
 
