@@ -14,17 +14,10 @@ public class SwimmingFitness : Fitness
     // Start is called before the first frame update
     void Start()
     {
-        creature = myEnvironment.currentCreature;
-        currCom = creature.GetCentreOfMass();
+        Reset();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-    public override float GetFrameReward()
+    public override float UpdateFrameReward()
     {
         //Creature creature = myEnvironment.currentCreature;
         float reward = 0f;
@@ -32,9 +25,10 @@ public class SwimmingFitness : Fitness
 	    prevCom = currCom;
         currCom = creature.GetCentreOfMass();
 	    prevSpeed = currSpeed;
-        distance = Vector3.Distance(currCom,prevCom);
+        //distance = Vector3.Distance(currCom,prevCom);
+        distance = Vector3.Dot(currCom - prevCom, Vector3.right);
 
-	    currSpeed = distance/Time.deltaTime;
+	    currSpeed = distance / Time.fixedDeltaTime;
 	    reward += currSpeed;
 	
 	    // Continuing movement is rewarded over that from a single initial push, by giving the velocities during the final phase of the test period a stronger relative weight in the total fitness value
@@ -52,5 +46,12 @@ public class SwimmingFitness : Fitness
         // Continuing movement is rewarded over that from a single initial push, by giving the velocities during the final phase of the test period a stronger relative weight in the total fitness value.
         
         return reward;
+    }
+
+    public override void Reset()
+    {
+        creature = myEnvironment.currentCreature;
+        if (creature == null) return;
+        currCom = creature.GetCentreOfMass();
     }
 }
