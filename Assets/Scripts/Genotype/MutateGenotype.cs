@@ -336,9 +336,9 @@ public class MutateGenotype
 
         cg.counter++;
         if (initialSegmentId == null) {
-            Debug.Log(cg.counter + " null");
+            //Debug.Log(cg.counter + " null");
         } else {
-            Debug.Log(cg.counter + " " + (byte)initialSegmentId);
+            //Debug.Log(cg.counter + " " + (byte)initialSegmentId);
         }
 
         if (cg.counter == 20)
@@ -358,7 +358,7 @@ public class MutateGenotype
             SegmentGenotype ghostSegmentGenotype = cg.GetSegment(id);
 
             // Add neurons
-            Debug.Log("segment id 0 " + ghostSegmentGenotype.neurons.Count);
+            //Debug.Log("segment id 0 " + ghostSegmentGenotype.neurons.Count);
             foreach (NeuronGenotype ng in ghostSegmentGenotype.neurons)
             {
                 NeuronReference nr = new NeuronReference();
@@ -384,7 +384,7 @@ public class MutateGenotype
             {
                 runTerminalOnly = true;
             }
-            Debug.Log("segment id 1 " + rootSegmentGenotype.neurons.Count);
+            //Debug.Log("segment id 1 " + rootSegmentGenotype.neurons.Count);
             // Add neurons
             if (initialSegmentId == null)
             {
@@ -426,7 +426,7 @@ public class MutateGenotype
             SegmentGenotype currentSegmentGenotype = cg.GetSegment(id);
 
 
-            Debug.Log("segment id " + id + " count " + currentSegmentGenotype.neurons.Count);
+            //Debug.Log("segment id " + id + " count " + currentSegmentGenotype.neurons.Count);
 
             if (currentSegmentGenotype == null) return;
 
@@ -515,8 +515,8 @@ public class MutateGenotype
     {
         // Select random SegmentGenotype
         byte segmentId = (byte)Random.Range(0, cg.segments.Count);
-        Debug.Log("SegmentID " + segmentId);
-        Debug.Log("rootNeuronReferences count " + rootNeuronReferences.Count);
+        //Debug.Log("SegmentID " + segmentId);
+        //Debug.Log("rootNeuronReferences count " + rootNeuronReferences.Count);
         SegmentGenotype segmentGenotype = cg.GetSegment(segmentId);
 
         // Create NeuronReference
@@ -604,7 +604,7 @@ public class MutateGenotype
             // TODO: Adjust below line to start from non-root node outward
             TraceConnectionOther(cg, segmentGenotype, out otherSegmentIds, out otherConnectionPaths, out otherNeuronReferences);
 
-            Debug.Log("otherNeuronReferences count " + otherNeuronReferences.Count);
+            //Debug.Log("otherNeuronReferences count " + otherNeuronReferences.Count);
             // Add child segments' neurons
             foreach (NeuronReference nr in otherNeuronReferences)
             {
@@ -652,11 +652,11 @@ public class MutateGenotype
                 currentId = nextId;
             }
 
-            Debug.Log("parentGenotypes count " + parentGenotypes.Count);
+            //Debug.Log("parentGenotypes count " + parentGenotypes.Count);
             // Add parent segments' neurons
             for (int i = 0; i < parentGenotypes.Count; i++)
             {
-                Debug.Log("n " + parentGenotypes[i].neurons.Count);
+                //Debug.Log("n " + parentGenotypes[i].neurons.Count);
                 foreach (NeuronGenotype ng in parentGenotypes[i].neurons)
                 {
                     if (ng.nr.id != 12) // Is not an effector
@@ -688,10 +688,10 @@ public class MutateGenotype
             // Add random neuron to neuronInputs
             neuronInputs[i] = possibleNeurons[selectedNeuronId];
             if (neuronInputs[i].relativityNullable.Equals(null)){
-                Debug.Log("null");
+                //Debug.Log("null");
                 throw new System.Exception("Null neuron input relativity.");
             } else {
-                Debug.Log((NeuronReferenceRelativity)neuronInputs[i].relativityNullable);
+                //Debug.Log((NeuronReferenceRelativity)neuronInputs[i].relativityNullable);
             }
 
             // Set random weight
@@ -701,7 +701,7 @@ public class MutateGenotype
         // Create and install NeuronGenotype
         NeuronGenotype ngOut = new NeuronGenotype(type, neuronInputs, spawnedNeuronReference);
         ngOut.weights = neuronWeights;
-        Debug.Log(string.Format("Added neuron with type {0}, {1} inputs, on segment id {2}", type.ToString(), neuronInputs.Length.ToString(), segmentId.ToString()));
+        //Debug.Log(string.Format("Added neuron with type {0}, {1} inputs, on segment id {2}", type.ToString(), neuronInputs.Length.ToString(), segmentId.ToString()));
         segmentGenotype.neurons.Add(ngOut);
     }
 
@@ -868,7 +868,7 @@ public class MutateGenotype
 
     public static CreatureGenotype MutateCreatureGenotype(CreatureGenotype cg, MutationPreferenceSetting mp)
     {
-        Debug.Log("----MUTATING CREATURE----");
+        //Debug.Log("----MUTATING CREATURE----");
         cg = cg.Clone();
         SimplifyCreatureGenotype(ref cg);
 
