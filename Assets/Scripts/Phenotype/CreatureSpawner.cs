@@ -429,5 +429,11 @@ public class CreatureSpawnerEditor : Editor
             CreatureGenotype cg = CreatureGenotype.LoadData(path, true);
             spawner.creatureGenotype = cg;
         }
+
+        if (GUILayout.Button("Spawn Creature"))
+        {
+            Debug.Log("Spawning Creature");
+            spawner.SpawnCreature(spawner.creatureGenotype, Vector3.up + Vector3.right, null);
+        }
     }
 }

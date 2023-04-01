@@ -123,52 +123,268 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!114 &1397214681
+--- !u!1 &692345308
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 692345309}
+  - component: {fileID: 692345310}
+  m_Layer: 0
+  m_Name: MAKE YOUR CREATURE HERE
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &692345309
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 692345308}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1472642734204876928}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &692345310
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 692345308}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: defe3efb56c1bc943a6bfb504a00dc77, type: 3}
+  m_Script: {fileID: 11500000, guid: 995ffbf13ae25dd4282f4ad0f04a3e25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  active: 1
-  startDistance:
-    m_OverrideState: 0
-    m_Value: 0
-  fogDensity:
-    m_OverrideState: 0
-    m_Value: 20
-  heightFogDepth:
-    m_OverrideState: 0
-    m_Value: 25
-  heightFogDensity:
-    m_OverrideState: 0
-    m_Value: 50
-  heightFogBrightness:
-    m_OverrideState: 0
-    m_Value: 0.6
-  fogBrightness:
-    m_OverrideState: 0
-    m_Value: 1
-  subsurfaceStrength:
-    m_OverrideState: 0
-    m_Value: 1
-  causticsStrength:
-    m_OverrideState: 0
-    m_Value: 1
-  distortionStrength:
-    m_OverrideState: 0
-    m_Value: 0.25
-  distortionFrequency:
-    m_OverrideState: 0
-    m_Value: 0.75
-  distortionSpeed:
-    m_OverrideState: 0
-    m_Value: 0.5
+  creaturePrefab: {fileID: 5168623450832129693, guid: f57b33118f5715c428887d11a1b04801, type: 3}
+  segmentPrefab: {fileID: 6837624401485191407, guid: 56ac4567187132f4f921d8ae50078f2e, type: 3}
+  spawnPos: {x: 0, y: 4.5, z: 0}
+  creatureGenotype:
+    name: Wiggly
+    stage: 0
+    segments:
+    - r: 0
+      g: 1
+      b: 0
+      id: 0
+      connections: []
+      neurons: []
+      recursiveLimit: 1
+      dimensionX: 0
+      dimensionY: 0
+      dimensionZ: 0
+      jointType: 0
+    - r: 255
+      g: 0
+      b: 0
+      id: 1
+      connections:
+      - id: 0
+        destination: 2
+        anchorX: 0.5
+        anchorY: 0
+        anchorZ: 0
+        orientationX: 0
+        orientationY: 0
+        orientationZ: -0.70710677
+        orientationW: 0.70710677
+        eulerX: 0
+        eulerY: 0
+        eulerZ: -90
+        scale: 1
+        reflected: 0
+        terminalOnly: 0
+      - id: 1
+        destination: 3
+        anchorX: 0.11552566
+        anchorY: -0.07724565
+        anchorZ: 0.5
+        orientationX: 0
+        orientationY: 0
+        orientationZ: 0
+        orientationW: 1
+        eulerX: 0
+        eulerY: 0
+        eulerZ: 0
+        scale: 1.9246615
+        reflected: 1
+        terminalOnly: 1
+      - id: 2
+        destination: 1
+        anchorX: 0.5
+        anchorY: 0.21485017
+        anchorZ: 0.03299123
+        orientationX: 0
+        orientationY: 0
+        orientationZ: 0
+        orientationW: 1
+        eulerX: 0
+        eulerY: 0
+        eulerZ: 0
+        scale: 0.28308454
+        reflected: 1
+        terminalOnly: 0
+      neurons:
+      - type: 0
+        inputs: []
+        weights: []
+        nr:
+          relativityNullable:
+            v: 0
+            hasValue: 0
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 02
+          id: 3
+      recursiveLimit: 1
+      dimensionX: 1
+      dimensionY: 1
+      dimensionZ: 1
+      jointType: 0
+    - r: 0
+      g: 0
+      b: 125
+      id: 2
+      connections:
+      - id: 0
+        destination: 2
+        anchorX: -0.1819771
+        anchorY: 0.5
+        anchorZ: 0.06987637
+        orientationX: 0.6628507
+        orientationY: 0.3563041
+        orientationZ: -0.3058834
+        orientationW: 0.58319104
+        eulerX: 0
+        eulerY: 0
+        eulerZ: 0
+        scale: 1.9248799
+        reflected: 0
+        terminalOnly: 1
+      - id: 1
+        destination: 2
+        anchorX: -0.5
+        anchorY: -0.11573559
+        anchorZ: -0.46306384
+        orientationX: 0.8713858
+        orientationY: 0.11718392
+        orientationZ: 0.47599098
+        orientationW: 0.019679753
+        eulerX: 0
+        eulerY: 0
+        eulerZ: 0
+        scale: 0.54900175
+        reflected: 1
+        terminalOnly: 1
+      neurons:
+      - type: 21
+        inputs:
+        - relativityNullable:
+            v: 0
+            hasValue: 0
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 
+          id: 3
+        - relativityNullable:
+            v: 0
+            hasValue: 0
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 
+          id: 3
+        - relativityNullable:
+            v: 0
+            hasValue: 0
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 
+          id: 3
+        weights:
+        - 1
+        - 1
+        - 0
+        nr:
+          relativityNullable:
+            v: 0
+            hasValue: 0
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 0200
+          id: 13
+      - type: 0
+        inputs:
+        - relativityNullable:
+            v: 0
+            hasValue: 0
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 00
+          id: 13
+        weights:
+        - 350
+        nr:
+          relativityNullable:
+            v: 0
+            hasValue: 0
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 0200
+          id: 12
+      recursiveLimit: 1
+      dimensionX: 0.2
+      dimensionY: 2
+      dimensionZ: 1
+      jointType: 3
+    - r: 221
+      g: 182
+      b: 181
+      id: 3
+      connections:
+      - id: 0
+        destination: 3
+        anchorX: 0.2902571
+        anchorY: 0.48003936
+        anchorZ: -0.5
+        orientationX: 0.18456714
+        orientationY: 0.54607576
+        orientationZ: 0.26601622
+        orientationW: 0.77263933
+        eulerX: 0
+        eulerY: 0
+        eulerZ: 0
+        scale: 0.24081635
+        reflected: 0
+        terminalOnly: 1
+      neurons: []
+      recursiveLimit: 1
+      dimensionX: 2.9872549
+      dimensionY: 1.5638393
+      dimensionZ: 1.0057864
+      jointType: 0
+    counter: 0
+    obsDim: 0
+    actDim: 0
+  creatureGenotypeHistory: []
+  counter: 0
 --- !u!114 &1654681847
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -472,6 +688,7 @@ MonoBehaviour:
       dimensionY: 1.5638393
       dimensionZ: 1.0057864
       jointType: 0
+    counter: 0
     obsDim: 0
     actDim: 0
   creatureGenotypeHistory: []
@@ -676,6 +893,7 @@ Transform:
   - {fileID: 1472642734819732103}
   - {fileID: 1472642734139459286}
   - {fileID: 2095058624}
+  - {fileID: 692345309}
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -838,6 +1056,7 @@ MonoBehaviour:
       dimensionY: 2
       dimensionZ: 1
       jointType: 3
+    counter: 0
     obsDim: 0
     actDim: 0
   creatureGenotypeHistory: []
@@ -873,7 +1092,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!59 &1472642735012365858
 HingeJoint:
   m_ObjectHideFlags: 0
