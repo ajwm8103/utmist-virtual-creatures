@@ -30,6 +30,10 @@
 
 This is the UTMIST Virtual Creatures Project. Cool!
 
+## Setup
+
+Unity Version: 2021.3.12f1
+
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
