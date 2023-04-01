@@ -6,36 +6,29 @@ public class WalkingFitness : Fitness
 {
     public float pushThreshold = 2f;
     public float pushPenaltyDiscount = 0.9f;
-    Vector3 currCom;
-    Vector3 prevCom;
-    float distance, prevSpeed;
     float currSpeed = 0f;
+    float distance, prevSpeed;
+    Vector3 currCom, prevCom;
     Creature creature;
 
     // Start is called before the first frame update
     void Start()
     {
-        creature = myEnvironment.currentCreature;
-        currCom = creature.GetCentreOfMass();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
+        Reset();
     }
 
     public override float UpdateFrameReward()
     {
-        Creature creature = myEnvironment.currentCreature;
+        //Creature creature = myEnvironment.currentCreature;
         float reward = 0f;
 	
 	    prevCom = currCom;
-       	currCom = creature.GetCentreOfMass();
+        currCom = creature.GetCentreOfMass();
 	    prevSpeed = currSpeed;
-       	distance = Vector3.Distance(currCom,prevCom);
+        //distance = Vector3.Distance(currCom,prevCom);
+        distance = Vector3.Dot(currCom - prevCom, Vector3.right);
 
-	    currSpeed = distance/Time.deltaTime;
+	    currSpeed = distance / Time.fixedDeltaTime;
 	    reward += currSpeed;
 	
 	    // Continuing movement is rewarded over that from a single initial push, by giving the velocities during the final phase of the test period a stronger relative weight in the total fitness value
@@ -47,11 +40,18 @@ public class WalkingFitness : Fitness
 		    reward *= pushPenaltyDiscount;
 	    }
 
+
+        // figure out where the origin of the environemnt is (likely myEnvironment.transform.position)
+        // Straight swimming is rewarded over circling by using the maximum distance from the initial center of mass
+        // Continuing movement is rewarded over that from a single initial push, by giving the velocities during the final phase of the test period a stronger relative weight in the total fitness value.
+        
         return reward;
     }
 
     public override void Reset()
     {
-        throw new System.NotImplementedException();
+        creature = myEnvironment.currentCreature;
+        if (creature == null) return;
+        currCom = creature.GetCentreOfMass();
     }
 }
