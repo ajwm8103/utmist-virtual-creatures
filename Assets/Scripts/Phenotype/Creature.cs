@@ -352,22 +352,42 @@ public class Creature : MonoBehaviour
             {
                 //Debug.Log(n.ng.nr.id);
                 NeuronReference potentialNr = n.ng.nr;
-                if (potentialNr.id == guidingNR.id && potentialNr.connectionPath.SequenceEqual(requestingNR.connectionPath))
+                if (potentialNr.id == guidingNR.id)
                 {
-                    return n;
+                    if (potentialNr.connectionPath == null){
+                        if (requestingNR.connectionPath == null) return n;
+                    } else if (potentialNr.connectionPath.SequenceEqual(requestingNR.connectionPath)){
+                        return n;
+                    }   
                 } // thank you sir (right here joshua helped me fix a curly bracket)
             }
         }
         else if (guidingNR.relativity == NeuronReferenceRelativity.CHILD)
         {
-            List<byte> childPath = new List<byte>(requestingNR.connectionPath);
-            childPath.AddRange(guidingNR.connectionPath);
+            List<byte> childPath;
+            if (requestingNR.connectionPath == null) {
+                // child from root
+                if (guidingNR.connectionPath == null) {
+                    childPath = null;
+                } else {
+                    childPath = new List<byte>(guidingNR.connectionPath);
+                }
+            } else {
+                childPath = new List<byte>(requestingNR.connectionPath);
+                childPath.AddRange(guidingNR.connectionPath);
+            }
             foreach (Neuron n in neuronList)
             {
                 //Debug.Log(n.ng.nr.id);
-                if (n.ng.nr.id == guidingNR.id && n.ng.nr.connectionPath.SequenceEqual(childPath))
+                if (n.ng.nr.id == guidingNR.id)
                 {
-                    return n;
+                    if (n.ng.nr.connectionPath == null)
+                    {
+                        if (childPath == null) return n;
+                    } else if (n.ng.nr.connectionPath.SequenceEqual(childPath))
+                    {
+                        return n;
+                    }
                 }
             }
         }
