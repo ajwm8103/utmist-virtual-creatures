@@ -20,15 +20,16 @@ public class MusclePreferenceSetting
     public float refStrain = 0.04 * restLength; // epsilon_ref
     public float couplingConst = 0.01f; // tau
     public float timeDelay = 0.015f; // delta_P
-    public float contractileVelocity = 0; // initial value
-    public float contractileLength = optLength;
     public float activationRate = 100; // c_a
-    public float excitationSignal; // u
 }
 
 public class Muscle
 {   
     public MusclePreferenceSetting mps;
+
+    public float excitationSignal; // u
+    public float contractileLength = optLength; // initial value
+    public float contractileVelocity = 0; // initial value
 
     // Start is called before the first frame update
     void Start()
@@ -94,9 +95,9 @@ public class Muscle
         return contractileLength + Time.fixedDeltaTime * (contractileVelocity + UpdateContractileVelocity(muscleActivation, contractileLength, contractileVelocity, mps)) / 2;
     }
 
-    public float UpdateMuscleActivation(float muscleActivation, MusclePreferenceSetting mps)
+    public float UpdateMuscleActivation(float muscleActivation, float excitationSignal, MusclePreferenceSetting mps)
     {
-        return muscleActivation + Time.fixedDeltaTime * mps.activationRate * (mps.excitationSignal - muscleActivation);
+        return muscleActivation + Time.fixedDeltaTime * mps.activationRate * (excitationSignal - muscleActivation);
     }
 
 }
