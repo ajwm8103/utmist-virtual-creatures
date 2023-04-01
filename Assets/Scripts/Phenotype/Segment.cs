@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class Segment : MonoBehaviour
 {
+    public byte id { get; private set; }
+    public Dictionary<byte, Segment> children { get; private set; }
+    public System.Tuple<byte, Segment> parent { get; private set; }
+    public List<Neuron> neurons;
 
     public bool isTopEmpty;
     public bool isBottomEmpty;
@@ -18,10 +22,14 @@ public class Segment : MonoBehaviour
     public float jointAxisY;
     public float jointAxisZ;
 
+    public List<byte> path { get; private set; }
+
     void Awake()
     {
         joint = GetComponent<HingeJoint>();
         myRigidbody = GetComponent<Rigidbody>();
+        children = new Dictionary<byte, Segment>();
+        neurons = new List<Neuron>();
     }
 
     void FixedUpdate()
@@ -44,6 +52,26 @@ public class Segment : MonoBehaviour
         } else {
             joint = GetComponent<HingeJoint>();
         }
+    }
+
+    public void SetId(byte id){
+        this.id = id;
+    }
+
+    public void SetPath(List<byte> path){
+        this.path = path;
+    }
+
+    public void SetParent(byte connectionId, Segment s){
+        parent = new System.Tuple<byte, Segment>(connectionId, s);
+    }
+
+    public void AddChild(byte connectionId, Segment s){
+        children.Add(connectionId, s);
+    }
+
+    public void AddNeuron(Neuron n){
+        neurons.Add(n);
     }
 
     public List<float> GetObservations(){

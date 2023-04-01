@@ -76,21 +76,22 @@ public struct NeuronReference
     //[Tooltip("-3:ghost\n-2:parent\n-1:self\n0>:child connection id")]
     //public int ownerSegment;
 
-    public NeuronReferenceRelativity? relativityNullable;
+    public SN<NeuronReferenceRelativity> relativityNullable;
     public NeuronReferenceRelativity relativity
     {
         get
         {
-            if (relativityNullable == null) throw new System.Exception("Unexpected null relativity.");
+            if (relativityNullable.Equals(null)) throw new System.Exception("Unexpected null relativity.");
             return (NeuronReferenceRelativity)relativityNullable;
         }
     }
-    private byte? relativeLevelNullable; // Used for PARENT only
+
+    public SN<byte> relativeLevelNullable; // Used for PARENT only, 1 if direct parent, etc...
     public byte relativeLevel
     {
         get
         {
-            if (relativeLevelNullable == null) throw new System.Exception("Unexpected null relative level.");
+            if (relativeLevelNullable.Equals(null)) throw new System.Exception("Unexpected null relative level.");
             return (byte)relativeLevelNullable;
         }
         set
@@ -215,16 +216,12 @@ public class SegmentGenotype
 
     public JointType jointType;
 
-    private static SegmentGenotype _ghost;
     public static SegmentGenotype ghost
     {
         get
         {
-            if (_ghost == null)
-            {
-                _ghost = new SegmentGenotype();
-                _ghost.id = 0;
-            }
+            SegmentGenotype _ghost = new SegmentGenotype();
+            _ghost.id = 0;
             return _ghost;
         }
     }
@@ -239,7 +236,7 @@ public class SegmentGenotype
         r = 1;
         g = 1;
         b = 1;
-}
+    }
 
     public NeuronGenotype GetNeuron(byte id)
     {
@@ -291,6 +288,8 @@ public class CreatureGenotype
     public TrainingStage stage;
     public List<SegmentGenotype> segments;
 
+    public int counter = 0;
+
     public int obsDim;
 
     public int actDim;
@@ -305,6 +304,26 @@ public class CreatureGenotype
             }
         }
         return null;
+    }
+
+    public Dictionary<byte, byte> GetParentsDict(){
+        Dictionary<byte, byte> parentsDict = new Dictionary<byte, byte>(); // (segmentId, parentId)
+        Queue<SegmentGenotype> segmentsToSearch = new Queue<SegmentGenotype>();
+        segmentsToSearch.Enqueue(GetSegment(1));
+        while (segmentsToSearch.Count > 0){
+            SegmentGenotype sg = segmentsToSearch.Dequeue();
+
+            foreach (SegmentConnectionGenotype scg in sg.connections)
+            {
+                bool destSearched = parentsDict.ContainsKey(scg.destination);
+                if (!destSearched) {
+                    parentsDict.Add(scg.destination, sg.id);
+                    segmentsToSearch.Enqueue(GetSegment(scg.destination));
+                } 
+            }
+        }
+
+        return parentsDict;
     }
 
     public CreatureGenotype Clone()

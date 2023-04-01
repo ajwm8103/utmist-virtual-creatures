@@ -93,6 +93,9 @@ public class TrainingManager : MonoBehaviour
     [SerializeField]
     private TrainingStage stage;
 
+    // test
+    public CreatureGenotype creatureGenotype;
+
     // References to components
     [SerializeField]
     private TrainingAlgorithm algo;
@@ -123,6 +126,7 @@ public class TrainingManager : MonoBehaviour
         Debug.Log(save);
         ts = save.ts;
         stage = ts.optimizationSettings.stage;
+        creatureGenotype = ts.optimizationSettings.initialGenotype;
         envHolder = transform.Find("EnvHolder");
         if (envHolder == null){
             envHolder = new GameObject().transform;

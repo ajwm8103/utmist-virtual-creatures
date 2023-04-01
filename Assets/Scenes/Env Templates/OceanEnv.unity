@@ -123,6 +123,52 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!114 &1397214681
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: defe3efb56c1bc943a6bfb504a00dc77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  active: 1
+  startDistance:
+    m_OverrideState: 0
+    m_Value: 0
+  fogDensity:
+    m_OverrideState: 0
+    m_Value: 20
+  heightFogDepth:
+    m_OverrideState: 0
+    m_Value: 25
+  heightFogDensity:
+    m_OverrideState: 0
+    m_Value: 50
+  heightFogBrightness:
+    m_OverrideState: 0
+    m_Value: 0.6
+  fogBrightness:
+    m_OverrideState: 0
+    m_Value: 1
+  subsurfaceStrength:
+    m_OverrideState: 0
+    m_Value: 1
+  causticsStrength:
+    m_OverrideState: 0
+    m_Value: 1
+  distortionStrength:
+    m_OverrideState: 0
+    m_Value: 0.25
+  distortionFrequency:
+    m_OverrideState: 0
+    m_Value: 0.75
+  distortionSpeed:
+    m_OverrideState: 0
+    m_Value: 0.5
 --- !u!114 &1654681847
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -286,9 +332,12 @@ MonoBehaviour:
         inputs: []
         weights: []
         nr:
-          isGhost: 0
-          isParent: 0
-          isSelf: 0
+          relativityNullable:
+            v: 0
+            hasValue: 0
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
           connectionPath: 02
           id: 3
       recursiveLimit: 1
@@ -334,19 +383,28 @@ MonoBehaviour:
       neurons:
       - type: 21
         inputs:
-        - isGhost: 0
-          isParent: 1
-          isSelf: 0
+        - relativityNullable:
+            v: 0
+            hasValue: 0
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
           connectionPath: 
           id: 3
-        - isGhost: 0
-          isParent: 1
-          isSelf: 0
+        - relativityNullable:
+            v: 0
+            hasValue: 0
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
           connectionPath: 
           id: 3
-        - isGhost: 0
-          isParent: 1
-          isSelf: 0
+        - relativityNullable:
+            v: 0
+            hasValue: 0
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
           connectionPath: 
           id: 3
         weights:
@@ -354,24 +412,33 @@ MonoBehaviour:
         - 1
         - 0
         nr:
-          isGhost: 0
-          isParent: 0
-          isSelf: 0
+          relativityNullable:
+            v: 0
+            hasValue: 0
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
           connectionPath: 0200
           id: 13
       - type: 0
         inputs:
-        - isGhost: 0
-          isParent: 0
-          isSelf: 1
+        - relativityNullable:
+            v: 0
+            hasValue: 0
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
           connectionPath: 00
           id: 13
         weights:
         - 350
         nr:
-          isGhost: 0
-          isParent: 0
-          isSelf: 0
+          relativityNullable:
+            v: 0
+            hasValue: 0
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
           connectionPath: 0200
           id: 12
       recursiveLimit: 1
@@ -408,6 +475,7 @@ MonoBehaviour:
     obsDim: 0
     actDim: 0
   creatureGenotypeHistory: []
+  counter: 0
 --- !u!65 &1472642733568043872
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -671,9 +739,12 @@ MonoBehaviour:
         inputs: []
         weights: []
         nr:
-          isGhost: 0
-          isParent: 0
-          isSelf: 0
+          relativityNullable:
+            v: 0
+            hasValue: 0
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
           connectionPath: 
           id: 3
       recursiveLimit: 1
@@ -704,19 +775,28 @@ MonoBehaviour:
       neurons:
       - type: 21
         inputs:
-        - isGhost: 0
-          isParent: 1
-          isSelf: 0
+        - relativityNullable:
+            v: 1
+            hasValue: 1
+          relativeLevelNullable:
+            v: 1
+            hasValue: 1
           connectionPath: 
           id: 3
-        - isGhost: 0
-          isParent: 1
-          isSelf: 0
+        - relativityNullable:
+            v: 1
+            hasValue: 1
+          relativeLevelNullable:
+            v: 1
+            hasValue: 1
           connectionPath: 
           id: 3
-        - isGhost: 0
-          isParent: 1
-          isSelf: 0
+        - relativityNullable:
+            v: 1
+            hasValue: 1
+          relativeLevelNullable:
+            v: 1
+            hasValue: 1
           connectionPath: 
           id: 3
         weights:
@@ -724,24 +804,33 @@ MonoBehaviour:
         - 1
         - 0
         nr:
-          isGhost: 0
-          isParent: 0
-          isSelf: 0
+          relativityNullable:
+            v: 0
+            hasValue: 0
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
           connectionPath: 
           id: 13
       - type: 0
         inputs:
-        - isGhost: 0
-          isParent: 0
-          isSelf: 1
-          connectionPath: 00
+        - relativityNullable:
+            v: 2
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 
           id: 13
         weights:
         - 350
         nr:
-          isGhost: 0
-          isParent: 0
-          isSelf: 0
+          relativityNullable:
+            v: 0
+            hasValue: 0
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
           connectionPath: 
           id: 12
       recursiveLimit: 1
@@ -752,6 +841,7 @@ MonoBehaviour:
     obsDim: 0
     actDim: 0
   creatureGenotypeHistory: []
+  counter: 0
 --- !u!4 &1472642734819732103
 Transform:
   m_ObjectHideFlags: 0

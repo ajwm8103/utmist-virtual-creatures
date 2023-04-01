@@ -84,7 +84,7 @@ public abstract class Environment : MonoBehaviour
 
         timePassed += Time.fixedDeltaTime;
         bool isOutOfTime = timePassed >= es.maxTime && es.maxTime > 0;
-        bool isExtremelyFar = currentCreature.GetCentreOfMass().sqrMagnitude >= 1000;
+        bool isExtremelyFar = (transform.position - currentCreature.GetCentreOfMass()).sqrMagnitude >= 1000;
         if (isOutOfTime || isExtremelyFar)
         {
             if (isExtremelyFar){
