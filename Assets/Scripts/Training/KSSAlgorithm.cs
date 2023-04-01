@@ -83,6 +83,7 @@ namespace KSS
             {
                 int childrenCount = Mathf.RoundToInt(remainingCount * (float)topSoftmaxEval.fitness / denom);
                 //Debug.Log(remainingCount + " " + childrenCount + " " + topSoftmaxEval.fitness + " " + denom);
+                if (remainingCount == 0) break;
                 remainingCount -= childrenCount;
                 denom -= (float)topSoftmaxEval.fitness;
                 //Debug.Log(remainingCount + " " + denom);
