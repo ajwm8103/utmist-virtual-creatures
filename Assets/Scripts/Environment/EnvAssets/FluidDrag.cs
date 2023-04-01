@@ -31,20 +31,20 @@ public class FluidDrag : MonoBehaviour
         viscosityDrag = fluidManager.viscosityDrag;
     }
 
-    float LinearDragFloat(float A, float dot)
+    float LinearDragFloat(float area, float dot)
     {
-        // TOOD: Probably incorrect
-        return A * dot * viscosityDrag * C_D;
+        // TODO: Probably incorrect
+        return area * dot * viscosityDrag * C_D;
     }
-    float QuadraticDragFloat(float A, float dot)
+    float QuadraticDragFloat(float area, float dot)
     {
-        // 0.5 * rho * v^2 * C_D * A
-        return 0.5f * fluidDensity * Mathf.Pow(dot, 2) * C_D * A;
+        // 0.5 * rho * v^2 * C_D * area
+        return 0.5f * fluidDensity * Mathf.Pow(dot, 2) * C_D * area;
     }
 
     void FixedUpdate()
     {
-        // F_drag = 0.5 * C_D * A * rho * v^2
+        // F_drag = 0.5 * C_D * area * rho * v^2
         // Cache positive axis vectors:
         Vector3 forward = transform.forward;
         Vector3 up = transform.up;
@@ -61,48 +61,81 @@ public class FluidDrag : MonoBehaviour
         Vector3 pointVelPosZ = myRigidbody.GetPointVelocity(zpos_face_center);
         Vector3 pointVelPosY = myRigidbody.GetPointVelocity(ypos_face_center);
         Vector3 pointVelPosX = myRigidbody.GetPointVelocity(xpos_face_center);
+        
+        Vector3 pointVelNegZ = myRigidbody.GetPointVelocity(zneg_face_center);
+        Vector3 pointVelNegY = myRigidbody.GetPointVelocity(yneg_face_center);
+        Vector3 pointVelNegX = myRigidbody.GetPointVelocity(xneg_face_center);
+
 
         // Quadratic drag seems to break some stuff with symmetry, so using linear drag as in the original paper:
 
-        Vector3 fluidDragVecPosZ;
+        Vector3 fluidDragVecPosZ, fluidDragVecNegZ;
 
         // Do the dot product first, but break it up and do it manually like this instead of calling the Dot() method:
-        float dotZ;
-        dotZ = -forward.x * pointVelPosZ.x +
+        float dotPosZ, dotNegZ;
+
+        dotPosZ = -forward.x * pointVelPosZ.x +
             -forward.y * pointVelPosZ.y +
             -forward.z * pointVelPosZ.z;
 
-        fluidDragVecPosZ.x = forward.x * dotZ * sa_z * viscosityDrag;
-        fluidDragVecPosZ.y = forward.y * dotZ * sa_z * viscosityDrag;
-        fluidDragVecPosZ.z = forward.z * dotZ * sa_z * viscosityDrag;
+        dotNegZ = -forward.x * pointVelNegZ.x +
+            -forward.y * pointVelNegZ.y +
+            -forward.z * pointVelNegZ.z;
 
-        myRigidbody.AddForceAtPosition(fluidDragVecPosZ * 2, zpos_face_center);
 
-        Vector3 fluidDragVecPosY;
+        fluidDragVecPosZ.x = forward.x * dotPosZ * sa_z * viscosityDrag;
+        fluidDragVecPosZ.y = forward.y * dotPosZ * sa_z * viscosityDrag;
+        fluidDragVecPosZ.z = forward.z * dotPosZ * sa_z * viscosityDrag;
 
-        float dotY;
-        dotY = -up.x * pointVelPosY.x +
+        fluidDragVecNegZ.x = forward.x * dotNegZ * sa_z * viscosityDrag;
+        fluidDragVecNegZ.y = forward.y * dotNegZ * sa_z * viscosityDrag;
+        fluidDragVecNegZ.z = forward.z * dotNegZ * sa_z * viscosityDrag;
+
+        myRigidbody.AddForceAtPosition(fluidDragVecPosZ + fluidDragVecNegZ, zpos_face_center);
+
+        Vector3 fluidDragVecPosY, fluidDragVecNegY;
+
+        float dotPosY, dotNegY;
+
+        dotPosY = -up.x * pointVelPosY.x +
             -up.y * pointVelPosY.y +
             -up.z * pointVelPosY.z;
 
-        fluidDragVecPosY.x = up.x * dotY * sa_y * viscosityDrag;
-        fluidDragVecPosY.y = up.y * dotY * sa_y * viscosityDrag;
-        fluidDragVecPosY.z = up.z * dotY * sa_y * viscosityDrag;
+        dotNegY = -up.x * pointVelNegY.x +
+            -up.y * pointVelNegY.y +
+            -up.z * pointVelNegY.z;
+
+        fluidDragVecPosY.x = up.x * dotPosY * sa_y * viscosityDrag;
+        fluidDragVecPosY.y = up.y * dotPosY * sa_y * viscosityDrag;
+        fluidDragVecPosY.z = up.z * dotPosY * sa_y * viscosityDrag;
+
+        fluidDragVecNegY.x = up.x * dotNegY * sa_y * viscosityDrag;
+        fluidDragVecNegY.y = up.y * dotNegY * sa_y * viscosityDrag;
+        fluidDragVecNegY.z = up.z * dotNegY * sa_y * viscosityDrag;
 
         myRigidbody.AddForceAtPosition(fluidDragVecPosY * 2, ypos_face_center);
 
-        Vector3 fluidDragVecPosX;
+        Vector3 fluidDragVecPosX, fluidDragVecNegX;
 
-        float dotX;
-        dotX = -right.x * pointVelPosX.x +
+        float dotPosX, dotNegX;
+
+        dotPosX = -right.x * pointVelPosX.x +
             -right.y * pointVelPosX.y +
             -right.z * pointVelPosX.z;
 
-        fluidDragVecPosX.x = right.x * dotX * sa_x * viscosityDrag;
-        fluidDragVecPosX.y = right.y * dotX * sa_x * viscosityDrag;
-        fluidDragVecPosX.z = right.z * dotX * sa_x * viscosityDrag;
+        dotNegX = -right.x * pointVelNegX.x +
+            -right.y * pointVelNegX.y +
+            -right.z * pointVelNegX.z;
 
-        myRigidbody.AddForceAtPosition(fluidDragVecPosX * 2, xpos_face_center);
+        fluidDragVecPosX.x = right.x * dotPosX * sa_x * viscosityDrag;
+        fluidDragVecPosX.y = right.y * dotPosX * sa_x * viscosityDrag;
+        fluidDragVecPosX.z = right.z * dotPosX * sa_x * viscosityDrag;
+
+        fluidDragVecNegX.x = right.x * dotNegX * sa_x * viscosityDrag;
+        fluidDragVecNegX.y = right.y * dotNegX * sa_x * viscosityDrag;
+        fluidDragVecNegX.z = right.z * dotNegX * sa_x * viscosityDrag;
+
+        myRigidbody.AddForceAtPosition(fluidDragVecPosX + fluidDragVecNegX, xpos_face_center);
 
         //=== FOR EACH FACE of rigidbody box: ----------------------------------------
         //=== Get Velocity: ---------------------------------------------
