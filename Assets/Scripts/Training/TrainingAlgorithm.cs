@@ -15,5 +15,5 @@ public abstract class TrainingAlgorithm : MonoBehaviour
         save = tm.save;
     }
 
-    public abstract void ResetPing(Environment env, float fitness);
+    public abstract void ResetPing(Environment env, float fitness, bool isDQ);
 }

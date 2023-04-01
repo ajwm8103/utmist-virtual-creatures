@@ -25,7 +25,7 @@ public class WalkingFitness : Fitness
 
     }
 
-    public override float GetFrameReward()
+    public override float UpdateFrameReward()
     {
         Creature creature = myEnvironment.currentCreature;
         float reward = 0f;
@@ -48,5 +48,10 @@ public class WalkingFitness : Fitness
 	    }
 
         return reward;
+    }
+
+    public override void Reset()
+    {
+        throw new System.NotImplementedException();
     }
 }

@@ -445,7 +445,7 @@ Transform:
   m_GameObject: {fileID: 6472731533670679720}
   m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: -6.42, z: 0}
-  m_LocalScale: {x: 200, y: 200.00002, z: 1}
+  m_LocalScale: {x: 400, y: 400, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 535851296851451833}
@@ -563,14 +563,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b9fc171aecb3e84188af69fec442481, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  envCode: 0
-  totalReward: 0
+  timePassed: 0
   currentCreature: {fileID: 0}
   fitness: {fileID: 0}
   tm: {fileID: 0}
   cs: {fileID: 0}
   spawnTransform: {fileID: 0}
   creatureHolder: {fileID: 0}
+  tas: []
 --- !u!1 &6472731534607262250
 GameObject:
   m_ObjectHideFlags: 0

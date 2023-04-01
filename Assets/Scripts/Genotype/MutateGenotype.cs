@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
- 
+
 public class MutateGenotype
 {
     public static float NextGaussian()
@@ -49,12 +49,14 @@ public class MutateGenotype
         return Random.Range(0, 2) == 1;
     }
 
+    [System.Serializable]
     public class MutationPreferenceSetting
     {
         public bool mutateMorphology = true;
-        public bool mutateNeural = false;
+        public bool mutateNeural = true;
         public float stdevSizeAdjustmentFactor = 0.3f;
 
+        [System.Serializable]
         public struct MutationPreference
         {
             public float mutationChance;
@@ -73,15 +75,15 @@ public class MutateGenotype
             {"s_r", new MutationPreference(0.25f, 0.25f)}, // Red (byte)
             {"s_g", new MutationPreference(0.25f, 0.25f)}, // Green (byte)
             {"s_b", new MutationPreference(0.25f, 0.25f)}, // Blue (byte)
-            {"s_rl", new MutationPreference(0.25f, 0.25f)}, // Recursive limit (byte, 0:15)
-            {"s_dx", new MutationPreference(0.25f, 0.25f)}, // Dimension X (float, 0.05f:3f)
-            {"s_dy", new MutationPreference(0.25f, 0.25f)}, // Dimension Y (float, 0.05f:3f)
-            {"s_dz", new MutationPreference(0.25f, 0.25f)}, // Dimension Z (float, 0.05f:3f)
+            {"s_rl", new MutationPreference(0.25f, 0.25f)}, // Recursive limit (byte, 1:15)
+            {"s_dx", new MutationPreference(0.25f, 0.25f)}, // Dimension X (float, 0.05f:1.2f)
+            {"s_dy", new MutationPreference(0.25f, 0.25f)}, // Dimension Y (float, 0.05f:1.2f)
+            {"s_dz", new MutationPreference(0.25f, 0.25f)}, // Dimension Z (float, 0.05f:1.2f)
             {"s_jt", new MutationPreference(0.25f, 0.25f)}, // JointType (enum, 0:3)
             {"s_dest", new MutationPreference(0.25f, 0.25f)}, // Destination (byte, 1:255)
             {"s_a", new MutationPreference(0.25f, 0.25f)}, // Anchor (sadness)
             {"s_o", new MutationPreference(0.25f, 0.25f)}, // Orientation (float, 0f:360f)
-            {"s_s", new MutationPreference(0.25f, 0.25f)}, // Scale (float, 0.2f:2f)
+            {"s_s", new MutationPreference(0.25f, 0.25f)}, // Scale (float, 0.2f:1.2f)
             {"s_reflected", new MutationPreference(0.25f, 0.25f)}, // Reflected (bool)
             {"s_t", new MutationPreference(0.25f, 0.25f)}, // Terminal-only (bool)
             {"s_addc", new MutationPreference(0.25f, 0.25f)}, // Add connection
@@ -94,11 +96,11 @@ public class MutateGenotype
         };
 
         public Dictionary<string, float[]> floatClamps = new Dictionary<string, float[]>() {
-            {"s_dx", new float[2]{0.05f,3f}},
-            {"s_dy", new float[2]{0.05f,3f}},
-            {"s_dz", new float[2]{0.05f,3f}},
+            {"s_dx", new float[2]{0.05f,1.2f}},
+            {"s_dy", new float[2]{0.05f,1.2f}},
+            {"s_dz", new float[2]{0.05f,1.2f}},
             {"s_o", new float[2]{0f,360f}},
-            {"s_s", new float[2]{0.2f,2f}},
+            {"s_s", new float[2]{0.2f,1.2f}},
             {"n_w1", new float[2]{-15f,15f}},
             {"n_w2", new float[2]{-15f,15f}},
             {"n_w3", new float[2]{-15f,15f}},
@@ -108,13 +110,31 @@ public class MutateGenotype
             {"s_r", new byte[2]{0,255}},
             {"s_g", new byte[2]{0,255}},
             {"s_b", new byte[2]{0,255}},
-            {"s_rl", new byte[2]{0,15}},
+            {"s_rl", new byte[2]{1,3}}, // temporary fix, used to be max 15
             {"s_dest", new byte[2]{1,255}},
         };
 
         public bool CoinFlip(string parameter)
         {
             return MutateGenotype.CoinFlip(mutationFrequencies[parameter].mutationChance * currentScaleFactor);
+        }
+
+        public float GetFloatMean(string parameter) {
+            return (floatClamps[parameter][1] - floatClamps[parameter][0]) / 2f;
+        }
+
+        public byte GetByteMean(string parameter)
+        {
+            return (byte)Mathf.RoundToInt((byteClamps[parameter][1] - byteClamps[parameter][0]) / 2f);
+        }
+
+        public float GetRandomFloat(string parameter) {
+            return ModifyFloat(GetFloatMean(parameter), parameter);
+        }
+
+        public byte GetRandomByte(string parameter)
+        {
+            return ModifyByte(GetByteMean(parameter), parameter);
         }
 
         public float ModifyFloat(float mean, string parameter)
@@ -146,9 +166,44 @@ public class MutateGenotype
 
     public static void SimplifyCreatureGenotype(ref CreatureGenotype cg)
     {
-        /// Remove all unconnected segments
+        if (cg.GetSegment(0) == null) {
 
-        /// List all connected segments
+            cg.segments.Insert(0, SegmentGenotype.ghost);
+        }
+
+        // Correct any terminal only flags
+        foreach (SegmentGenotype sg in cg.segments)
+        {
+            bool canTerminalOnly = false;
+            List<SegmentConnectionGenotype> toFlip = new List<SegmentConnectionGenotype>();
+            foreach (SegmentConnectionGenotype scg in sg.connections)
+            {
+                if (scg.terminalOnly) {
+                    if (scg.destination == sg.id && scg.terminalOnly) {
+                        // Can never terminal only to self
+                        scg.terminalOnly = false;
+                    } else {
+                        toFlip.Add(scg);
+                    }
+                }
+                if (scg.destination == sg.id) {
+                    // If connecting to self, then terminal only outward is valid
+                    canTerminalOnly = true;
+                    break;
+                }
+            }
+            if (!canTerminalOnly) {
+                // Turn all flags to false
+                foreach (SegmentConnectionGenotype scg in toFlip)
+                {
+                    scg.terminalOnly = false;
+                }
+            }
+        }
+
+        // Remove all unconnected segments
+
+        // List all connected segments
         Dictionary<byte, List<SegmentConnectionGenotype>> segmentConnectionsByDest = new Dictionary<byte, List<SegmentConnectionGenotype>>();
         /*foreach (SegmentGenotype sm in cm.segments)
         {
@@ -210,7 +265,7 @@ public class MutateGenotype
             {
                 if (cg.GetSegment(i) == null)
                 {
-                    Debug.Log($"Replacing old id {sg.id} with new id {i}.");
+                    //Debug.Log($"Replacing old id {sg.id} with new id {i}.");
                     // Found lower value
                     byte oldId = sg.id;
 
@@ -231,12 +286,69 @@ public class MutateGenotype
         }
     }
 
-    public static void TraceConnections(CreatureGenotype cg, Dictionary<byte, byte> recursiveLimitValues,
-		    SegmentConnectionGenotype myConnection, List<byte> connectionPath, List<byte> segmentIds,
-		    List<List<byte>> connectionPaths, List<NeuronReference> neuronReferences)
+    public static void TraceConnectionRoot(CreatureGenotype cg, out List<byte> segmentIds,
+            out List<List<byte>> connectionPaths, out List<NeuronReference> neuronReferences)
     {
-        /// Runs through entire creature genotype and fills out connectionPaths, segmentIds, neuronReferences
-        
+        segmentIds = new List<byte>();
+        connectionPaths = new List<List<byte>>();
+        neuronReferences = new List<NeuronReference>();
+
+        TraceConnections(cg, null, null, new List<byte>(), segmentIds, connectionPaths, neuronReferences, null);
+    }
+
+    public static void TraceConnectionOther(CreatureGenotype cg, SegmentGenotype sg, out List<byte> segmentIds,
+            out List<List<byte>> connectionPaths, out List<NeuronReference> neuronReferences)
+    {
+        segmentIds = new List<byte>();
+        connectionPaths = new List<List<byte>>();
+        neuronReferences = new List<NeuronReference>();
+        SegmentConnectionGenotype scg = new SegmentConnectionGenotype(); // dummy connection
+        scg.destination = sg.id;
+        TraceConnections(cg, null, scg, new List<byte>(), segmentIds, connectionPaths, neuronReferences, sg.id);
+    }
+
+    /// <summary>
+    /// Runs through entire creature genotype and fills out connectionPaths, segmentIds, neuronReferences
+    /// Also updates NeuronGenotype's self-NeuronReferences to contain their connection path
+    /// </summary>
+    /// <param name="cg"></param>
+    /// <param name="recursiveLimitValues">Values of recursive limit for each SegmentGenotype for tracking.</param>
+    /// <param name="myConnection">Connection the current SegmentGenotype originated from.</param>
+    /// <param name="connectionPath">The full path of connection ids the current SegmentGenotype originated through.</param>
+    /// <param name="segmentIds">The id of the segment that results from some path in connectionPaths.</param>
+    /// <param name="connectionPaths">A list of full paths to every to-be-instantiated Segment</param>
+    /// <param name="neuronReferences">A list of full paths </param>
+    public static void TraceConnections(CreatureGenotype cg, Dictionary<byte, byte> recursiveLimitValues,
+            SegmentConnectionGenotype myConnection, List<byte> connectionPath, List<byte> segmentIds,
+            List<List<byte>> connectionPaths, List<NeuronReference> neuronReferences, byte? initialSegmentId)
+    {
+        if (segmentIds == null || connectionPaths == null || neuronReferences == null){
+            throw new System.Exception("Unexpected null input");
+        }
+
+        if (recursiveLimitValues == null){
+            recursiveLimitValues = new Dictionary<byte, byte>();
+            foreach (SegmentGenotype segment in cg.segments)
+            {
+                recursiveLimitValues[segment.id] = segment.recursiveLimit;
+            }
+        }
+
+        cg.counter++;
+        if (initialSegmentId == null) {
+            Debug.Log(cg.counter + " null");
+        } else {
+            Debug.Log(cg.counter + " " + (byte)initialSegmentId);
+        }
+
+        if (cg.counter == 20)
+        {
+            Debug.Log("Likely looping trace, save for debug.");
+            string name = "/debug_" + Random.Range(0, 100) + ".creature";
+            cg.SaveData(name, false);
+            Debug.Log("Saved to " + Application.persistentDataPath + name);
+        }
+
         // Find SegmentGenotype
         byte id;
         if (myConnection == null)
@@ -246,11 +358,14 @@ public class MutateGenotype
             SegmentGenotype ghostSegmentGenotype = cg.GetSegment(id);
 
             // Add neurons
+            Debug.Log("segment id 0 " + ghostSegmentGenotype.neurons.Count);
             foreach (NeuronGenotype ng in ghostSegmentGenotype.neurons)
             {
-                ng.nr.connectionPath = connectionPath;
-                ng.nr.isGhost = true;
-                neuronReferences.Add(ng.nr);
+                NeuronReference nr = new NeuronReference();
+                nr.id = ng.nr.id;
+                nr.connectionPath = connectionPath;
+                nr.relativityNullable = NeuronReferenceRelativity.CHILD;
+                //neuronReferences.Add(nr);
             }
 
             connectionPaths.Add(null);
@@ -269,12 +384,21 @@ public class MutateGenotype
             {
                 runTerminalOnly = true;
             }
-
+            Debug.Log("segment id 1 " + rootSegmentGenotype.neurons.Count);
             // Add neurons
-            foreach (NeuronGenotype ng in rootSegmentGenotype.neurons)
+            if (initialSegmentId == null)
             {
-                ng.nr.connectionPath = connectionPath;
-                neuronReferences.Add(ng.nr);
+                foreach (NeuronGenotype ng in rootSegmentGenotype.neurons)
+                {
+                    NeuronReference nr = new NeuronReference();
+                    nr.id = ng.nr.id;
+                    nr.connectionPath = connectionPath;
+                    nr.relativityNullable = NeuronReferenceRelativity.CHILD;
+                    neuronReferences.Add(nr);
+
+                    ng.nr.connectionPath = connectionPath;
+                    ng.nr.relativityNullable = NeuronReferenceRelativity.TRACED;
+                }
             }
 
             connectionPaths.Add(connectionPath);
@@ -292,7 +416,7 @@ public class MutateGenotype
                     Dictionary<byte, byte> recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
                     List<byte> connectionPathClone = connectionPath.Select(item => (byte)item).ToList();
                     connectionPathClone.Add(connection.id);
-                    TraceConnections(cg, recursiveLimitClone, connection, connectionPathClone, segmentIds, connectionPaths, neuronReferences);
+                    TraceConnections(cg, recursiveLimitClone, connection, connectionPathClone, segmentIds, connectionPaths, neuronReferences, initialSegmentId);
                 }
             }
         }
@@ -300,6 +424,9 @@ public class MutateGenotype
         {
             id = myConnection.destination;
             SegmentGenotype currentSegmentGenotype = cg.GetSegment(id);
+
+
+            Debug.Log("segment id " + id + " count " + currentSegmentGenotype.neurons.Count);
 
             if (currentSegmentGenotype == null) return;
 
@@ -314,9 +441,19 @@ public class MutateGenotype
             // Add neurons
             foreach (NeuronGenotype ng in currentSegmentGenotype.neurons)
             {
-                ng.nr.connectionPath = connectionPath;
-                neuronReferences.Add(ng.nr);
+                if (initialSegmentId == null || id != initialSegmentId){
+                    NeuronReference nr = new NeuronReference();
+                    nr.id = ng.nr.id;
+                    nr.connectionPath = connectionPath;
+                    nr.relativityNullable = NeuronReferenceRelativity.CHILD;
+                    neuronReferences.Add(nr);
+                }
 
+                if (initialSegmentId == null)
+                {
+                    ng.nr.connectionPath = connectionPath;
+                    ng.nr.relativityNullable = NeuronReferenceRelativity.TRACED;
+                }
             }
 
             connectionPaths.Add(connectionPath);
@@ -334,19 +471,20 @@ public class MutateGenotype
                     Dictionary<byte, byte> recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
                     List<byte> connectionPathClone = new List<byte>(connectionPath);
                     connectionPathClone.Add(connection.id);
-                    TraceConnections(cg, recursiveLimitClone, connection, connectionPathClone, segmentIds, connectionPaths, neuronReferences);
+                    TraceConnections(cg, recursiveLimitClone, connection, connectionPathClone, segmentIds, connectionPaths, neuronReferences, initialSegmentId);
                 }
             }
         }
 
     }
 
-    public static CreatureGenotype GenerateRandomCreatureGenotype(){
+    public static CreatureGenotype GenerateRandomCreatureGenotype(MutationPreferenceSetting mp)
+    {
         // TODO: May need reference to MutationPreferenceSetting?
         return null;
     }
 
-    public static bool GenerateRandomSegmentGenotype(ref CreatureGenotype cg)
+    public static SegmentGenotype GenerateRandomSegmentGenotype(ref CreatureGenotype cg, MutationPreferenceSetting mp)
     {
         for (byte i = 1; i < 255; i++)
         {
@@ -360,37 +498,232 @@ public class MutateGenotype
                 generatedSegmentGenotype.id = i;
                 generatedSegmentGenotype.connections = new List<SegmentConnectionGenotype>();
                 generatedSegmentGenotype.neurons = new List<NeuronGenotype>();
-                generatedSegmentGenotype.recursiveLimit = (byte)Random.Range(1, 16);
-                generatedSegmentGenotype.dimensionX = Random.Range(0.05f, 3f);
-                generatedSegmentGenotype.dimensionY = Random.Range(0.05f, 3f);
-                generatedSegmentGenotype.dimensionZ = Random.Range(0.05f, 3f);
+                generatedSegmentGenotype.recursiveLimit = mp.GetRandomByte("s_rl");
+                generatedSegmentGenotype.dimensionX = mp.GetRandomFloat("s_dx");
+                generatedSegmentGenotype.dimensionY = mp.GetRandomFloat("s_dy");
+                generatedSegmentGenotype.dimensionZ = mp.GetRandomFloat("s_dz");
                 generatedSegmentGenotype.jointType = (JointType)Random.Range(0, 4);
 
                 cg.segments.Add(generatedSegmentGenotype);
-                return true;
+                return generatedSegmentGenotype;
             }
         }
-        return false;
+        return null;
     }
 
-    public static void GenerateRandomNeuronGenotype(ref CreatureGenotype cg, List<List<byte>> connectionPaths, List<byte> segmentIds, List<NeuronReference> neuronReferences)
+    public static void GenerateRandomNeuronGenotype(CreatureGenotype cg, List<List<byte>> connectionPaths, List<byte> segmentIds, List<NeuronReference> rootNeuronReferences)
+    {
+        // Select random SegmentGenotype
+        byte segmentId = (byte)Random.Range(0, cg.segments.Count);
+        Debug.Log("SegmentID " + segmentId);
+        Debug.Log("rootNeuronReferences count " + rootNeuronReferences.Count);
+        SegmentGenotype segmentGenotype = cg.GetSegment(segmentId);
+
+        // Create NeuronReference
+        NeuronReference spawnedNeuronReference = new NeuronReference();
+        spawnedNeuronReference.connectionPath = null;
+        spawnedNeuronReference.relativityNullable = null;
+        spawnedNeuronReference.relativeLevelNullable = null;
+
+        // Pick unused id
+        for (byte i = 13; i < 255; i++)
+        {
+            if (segmentGenotype.GetNeuron(i) == null)
+            {
+                // Found unused id, add node here
+                spawnedNeuronReference.id = i;
+                break;
+            }
+        }
+
+        // Set a neuron type
+        byte type = (byte)Random.Range(0, 23);
+        byte typeInputs = NeuronGenotype.GetTypeInputs(type);
+
+        // Find all valid inputs for the node and connect them
+        // Valid inputs will be within the node, the parent of the node, a child of the node, or the ghost
+        // Make list of all those then select randomly
+        List<NeuronReference> possibleNeurons = new List<NeuronReference>();
+
+        // Always add ghost neurons
+        foreach (NeuronGenotype ng in cg.GetSegment(0).neurons)
+        {
+            if (ng.nr.id != 12) // Remove effectors
+            {
+                NeuronReference nr = new NeuronReference();
+                nr.relativityNullable = NeuronReferenceRelativity.GHOST;
+                nr.id = ng.nr.id;
+                possibleNeurons.Add(nr);
+            }
+        }
+
+        // Always add own neurons if not ghost
+        if (segmentId != 0){
+            foreach (NeuronGenotype ng in segmentGenotype.neurons)
+            {
+                if (ng.nr.id != 12) // Remove effectors
+                {
+                    NeuronReference nr = new NeuronReference();
+                    nr.relativityNullable = NeuronReferenceRelativity.SELF;
+                    nr.id = ng.nr.id;
+                    possibleNeurons.Add(nr);
+                }
+            }
+        }
+
+        if (segmentId == 0)
+        {
+            // Is Ghost, add all from root
+            foreach (NeuronReference nr in rootNeuronReferences)
+            {
+                if (nr.id != 12) // Is sensor or neuron, and not repeating ghost
+                {
+                    possibleNeurons.Add(nr);
+                }
+            }
+        } else if (segmentId == 1)
+        {
+            // Is root, add all from root
+            // Trace outward
+            List<byte> otherSegmentIds; List<List<byte>> otherConnectionPaths; List<NeuronReference> otherNeuronReferences;
+            // TODO: Adjust below line to start from non-root node outward
+            TraceConnectionOther(cg, segmentGenotype, out otherSegmentIds, out otherConnectionPaths, out otherNeuronReferences);
+
+            foreach (NeuronReference nr in otherNeuronReferences)
+            {
+                if (nr.id != 12) // Is sensor or neuron, and not repeating ghost
+                {
+                    possibleNeurons.Add(nr);
+                }
+            }
+        }
+        else
+        {
+            // Non-root, so trace outward
+            List<byte> otherSegmentIds; List<List<byte>> otherConnectionPaths; List<NeuronReference> otherNeuronReferences;
+            // TODO: Adjust below line to start from non-root node outward
+            TraceConnectionOther(cg, segmentGenotype, out otherSegmentIds, out otherConnectionPaths, out otherNeuronReferences);
+
+            Debug.Log("otherNeuronReferences count " + otherNeuronReferences.Count);
+            // Add child segments' neurons
+            foreach (NeuronReference nr in otherNeuronReferences)
+            {
+                if (nr.id != 12) // Is not an effector
+                {
+                    possibleNeurons.Add(nr);
+                }
+            }
+
+            // Find segment's id in segmentIds
+            /*SegmentGenotype currentSG; int i = 0;
+            while (currentSG != segmentGenotype){
+                currentSG = currentSG.connections[connectionPaths[i]]
+            }*/
+            int segmentIndex = segmentIds.IndexOf(segmentId);
+
+            if (segmentIndex == -1) {
+                foreach (SegmentGenotype sg in cg.segments)
+                {
+                    Debug.Log("sg id " + sg.id + " recursiveLimit " + sg.recursiveLimit);
+                    foreach (SegmentConnectionGenotype scg in sg.connections)
+                    {
+                        Debug.Log("Connection id " + scg.id + " to segment id " + scg.destination);
+                        Debug.Log("Terminal only " + scg.terminalOnly);
+                    }
+                }
+                foreach (byte idd in segmentIds)
+                {
+                    Debug.Log("idd " + idd);
+                }
+                throw new System.Exception("No segmentId " + segmentId + " out of " + cg.segments.Count + " segments.");
+            }
+
+            List<SegmentGenotype> parentGenotypes = new List<SegmentGenotype>();
+            Dictionary<byte, byte> parentsDict = cg.GetParentsDict();
+            byte currentId = segmentId;
+            while (currentId != 1)
+            {
+                byte nextId = parentsDict[currentId];
+                if (nextId != currentId)
+                {
+                    // Found a parent segment
+                    parentGenotypes.Add(cg.GetSegment(nextId));
+                }
+                currentId = nextId;
+            }
+
+            Debug.Log("parentGenotypes count " + parentGenotypes.Count);
+            // Add parent segments' neurons
+            for (int i = 0; i < parentGenotypes.Count; i++)
+            {
+                Debug.Log("n " + parentGenotypes[i].neurons.Count);
+                foreach (NeuronGenotype ng in parentGenotypes[i].neurons)
+                {
+                    if (ng.nr.id != 12) // Is not an effector
+                    {
+                        NeuronReference nr = new NeuronReference();
+                        nr.id = ng.nr.id;
+                        nr.relativityNullable = NeuronReferenceRelativity.PARENT;
+                        nr.relativeLevel = (byte)(i + 1);
+                        possibleNeurons.Add(nr);
+                    }
+                }
+            }
+        }
+
+        if (possibleNeurons.Count == 0){
+            throw new System.Exception("No possible Neurons for segmentId " + segmentId);
+        }
+        
+        // Select random input NeuronReferences
+        NeuronReference[] neuronInputs = new NeuronReference[typeInputs];
+        float[] neuronWeights = new float[typeInputs];
+        for (int i = 0; i < typeInputs; i++)
+        {
+            // Select random id
+            int selectedNeuronId = Random.Range(0, possibleNeurons.Count);
+
+            //Debug.Log(i);
+            //Debug.Log(selectedNeuronId);
+            // Add random neuron to neuronInputs
+            neuronInputs[i] = possibleNeurons[selectedNeuronId];
+            if (neuronInputs[i].relativityNullable.Equals(null)){
+                Debug.Log("null");
+                throw new System.Exception("Null neuron input relativity.");
+            } else {
+                Debug.Log((NeuronReferenceRelativity)neuronInputs[i].relativityNullable);
+            }
+
+            // Set random weight
+            neuronWeights[i] = Random.Range(-15f, 15f);
+        }
+
+        // Create and install NeuronGenotype
+        NeuronGenotype ngOut = new NeuronGenotype(type, neuronInputs, spawnedNeuronReference);
+        ngOut.weights = neuronWeights;
+        Debug.Log(string.Format("Added neuron with type {0}, {1} inputs, on segment id {2}", type.ToString(), neuronInputs.Length.ToString(), segmentId.ToString()));
+        segmentGenotype.neurons.Add(ngOut);
+    }
+
+    [System.Obsolete("GenerateRandomNeuronGenotypeOld is deprecated, please use GenerateRandomNeuronGenotype instead.", true)]
+    public static void GenerateRandomNeuronGenotypeOld(CreatureGenotype cg, List<List<byte>> connectionPaths, List<byte> segmentIds, List<NeuronReference> neuronReferences)
     {
         // Pick a random segment path
         int segmentSelectionId = Random.Range(0, connectionPaths.Count);
         List<byte> segmentPath = connectionPaths[segmentSelectionId];
 
         byte segmentId = segmentIds[segmentSelectionId];
-        SegmentGenotype SegmentGenotype = cg.GetSegment(segmentId);
+        SegmentGenotype segmentGenotype = cg.GetSegment(segmentId);
 
         // Make the neuron reference
         NeuronReference spawnedNeuronReference = new NeuronReference();
         spawnedNeuronReference.connectionPath = segmentPath;
-        spawnedNeuronReference.isGhost = segmentPath == null; // if no segment path, neuron was chosen to spawn in ghost
+        //spawnedNeuronReference.isGhost = segmentPath == null; // if no segment path, neuron was chosen to spawn in ghost
 
         // Pick unused id
         for (byte i = 13; i < 255; i++)
         {
-            if (SegmentGenotype.GetNeuron(i) == null)
+            if (segmentGenotype.GetNeuron(i) == null)
             {
                 // Found unused id, add node here
                 spawnedNeuronReference.id = i;
@@ -453,7 +786,7 @@ public class MutateGenotype
                 {
                     continue;
                 }
-                if (nr.isGhost) // Is ghost
+                if (nr.relativity == NeuronReferenceRelativity.GHOST) // Is ghost
                 {
                     possibleNeurons.Add(nr);
                 }
@@ -525,7 +858,7 @@ public class MutateGenotype
 
         NeuronGenotype ng = new NeuronGenotype(type, neuronInputs, spawnedNeuronReference);
         ng.weights = neuronWeights;
-        SegmentGenotype.neurons.Add(ng);
+        segmentGenotype.neurons.Add(ng);
         //return true;
     }
 
@@ -536,20 +869,16 @@ public class MutateGenotype
     public static CreatureGenotype MutateCreatureGenotype(CreatureGenotype cg, MutationPreferenceSetting mp)
     {
         Debug.Log("----MUTATING CREATURE----");
+        cg = cg.Clone();
+        SimplifyCreatureGenotype(ref cg);
+
+        // test
+        //cg.name += Random.Range(0, 100);
+
         // Get list of segment connection paths and all neuron connection paths for random selection
 
-        List<List<byte>> connectionPaths = new List<List<byte>>();
-        List<byte> segmentIds = new List<byte>();
-        List<NeuronReference> neuronReferences = new List<NeuronReference>();
-
-        // Create recursive limit dict
-        Dictionary<byte, byte> recursiveLimitInitial = new Dictionary<byte, byte>();
-        foreach (SegmentGenotype segment in cg.segments)
-        {
-            recursiveLimitInitial[segment.id] = segment.recursiveLimit;
-        }
-
-        TraceConnections(cg, recursiveLimitInitial, null, new List<byte>(), segmentIds, connectionPaths, neuronReferences);
+        List<List<byte>> connectionPaths; List<byte> segmentIds; List<NeuronReference> neuronReferences;
+        TraceConnectionRoot(cg, out segmentIds, out connectionPaths, out neuronReferences);
         //cp1 = connectionPaths;
         //nr1 = neuronReferences;
 
@@ -604,15 +933,16 @@ public class MutateGenotype
                 {
                     sg.dimensionZ = mp.ModifyFloat(sg.dimensionZ, "s_dz");
                 }
-                if (mp.CoinFlip("s_jt"))
+                /*if (mp.CoinFlip("s_jt"))
                 {
                     sg.jointType = (JointType)Random.Range(0, 4);
-                }
+                }*/
             }
 
             // 2. New random node added to graph.
-            GenerateRandomSegmentGenotype(ref cg);
+            SegmentGenotype generatedSegmentGenotype = GenerateRandomSegmentGenotype(ref cg, mp);
 
+            // TODO: Bring back commented out - mutate connection params and add connection
 
             // 3. Connection parameters subjected to mutation.
             // Sometimes pointer moved to point to a different node at random.
@@ -623,11 +953,33 @@ public class MutateGenotype
                 {
                     if (mp.CoinFlip("s_dest"))
                     {
-                        scg.destination = cg.segments[Random.Range(0, cg.segments.Count)].id;
+                        // Gather possible SegmentGenotypes
+                        List<byte> possibleDestinations = new List<byte>();
+                        foreach (SegmentGenotype sgSearch in cg.segments)
+                        {
+                            if (sgSearch.id == 0) continue;
+                            possibleDestinations.Add(sgSearch.id);
+                        }
+
+                        // Check all unconnected nodes, hence excluding the current destination from the list
+                        foreach (SegmentGenotype sgSearch in cg.segments)
+                        {
+                            foreach (SegmentConnectionGenotype scgSearch in sgSearch.connections)
+                            {
+                                if (possibleDestinations.Any(x => x == scgSearch.destination)) {
+                                    possibleDestinations.Remove(scgSearch.destination);
+                                }
+                            }
+                        }
+
+                        if (possibleDestinations.Count != 0){
+                            scg.destination = possibleDestinations[Random.Range(0, possibleDestinations.Count)];
+                        }
                     }
                     if (mp.CoinFlip("s_a"))
                     {
                         // Actually horrible
+                        // Ok fine, turn it into spherical coords, nudge that, turn back into cube
                     }
                     if (mp.CoinFlip("s_o"))
                     {
@@ -659,7 +1011,8 @@ public class MutateGenotype
             // Each existing connection is subject to possible removal.
             foreach (SegmentGenotype sg in cg.segments)
             {
-                List<SegmentConnectionGenotype> toRemove = new List<SegmentConnectionGenotype>();
+                sg.connections.RemoveAll(connection => mp.CoinFlip("s_removec"));
+                /*List<SegmentConnectionGenotype> toRemove = new List<SegmentConnectionGenotype>();
                 foreach (SegmentConnectionGenotype scg in sg.connections)
                 {
                     if (mp.CoinFlip("s_removec"))
@@ -670,7 +1023,7 @@ public class MutateGenotype
                 foreach (SegmentConnectionGenotype scg in toRemove)
                 {
                     sg.connections.Remove(scg);
-                }
+                }*/
             }
 
             foreach (SegmentGenotype sg in cg.segments)
@@ -685,7 +1038,16 @@ public class MutateGenotype
                             // Select random other node and connect to it
                             SegmentConnectionGenotype scg = new SegmentConnectionGenotype();
                             scg.id = i;
-                            scg.destination = cg.segments[Random.Range(0, cg.segments.Count)].id;
+
+                            if (sg.connections.Where(c => c.destination == sg.id) != null)
+                            {
+                                // Already exists a self-connection
+                                scg.destination = generatedSegmentGenotype.id;
+                            } else {
+                                // All other options create loops
+                                scg.destination = (RandomBool() ? generatedSegmentGenotype : sg).id;
+                            }
+                            //scg.destination = cg.segments[Random.Range(0, cg.segments.Count)].id;
 
                             // Anchors
                             switch (Random.Range(0, 3))
@@ -713,7 +1075,7 @@ public class MutateGenotype
                             scg.orientationZ = rot.z;
                             scg.orientationW = rot.w;
 
-                            scg.scale = Random.Range(0.2f, 2f);
+                            scg.scale = Random.Range(0.2f, 1.2f);
                             scg.reflected = RandomBool();
                             scg.terminalOnly = RandomBool();
                             sg.connections.Add(scg);
@@ -731,18 +1093,10 @@ public class MutateGenotype
         {
             // Get list of segment connection paths and all neuron connection paths for random selection
 
-            connectionPaths = new List<List<byte>>();
-            segmentIds = new List<byte>();
-            neuronReferences = new List<NeuronReference>();
-
-            // Create recursive limit dict
-            recursiveLimitInitial = new Dictionary<byte, byte>();
-            foreach (SegmentGenotype segment in cg.segments)
-            {
-                recursiveLimitInitial[segment.id] = segment.recursiveLimit;
-            }
-
-            TraceConnections(cg, recursiveLimitInitial, null, new List<byte>(), segmentIds, connectionPaths, neuronReferences);
+            segmentIds = null;
+            connectionPaths = null;
+            neuronReferences = null;
+            TraceConnectionRoot(cg, out segmentIds, out connectionPaths, out neuronReferences);
 
             // First mutate the outer graph, then the inner layer.
             // Legal values of inner depend on the topology of the outer.
@@ -763,41 +1117,63 @@ public class MutateGenotype
                     {
                         // Mutate LOL
                     }
-                    if (mp.CoinFlip("n_w1"))
+                    if (ng.weights.Length > 0 && mp.CoinFlip("n_w1"))
                     {
                         // Mutate LOL
+                        ng.weights[0] = mp.ModifyFloat(ng.weights[0], "n_w1");
                     }
-                    if (mp.CoinFlip("n_w2"))
+                    if (ng.weights.Length > 1 && mp.CoinFlip("n_w2"))
                     {
                         // Mutate LOL
+                        ng.weights[1] = mp.ModifyFloat(ng.weights[1], "n_w2");
                     }
-                    if (mp.CoinFlip("n_w3"))
+                    if (ng.weights.Length > 2 && mp.CoinFlip("n_w3"))
                     {
                         // Mutate LOL
+                        ng.weights[2] = mp.ModifyFloat(ng.weights[2], "n_w3");
                     }
                 }
             }
 
 
             // 2. New random node added to graph.
-            GenerateRandomNeuronGenotype(ref cg, connectionPaths, segmentIds, neuronReferences); // please work please
+            GenerateRandomNeuronGenotype(cg, connectionPaths, segmentIds, neuronReferences); // please work please
 
             // 3. Connection parameters subjected to mutation.
             // Sometimes pointer moved to point to a different node at random.
+            // TODO function for list of possible nodes, basically copy from generate random and use there and here
             foreach (SegmentGenotype sg in cg.segments)
             {
                 foreach (NeuronGenotype ng in sg.neurons)
                 {
-                    for (int i = 0; i < ng.inputs.Length; i++)
+                    foreach (NeuronReference nr in ng.inputs)
                     {
                         if (mp.CoinFlip("n_relocateinput"))
                         {
                             // Mutate LOL
+
+                            // Pick a random segment path
+                            int segmentSelectionId = Random.Range(0, connectionPaths.Count);
+                            List<byte> segmentPath = connectionPaths[segmentSelectionId];
+
+                            byte segmentId = segmentIds[segmentSelectionId];
+                            SegmentGenotype SegmentGenotype = cg.GetSegment(segmentId);
+
+                            if (segmentId == 0){
+                                // Ghost
+
+                            } else if (segmentId == sg.id) {
+                                // Self
+
+                            }// else if (segmentId)
                         }
                     }
                 }
             }
         }
+
+        // 4. Omitted for neural graph
+
         // 5. Unconnected elements are garbage collected / simplified
         SimplifyCreatureGenotype(ref cg);
 

@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Runtime.Serialization.Formatters.Binary;
 
 [System.Serializable]
 public class TrainingSave {
@@ -10,6 +11,39 @@ public class TrainingSave {
     public string savePath;
     public bool isNew;
     public TrainingSettings ts;
+
+    public void SaveData(string path, bool isFullPath)
+    {
+        BinaryFormatter formatter = new BinaryFormatter();
+        string fullPath = isFullPath ? path : Application.persistentDataPath + path;
+
+        FileStream stream = new FileStream(fullPath, FileMode.Create);
+
+        formatter.Serialize(stream, this);
+        stream.Close();
+    }
+
+    public static TrainingSave LoadData(string path, bool isFullPath)
+    {
+        string fullPath = isFullPath ? path : Application.persistentDataPath + path;
+
+        if (File.Exists(fullPath))
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            FileStream stream = new FileStream(fullPath, FileMode.Open);
+
+            TrainingSave data = formatter.Deserialize(stream) as TrainingSave;
+
+            stream.Close();
+
+            return data;
+        }
+        else
+        {
+            Debug.LogError("Error: Save file not found in " + fullPath);
+            return null;
+        }
+    }
 }
 
 [System.Serializable]
@@ -38,8 +72,9 @@ public class RLSettings : OptimizationSettings {
 [System.Serializable]
 public class KSSSettings : OptimizationSettings {
     public override TrainingStage stage { get { return TrainingStage.KSS; } }
-    public int populationSize = 50;
-    public int totalGenerations = 10;
+    public int populationSize = 300;
+    public int totalGenerations = 50;
+    public float survivalRatio = 1f / 5f;
     public MutateGenotype.MutationPreferenceSetting mp;
 }
 
@@ -57,6 +92,9 @@ public class TrainingManager : MonoBehaviour
     private TrainingSettings ts;
     [SerializeField]
     private TrainingStage stage;
+
+    // test
+    public CreatureGenotype creatureGenotype;
 
     // References to components
     [SerializeField]
@@ -88,6 +126,7 @@ public class TrainingManager : MonoBehaviour
         Debug.Log(save);
         ts = save.ts;
         stage = ts.optimizationSettings.stage;
+        creatureGenotype = ts.optimizationSettings.initialGenotype;
         envHolder = transform.Find("EnvHolder");
         if (envHolder == null){
             envHolder = new GameObject().transform;

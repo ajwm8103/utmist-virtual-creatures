@@ -3,7 +3,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 using System.Linq;
+using Unity.MLAgents;
+using Unity.MLAgents.Actuators;
+using Unity.MLAgents.Sensors;
 
 [System.Serializable]
 public class Neuron
@@ -15,6 +19,20 @@ public class Neuron
     public NeuronGenotype ng;
     public HingeJoint effectorJoint;
     public Segment segment;
+    public byte segmentId { get; private set; }
+
+    public Neuron(NeuronGenotype ng, byte segmentId)
+    {
+        this.ng = ng;
+        this.segmentId = segmentId;
+    }
+
+    public Neuron(NeuronGenotype ng, byte segmentId, Segment segment)
+    {
+        this.ng = ng;
+        this.segmentId = segmentId;
+        this.segment = segment;
+    }
 
     public void GetInputs()
     {
@@ -114,15 +132,43 @@ public class Neuron
             return;
         }
     }
+}
 
-    public Neuron(NeuronGenotype ng)
+public class CreatureAgent : Agent {
+    public Creature creature;
+    public override void CollectObservations(VectorSensor sensor)
     {
-        this.ng = ng;
+        List<float> observations = creature.GetObservations();
+        foreach (float obs in observations)
+        {
+            sensor.AddObservation(obs);
+        }
+    }
+
+    public override void OnActionReceived(ActionBuffers actionBuffers)
+    {
+        List<float> actions = new List<float>();
+        foreach (float buffer in actionBuffers.DiscreteActions)
+        {
+            actions.Add(buffer);
+        }
+        creature.Act(actions);
+
+        // No condition needed as fitness being null will throw an error anyway
+        float frameReward = creature.fitness.UpdateFrameReward();
+        creature.totalReward += frameReward;
+        AddReward(frameReward);
     }
 }
 
 public class Creature : MonoBehaviour
 {
+    private bool isAgent = false; // false => KSS, true => RL
+    private CreatureAgent agent;
+    public CreatureGenotype cg;
+    private bool isAlive = true; // false => display mode
+    public Fitness fitness { get; private set; }
+    public float totalReward;
     public List<Neuron> sensors = new List<Neuron>();
     public List<Neuron> neurons = new List<Neuron>();
     public List<Neuron> effectors = new List<Neuron>();
@@ -131,14 +177,23 @@ public class Creature : MonoBehaviour
     public List<Segment> segments = new List<Segment>();
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
+        if (!isAlive) return;
+
+        // Feed forward twice per frame
         FeedForward();
+        FeedForward();
+
+        if (fitness != null && !isAgent){
+            totalReward += fitness.UpdateFrameReward();
+        }
     }
 
-    public void InitializeCreature()
+    public void InitializeCreature(Fitness fitness)
     {
-        Debug.Log("----INITIALIZING CREATURE----");
+        // Debug.Log("----INITIALIZING CREATURE----");
+        this.fitness = fitness;
         ConnectNeurons(neurons);
         ConnectNeurons(effectors);
     }
@@ -167,6 +222,7 @@ public class Creature : MonoBehaviour
         }
     }
 
+    // bad name but GetObservations is already taken by Agent...
     public List<float> GetObservations()
     {   
         // Collects obs
@@ -199,7 +255,7 @@ public class Creature : MonoBehaviour
                 if (nr.id >= 13) // other neurons
                 {
                     //Debug.Log($"Finding a neuron ({nr.id}) for neuron {n.ng.nr.id}.");
-                    Neuron foundNeuron = GetNeuron(neurons, nr, n.ng.nr);
+                    Neuron foundNeuron = GetNeuron(neurons, nr, n);
                     if (foundNeuron == null)
                     {
                         // Nay!
@@ -214,7 +270,7 @@ public class Creature : MonoBehaviour
                 else if (nr.id == 12) // joint effector
                 {
                     //Debug.Log($"Finding an effector ({nr.id}) for neuron {n.ng.nr.id}.");
-                    Neuron foundNeuron = GetNeuron(effectors, nr, n.ng.nr);
+                    Neuron foundNeuron = GetNeuron(effectors, nr, n);
                     if (foundNeuron == null)
                     {
                         // Nay!
@@ -229,7 +285,7 @@ public class Creature : MonoBehaviour
                 else
                 {
                     //Debug.Log($"Finding/generating a sensor ({nr.id}) for neuron {n.ng.nr.id}.");
-                    Neuron foundNeuron = GetNeuron(sensors, nr, n.ng.nr);
+                    Neuron foundNeuron = GetNeuron(sensors, nr, n);
                     if (foundNeuron == null)
                     {
                         //Debug.Log("No sensor found.");
@@ -245,96 +301,105 @@ public class Creature : MonoBehaviour
         }
     }
 
-    private Neuron GetNeuron(List<Neuron> neuronList, NeuronReference nr, NeuronReference requestingNeuronsNr)
+    private Neuron GetNeuron(List<Neuron> neuronList, NeuronReference guidingNR, Neuron requestingNeuron)
     {
-        // requestingNeuronsNr is the nr of the neuron requesting this neuron
+        // Likely a good idea to store references to these neurons in a dictionary per segment instance. Would make searching easier! TODO
         //Debug.Log("Getting Neuron");
         //Debug.Log(nr.id);
-        if (nr.isGhost)
+        NeuronReference requestingNR = requestingNeuron.ng.nr;
+        if (guidingNR.relativity == NeuronReferenceRelativity.GHOST)
         {
             // Check all neurons in ghost and match the id
             foreach (Neuron n in neuronList)
             {
                 //Debug.Log(n.ng.nr.id);
-                if (n.ng.nr.isGhost && n.ng.nr.id == nr.id)
+                if (n.segmentId == 0 && n.ng.nr.id == guidingNR.id)
                 {
                     return n;
                 }
 
             }
         }
-        else if (nr.isParent)
+        else if (guidingNR.relativity == NeuronReferenceRelativity.PARENT)
         {
-            // this id will be in the Parent of the requesting neuron, so find all neurons there and match ids
-            foreach (Neuron n in neuronList)
+            // This will be in a parent of the requesting neuron, so go through path to find correct relativeLevel
+            int relativityLeft = guidingNR.relativeLevel;
+            Segment currentSegment = requestingNeuron.segment;
+            while (relativityLeft != 0){
+                Segment nextSegment = currentSegment.parent.Item2;
+                if (nextSegment.id != currentSegment.id)
+                {
+                    relativityLeft--;
+                }
+                currentSegment = nextSegment;
+            }
+
+            foreach (Neuron n in currentSegment.neurons)
             {
                 //Debug.Log(n.ng.nr.id);
                 NeuronReference potentialNr = n.ng.nr;
-                if (potentialNr.id == nr.id && potentialNr.connectionPath.Count + 1 == requestingNeuronsNr.connectionPath.Count)
+                if (potentialNr.id == guidingNR.id)
                 {
-                    // Checks if the path to the parent of the requesting neuron and the path to the potential neuron are the same.
-                    // This means that they are both in the same correct instance of the parent, so it's the right neuron.
-                    bool isGood = true;
-                    for (int i = 0; i < potentialNr.connectionPath.Count; i++)
-                    {
-                        if (potentialNr.connectionPath[i] != requestingNeuronsNr.connectionPath[i])
-                        {
-                            isGood = false;
-                            break;
-                        }
-                    }
-                    if (isGood) return n;
+                    return n;
                 }
-
             }
         }
-        else if (nr.isSelf)
+        else if (guidingNR.relativity == NeuronReferenceRelativity.SELF)
         {
+            // TODO in new system this will just dictionary self, way faster search
             // this id will be in the same neuron as the requesting neuron, so find all neurons there and match ids
             foreach (Neuron n in neuronList)
             {
                 //Debug.Log(n.ng.nr.id);
                 NeuronReference potentialNr = n.ng.nr;
-                if (potentialNr.id == nr.id)
+                if (potentialNr.id == guidingNR.id)
                 {
-                    // Checks if the path to the requesting neuron segment and the path to the potential neuron segment are the same.
-                    // This means that they are both in the same correct instance of the segment, so it's the right neuron.
-                    bool isGood = true;
-                    for (int i = 0; i < potentialNr.connectionPath.Count; i++)
-                    {
-                        //Debug.Log(potentialNr.connectionPath[i] != requestingNeuronsNr.connectionPath[i]);
-                        if (potentialNr.connectionPath[i] != requestingNeuronsNr.connectionPath[i])
-                        {
-                            isGood = false;
-                            break;
-                        }
-                    }
-                    if (isGood) return n;
+                    if (potentialNr.connectionPath == null){
+                        if (requestingNR.connectionPath == null) return n;
+                    } else if (potentialNr.connectionPath.SequenceEqual(requestingNR.connectionPath)){
+                        return n;
+                    }   
                 } // thank you sir (right here joshua helped me fix a curly bracket)
             }
         }
-        else
+        else if (guidingNR.relativity == NeuronReferenceRelativity.CHILD)
         {
+            List<byte> childPath;
+            if (requestingNR.connectionPath == null) {
+                // child from root
+                if (guidingNR.connectionPath == null) {
+                    childPath = null;
+                } else {
+                    childPath = new List<byte>(guidingNR.connectionPath);
+                }
+            } else {
+                childPath = new List<byte>(requestingNR.connectionPath);
+                childPath.AddRange(guidingNR.connectionPath);
+            }
             foreach (Neuron n in neuronList)
             {
                 //Debug.Log(n.ng.nr.id);
-                if (n.ng.nr.id == nr.id && n.ng.nr.connectionPath.SequenceEqual(nr.connectionPath))
+                if (n.ng.nr.id == guidingNR.id)
                 {
-                    return n;
+                    if (n.ng.nr.connectionPath == null)
+                    {
+                        if (childPath == null) return n;
+                    } else if (n.ng.nr.connectionPath.SequenceEqual(childPath))
+                    {
+                        return n;
+                    }
                 }
-
             }
         }
-
 
         return null;
     }
 
 
-    public void AddNeuron(NeuronGenotype ng, HingeJoint effectorJoint, Segment segment)
+    public Neuron AddNeuron(NeuronGenotype ng, HingeJoint effectorJoint, Segment segment, byte segmentId)
     {
         //Debug.Log("Adding neuron" + ng.nr.id);
-        Neuron n = new Neuron(ng);
+        Neuron n = new Neuron(ng, segmentId, segment);
         if (n.ng.nr.id >= 13) // other
         {
             //Debug.Log("Neuron");
@@ -349,14 +414,44 @@ public class Creature : MonoBehaviour
         else // is a sensor
         {
             //Debug.Log("Sensor");
-            n.segment = segment;
+            //n.segment = segment;
             sensors.Add(n);
         }
+        return n;
     }
 
     public Vector3 GetCentreOfMass()
     {
-	    //Please fix me
-	    return Vector3.zero;
+        Vector3 com = Vector3.zero;
+        float totalMass = 0f;
+        foreach (Segment seg in segments)
+        {
+            float mass = seg.myRigidbody.mass;
+            com += seg.myRigidbody.worldCenterOfMass * mass;
+            totalMass += mass;
+        }
+        return com / totalMass;
+    }
+}
+
+[CustomEditor(typeof(Creature))]
+public class CreatureEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        DrawDefaultInspector();
+        Creature creature = target as Creature;
+
+        if (GUILayout.Button("Save Current Creature"))
+        {
+            Debug.Log("Saving Current Creature");
+            CreatureGenotype cg = creature.cg;
+            string path = EditorUtility.SaveFilePanel("Save Your Creature", "C:", "Creature.creature", "creature");
+            if (!string.IsNullOrEmpty(path))
+            {
+                cg.SaveData(path, true);
+                Debug.Log("Saved to " + Application.persistentDataPath);
+            }
+        }
     }
 }

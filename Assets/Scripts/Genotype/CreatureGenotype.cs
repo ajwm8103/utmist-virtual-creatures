@@ -33,8 +33,42 @@ public class NeuronGenotype
         ng.weights = (float[])weights.Clone();
         return ng;
     }
-
+    public static byte GetTypeInputs(byte type)
+    {
+        byte typeInputs = type switch
+        {
+            0 => 2,
+            1 => 2,
+            2 => 2,
+            3 => 3,
+            4 => 2,
+            5 => 1,
+            6 => 2,
+            7 => 2,
+            8 => 1,
+            9 => 3,
+            10 => 3,
+            11 => 1,
+            12 => 1,
+            13 => 1,
+            14 => 1,
+            15 => 1,
+            16 => 1,
+            17 => 1,
+            18 => 1,
+            19 => 1,
+            20 => 1,
+            21 => 3,
+            22 => 3,
+            _ => 0
+        };
+        return typeInputs;
+    }
 }
+
+public enum NeuronReferenceRelativity { GHOST, PARENT, SELF, CHILD, TRACED };
+// GHOST => isGhost, PARENT, SELF => isParent, isSelf, CHILD => connectionPath
+// TRACED => stored as the NeuronGenotype's self identifier
 
 [System.Serializable]
 public struct NeuronReference
@@ -42,10 +76,30 @@ public struct NeuronReference
     //[Tooltip("-3:ghost\n-2:parent\n-1:self\n0>:child connection id")]
     //public int ownerSegment;
 
-    public bool isGhost;
-    public bool isParent;
-    public bool isSelf;
-    public List<byte> connectionPath;
+    public SN<NeuronReferenceRelativity> relativityNullable;
+    public NeuronReferenceRelativity relativity
+    {
+        get
+        {
+            if (relativityNullable.Equals(null)) throw new System.Exception("Unexpected null relativity.");
+            return (NeuronReferenceRelativity)relativityNullable;
+        }
+    }
+
+    public SN<byte> relativeLevelNullable; // Used for PARENT only, 1 if direct parent, etc...
+    public byte relativeLevel
+    {
+        get
+        {
+            if (relativeLevelNullable.Equals(null)) throw new System.Exception("Unexpected null relative level.");
+            return (byte)relativeLevelNullable;
+        }
+        set
+        {
+            relativeLevelNullable = value;
+        }
+    }
+    public List<byte> connectionPath; // Used for CHILD and TRACED only
     [Tooltip(
     "0-5:collider\n6-8:joint angle\n9-11:photosensors\n12:joint effector\n13>:other neurons"
     )]
@@ -162,6 +216,28 @@ public class SegmentGenotype
 
     public JointType jointType;
 
+    public static SegmentGenotype ghost
+    {
+        get
+        {
+            SegmentGenotype _ghost = new SegmentGenotype();
+            _ghost.id = 0;
+            return _ghost;
+        }
+    }
+
+    public SegmentGenotype(){
+        connections = new List<SegmentConnectionGenotype>();
+        neurons = new List<NeuronGenotype>();
+        recursiveLimit = 1;
+        dimensionX = 1;
+        dimensionY = 1;
+        dimensionZ = 1;
+        r = 1;
+        g = 1;
+        b = 1;
+    }
+
     public NeuronGenotype GetNeuron(byte id)
     {
         foreach (NeuronGenotype nm in neurons)
@@ -212,10 +288,12 @@ public class CreatureGenotype
     public TrainingStage stage;
     public List<SegmentGenotype> segments;
 
+    public int counter = 0;
+
     public int obsDim;
 
     public int actDim;
-    
+
     public SegmentGenotype GetSegment(byte id)
     {
         foreach (SegmentGenotype segment in segments)
@@ -228,6 +306,26 @@ public class CreatureGenotype
         return null;
     }
 
+    public Dictionary<byte, byte> GetParentsDict(){
+        Dictionary<byte, byte> parentsDict = new Dictionary<byte, byte>(); // (segmentId, parentId)
+        Queue<SegmentGenotype> segmentsToSearch = new Queue<SegmentGenotype>();
+        segmentsToSearch.Enqueue(GetSegment(1));
+        while (segmentsToSearch.Count > 0){
+            SegmentGenotype sg = segmentsToSearch.Dequeue();
+
+            foreach (SegmentConnectionGenotype scg in sg.connections)
+            {
+                bool destSearched = parentsDict.ContainsKey(scg.destination);
+                if (!destSearched) {
+                    parentsDict.Add(scg.destination, sg.id);
+                    segmentsToSearch.Enqueue(GetSegment(scg.destination));
+                } 
+            }
+        }
+
+        return parentsDict;
+    }
+
     public CreatureGenotype Clone()
     {
         CreatureGenotype cg = new CreatureGenotype();
@@ -236,9 +334,10 @@ public class CreatureGenotype
         return cg;
     }
 
-    public void SaveData(string path){
+    public void SaveData(string path, bool isFullPath)
+    {
         BinaryFormatter formatter = new BinaryFormatter();
-        string fullPath = Application.persistentDataPath + path;
+        string fullPath = isFullPath ? path : Application.persistentDataPath + path;
 
         FileStream stream = new FileStream(fullPath, FileMode.Create);
 
@@ -246,9 +345,9 @@ public class CreatureGenotype
         stream.Close();
     }
 
-    public static CreatureGenotype LoadData(string path)
+    public static CreatureGenotype LoadData(string path, bool isFullPath)
     {
-        string fullPath = Application.persistentDataPath + path;
+        string fullPath = isFullPath ? path : Application.persistentDataPath + path;
 
         if (File.Exists(fullPath))
         {
@@ -276,7 +375,7 @@ public class CreatureGenotype
     /// <param name="myConnection"></param>
     /// <param name="connectionPath"></param>
     public void IterateSegment(CreatureGenotype cg, Dictionary<byte, byte> recursiveLimitValues,
-		    SegmentConnectionGenotype myConnection, List<byte> connectionPath, ref int segmentCount)
+            SegmentConnectionGenotype myConnection, List<byte> connectionPath, ref int segmentCount)
     {
         segmentCount++;
 
@@ -316,7 +415,8 @@ public class CreatureGenotype
     /// <summary>
     /// Calculates dimensions of observation and action vectors
     /// </summary>
-    void CalculateDims() {
+    void CalculateDims()
+    {
         // Initialize recurisve limit tracker
         Dictionary<byte, byte> recursiveLimitInitial = new Dictionary<byte, byte>();
         foreach (SegmentGenotype segment in segments) recursiveLimitInitial[segment.id] = segment.recursiveLimit;
@@ -331,3 +431,4 @@ public class CreatureGenotype
         obsDim = segmentCount * 12;
     }
 }
+

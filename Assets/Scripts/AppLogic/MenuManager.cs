@@ -62,13 +62,15 @@ public class MenuManager : MonoBehaviour
 
     public void LoadLocal()
     {
-        // Compile data from settings window into TrainingSettings
-        TrainingSettings ts = new TrainingSettings(new KSSSettings(), new OceanEnvSettings());
+        // Compile data from settings window into TrainingSave
+        KSSSettings optimizationSettings = new KSSSettings();
+        optimizationSettings.num_envs = 50;
+        optimizationSettings.mp = new MutateGenotype.MutationPreferenceSetting();
+        optimizationSettings.initialGenotype = CreatureGenotype.LoadData("/Fish.creature", false); // null means start w/ random creatures. TODO: Non-null will mean spawn that with mutations!
+        TrainingSettings ts = new TrainingSettings(optimizationSettings, new OceanEnvSettings());
         KSSSave save = new KSSSave();
         save.isNew = true;
         save.ts = ts;
-        ts.optimizationSettings.num_envs = 10;
-        ts.optimizationSettings.initialGenotype = CreatureGenotype.LoadData("/Fish.creature"); // null means start w/ random creatures. TODO: Non-null will mean spawn that with mutations!
 
         // Send to EvolutionSettingsPersist
         EvolutionSettingsPersist esp = EvolutionSettingsPersist.instance;
