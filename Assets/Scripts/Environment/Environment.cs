@@ -9,7 +9,7 @@ public enum EnvArrangeType { LINEAR, PLANAR };
 public enum GraphicsLevel { LOW, MEDIUM, HIGH };
 public enum EnvCode { OCEAN };
 
-[System.Serializable]
+[Serializable]
 public abstract class EnvironmentSettings {
     public abstract EnvCode envCode { get; }
     public readonly static Dictionary<EnvCode, string> envString = new Dictionary<EnvCode, string>() { { EnvCode.OCEAN, "OceanEnv" } };
@@ -19,6 +19,12 @@ public abstract class EnvironmentSettings {
     public virtual float sizeX { get { return 5; } }
     public virtual float sizeZ { get { return 5; } }
     public virtual float maxTime { get { return 3; } }
+    public static EnvironmentSettings GetDefault(EnvCode code){
+        if (code == EnvCode.OCEAN) {
+            return new OceanEnvSettings();
+        }
+        return null;
+    }
 }
 
 /// <summary>
@@ -28,15 +34,19 @@ public abstract class Environment : MonoBehaviour
 {
 
     [Header("Stats")]
-    public EnvCode envCode;
-    public float totalReward;
     public float timePassed;
+    public abstract EnvCode envCode { get; }
     public bool busy { get { return currentCreature != null; } }
+
+    private bool updatedFrameReward;
+    private float frameReward;
+    private bool isDQ = false;
+    private bool isStandalone; // true when just testing one
 
     // References to other Components
     public Creature currentCreature;
     [SerializeField]
-    private Fitness fitness;
+    protected Fitness fitness;
     [SerializeField]
     private TrainingManager tm;
     [SerializeField]
@@ -49,6 +59,15 @@ public abstract class Environment : MonoBehaviour
     private EnvironmentSettings es;
     public List<TrainingAlgorithm> tas;
 
+    public void Start()
+    {
+        tm = TrainingManager.instance;
+        isStandalone = tm == null;
+        if (isStandalone){
+            Setup(EnvironmentSettings.GetDefault(envCode));
+        }
+    }
+
     public virtual void Setup(EnvironmentSettings es)
     {
         this.es = es;
@@ -57,17 +76,20 @@ public abstract class Environment : MonoBehaviour
         cs = CreatureSpawner.instance;
         spawnTransform = transform.Find("SpawnTransform");
         creatureHolder = transform.Find("CreatureHolder");
-
-        ResetEnv();
     }
 
     public virtual void FixedUpdate()
     {
-        
-        timePassed += Time.fixedDeltaTime;
+        if (!busy) return;
 
-        if (timePassed >= es.maxTime && es.maxTime > 0)
+        timePassed += Time.fixedDeltaTime;
+        bool isOutOfTime = timePassed >= es.maxTime && es.maxTime > 0;
+        bool isExtremelyFar = (transform.position - currentCreature.GetCentreOfMass()).sqrMagnitude >= 1000;
+        if (isOutOfTime || isExtremelyFar)
         {
+            if (isExtremelyFar){
+                isDQ = true;
+            }
             //m_BlueAgentGroup.GroupEpisodeInterrupted();
             //m_RedAgentGroup.GroupEpisodeInterrupted();
 
@@ -84,16 +106,19 @@ public abstract class Environment : MonoBehaviour
         {
             ResetEnv();
         }
-        currentCreature = cs.SpawnCreature(cg, spawnTransform.position);
+        currentCreature = cs.SpawnCreature(cg, spawnTransform.position, fitness);
         currentCreature.transform.parent = creatureHolder;
+
+        fitness.Reset();
     }
     public virtual void ResetEnv()
     {
         if (tas != null){
             foreach (TrainingAlgorithm ta in tas)
             {
-                Debug.Log("Pinging training algorithm.");
-                ta.ResetPing(this, totalReward);
+                //Debug.Log("Pinging training algorithm.");
+                float totalReward = busy ? currentCreature.totalReward : 0;
+                ta.ResetPing(this, totalReward, isDQ);
             }
         }
 
@@ -104,8 +129,8 @@ public abstract class Environment : MonoBehaviour
             currentCreature = null;
         }
 
+        isDQ = false;
         timePassed = 0;
-        totalReward = 0;
     }
 
     public void PingReset(TrainingAlgorithm ta){
