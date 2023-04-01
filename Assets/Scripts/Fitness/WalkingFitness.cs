@@ -35,7 +35,7 @@ public class WalkingFitness : Fitness
 	    // We do not implement this because I am lazy
 	    // Initial push <=> curr speed would be way slower than prev speed => apply discount to reward
 
-	    if(2 * currSpeed < prevSpeed)
+	    if(pushThreshold * currSpeed < prevSpeed)
 	    {
 		    reward *= pushPenaltyDiscount;
 	    }
