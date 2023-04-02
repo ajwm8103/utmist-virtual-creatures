@@ -1626,10 +1626,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 5601391389485339114, guid: 57de2b3d99a3fc64395e6fba3d3156a0, type: 3}
-      propertyPath: fluidEnabled
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 5601391390957089978, guid: 57de2b3d99a3fc64395e6fba3d3156a0, type: 3}
       propertyPath: settings
       value: 

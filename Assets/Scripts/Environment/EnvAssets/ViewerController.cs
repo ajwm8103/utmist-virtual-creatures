@@ -53,7 +53,13 @@ public class ViewerController : MonoBehaviour
 
         if (Input.GetKey(KeyCode.F)) {
             Creature bestCreature = tm.GetBestLivingCreature();
-            transform.position = bestCreature.GetCentreOfMass() + Vector3.up * 3;
+            if (bestCreature != null){
+                Vector3 com = bestCreature.GetCentreOfMass();
+                if (com != null && !float.IsNaN(com.x) && !float.IsNaN(com.y) && !float.IsNaN(com.z))
+                {
+                    transform.position = bestCreature.GetCentreOfMass() + Vector3.up * 3;
+                }
+            }
         }
     }
 }
