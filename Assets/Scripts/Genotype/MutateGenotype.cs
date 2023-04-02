@@ -341,7 +341,7 @@ public class MutateGenotype
             //Debug.Log(cg.counter + " " + (byte)initialSegmentId);
         }
 
-        if (cg.counter == 20)
+        if (cg.counter == 60)
         {
             Debug.Log("Likely looping trace, save for debug.");
             string name = "/debug_" + Random.Range(0, 100) + ".creature";
@@ -873,7 +873,7 @@ public class MutateGenotype
         SimplifyCreatureGenotype(ref cg);
 
         // test
-        //cg.name += Random.Range(0, 100);
+        cg.name += Random.Range(0, 100);
 
         // Get list of segment connection paths and all neuron connection paths for random selection
 

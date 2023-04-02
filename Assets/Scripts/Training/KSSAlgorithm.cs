@@ -87,7 +87,7 @@ namespace KSS
                 remainingCount -= childrenCount;
                 denom -= (float)topSoftmaxEval.fitness;
                 //Debug.Log(remainingCount + " " + denom);
-
+                Debug.Log(topSoftmaxEval.cg.name + " " + childrenCount);
                 for (int i = 0; i < childrenCount; i++)
                 {
                     g.cgEvals.Add(new CreatureGenotypeEval(MutateGenotype.MutateCreatureGenotype(topSoftmaxEval.cg, mp)));
@@ -249,9 +249,9 @@ namespace KSS
         private void CreateNextGeneration(bool first)
         {
             currentGenotypeIndex = 0;
-            
+
             untestedRemaining = optimizationSettings.populationSize;
-            if (first){
+            if (first) {
                 currentGenerationIndex = 0;
                 currentGeneration = Generation.FromInitial(optimizationSettings.populationSize, optimizationSettings.initialGenotype, optimizationSettings.mp);
                 saveK.generations = new List<Generation>();
@@ -270,12 +270,13 @@ namespace KSS
         {
             List<CreatureGenotypeEval> topEvals = new List<CreatureGenotypeEval>();
             List<CreatureGenotypeEval> sortedEvals = g.cgEvals.OrderByDescending(x => x.fitness).ToList();
+            sortedEvals.RemoveAll(x => x.evalStatus == EvalStatus.DISQUALIFIED);
             int topCount = Mathf.RoundToInt(optimizationSettings.populationSize * optimizationSettings.survivalRatio);
             int positiveCount = 0;
             for (int i = 0; i < topCount; i++)
             {
                 CreatureGenotypeEval eval = g.cgEvals[i];
-                if (eval.fitness != null && eval.fitness >= 0) {
+                if (eval.evalStatus == EvalStatus.EVALUATED && eval.fitness != null && eval.fitness >= 0) {
                     topEvals.Add(eval);
                     positiveCount++;
                 } else {
@@ -288,6 +289,12 @@ namespace KSS
             Debug.Log(positiveCount + " Creatures with >=0 fitness.");
             Debug.Log("Best: " + topEvals.Max(x => x.fitness));
             return topEvals;
+        }
+
+        public CreatureGenotype GetBestCreatureGenotype(){
+            List<CreatureGenotypeEval> topEvals = SelectTopEvals(currentGeneration, optimizationSettings.mp);
+
+            return topEvals[0].cg;
         }
 
         private CreatureGenotype SelectBestGenotype(Generation g)
@@ -312,6 +319,15 @@ namespace KSS
                 Debug.Log("Saving Current KSSSave");
                 KSSSave save = alg.saveK;
                 save.SaveData("/" + save.saveName + ".saveK", false);
+                Debug.Log(Application.persistentDataPath);
+            }
+
+            if (GUILayout.Button("Save Best Creature"))
+            {
+                Debug.Log("Saving Best Creature");
+                CreatureGenotype cg = alg.GetBestCreatureGenotype();
+                string path = EditorUtility.SaveFilePanel("Save Creature As", "C:", cg.name + ".creature", "creature");
+                cg.SaveData(path, true);
                 Debug.Log(Application.persistentDataPath);
             }
         }

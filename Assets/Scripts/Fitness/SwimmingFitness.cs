@@ -26,7 +26,7 @@ public class SwimmingFitness : Fitness
         currCom = creature.GetCentreOfMass();
 	    prevSpeed = currSpeed;
         //distance = Vector3.Distance(currCom,prevCom);
-        distance = Vector3.Dot(currCom - prevCom, Vector3.right);
+        distance = Vector3.Dot(currCom - prevCom, Vector3.forward);
 
 	    currSpeed = distance / Time.fixedDeltaTime;
 	    reward += currSpeed;

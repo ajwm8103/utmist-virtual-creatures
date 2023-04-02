@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -161,6 +162,11 @@ public class TrainingManager : MonoBehaviour
             algo = (TrainingAlgorithm)gameObject.AddComponent(typeof(KSS.KSSAlgorithm));
             algo.Setup(this);
         }
+    }
+
+    public Creature GetBestLivingCreature()
+    {
+        return environments.OrderByDescending(x => x.currentCreature.totalReward).First().currentCreature;
     }
 
     // Update is called once per frame

@@ -16,6 +16,8 @@ public class MenuManager : MonoBehaviour
     public GameObject mainMenu;
     public GameObject evolutionSettingsMenu;
     public GameObject evolutionLSMenu;
+    // TEMP
+    public CreatureGenotypeScriptableObject templateCGSO;
 
     private List<GameObject> menus;
 
@@ -66,7 +68,8 @@ public class MenuManager : MonoBehaviour
         KSSSettings optimizationSettings = new KSSSettings();
         optimizationSettings.num_envs = 50;
         optimizationSettings.mp = new MutateGenotype.MutationPreferenceSetting();
-        optimizationSettings.initialGenotype = CreatureGenotype.LoadData("/Fish.creature", false); // null means start w/ random creatures. TODO: Non-null will mean spawn that with mutations!
+        optimizationSettings.initialGenotype = templateCGSO.cg;
+        //optimizationSettings.initialGenotype = CreatureGenotype.LoadData("/Fish.creature", false); // null means start w/ random creatures. TODO: Non-null will mean spawn that with mutations!
         TrainingSettings ts = new TrainingSettings(optimizationSettings, new OceanEnvSettings());
         KSSSave save = new KSSSave();
         save.isNew = true;

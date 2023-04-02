@@ -8,6 +8,7 @@ public class FluidDrag : MonoBehaviour
     private float fluidDensity = 1000f;
     private float dragScaling = 1f;
     private Rigidbody myRigidbody;
+    private FluidManager fluidManager;
 
     // Surface Areas for each pair of faces (neg x will be same as pos x):
     private float sa_x;
@@ -26,7 +27,7 @@ public class FluidDrag : MonoBehaviour
         sa_z = transform.localScale.x * transform.localScale.y;
 
         // Store local parameters
-        FluidManager fluidManager = FluidManager.instance;
+        fluidManager = FluidManager.instance;
         fluidDensity = fluidManager.fluidDensity;
         viscosityDrag = fluidManager.viscosityDrag;
     }
@@ -44,6 +45,7 @@ public class FluidDrag : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (!fluidManager.fluidEnabled) return;
         // F_drag = 0.5 * C_D * A * rho * v^2
         // Cache positive axis vectors:
         Vector3 forward = transform.forward;
