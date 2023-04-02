@@ -11,12 +11,12 @@ public class ViewerController : MonoBehaviour
     Vector2 rotation = Vector2.zero;
     public float speed = 3;
     TrainingManager tm;
+    private bool trackingCursor = false;
+    bool IsMouseOverGameWindow { get { return !(0 > Input.mousePosition.x || 0 > Input.mousePosition.y || Screen.width < Input.mousePosition.x || Screen.height < Input.mousePosition.y); } }
 
     // Start is called before the first frame update
     void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
         tm = TrainingManager.instance;
     }
 
@@ -47,9 +47,15 @@ public class ViewerController : MonoBehaviour
             transform.position += v3 * Input.GetAxis("Vertical") * horizontalSpeed * Time.deltaTime;
             transform.position += -Vector3.Cross(v3, Vector3.up).normalized * Input.GetAxis("Horizontal") * horizontalSpeed * Time.deltaTime;
         }
-        rotation.y += Input.GetAxis("Mouse X");
-        rotation.x += -Input.GetAxis("Mouse Y");
-        transform.eulerAngles = (Vector2)rotation * speed;
+
+
+
+        if (trackingCursor)
+        {
+            rotation.y += Input.GetAxis("Mouse X");
+            rotation.x += -Input.GetAxis("Mouse Y");
+            transform.eulerAngles = (Vector2)rotation * speed;
+        }
 
         if (Input.GetKey(KeyCode.F)) {
             Creature bestCreature = tm.GetBestLivingCreature();
@@ -60,6 +66,18 @@ public class ViewerController : MonoBehaviour
                     transform.position = bestCreature.GetCentreOfMass() + Vector3.up * 3;
                 }
             }
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            trackingCursor = false;
+        }
+
+        if (Input.GetMouseButtonDown(0) && !UIMouseHoverManager.instance.overUIElement && IsMouseOverGameWindow) {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            trackingCursor = true;
         }
     }
 }

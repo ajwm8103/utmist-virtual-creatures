@@ -107,7 +107,7 @@ public class TrainingManager : MonoBehaviour
     {
         if (instance != null)
         {
-            Destroy(gameObject); // Can't have two controllers active at once
+            Destroy(gameObject); // Can't have two managers active at once
         }
         else
         {
@@ -164,9 +164,21 @@ public class TrainingManager : MonoBehaviour
         }
     }
 
+    public void SaveTraining(){
+        algo.SaveTraining();
+    }
+
     public Creature GetBestLivingCreature()
     {
-        return environments.OrderByDescending(x => x.currentCreature.totalReward).First().currentCreature;
+        try
+        {
+            return environments.OrderByDescending(x => x.currentCreature.totalReward).First().currentCreature;
+        }
+        catch (Exception)
+        {
+
+            return null;
+        }
     }
 
     // Update is called once per frame

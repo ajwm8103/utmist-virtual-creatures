@@ -17,7 +17,7 @@ public class Neuron
     public float outValue;
     public float dummy1;
     public NeuronGenotype ng;
-    public HingeJoint effectorJoint;
+    public Joint effectorJoint;
     public Segment segment;
     public byte segmentId { get; private set; }
 
@@ -46,9 +46,12 @@ public class Neuron
         {
             // I am an "effector" I must "effect"
             //Debug.Log("Effector output" + a);
-            JointMotor motor = effectorJoint.motor;
-            motor.targetVelocity = a;
-            effectorJoint.motor = motor;
+            if (effectorJoint is HingeJoint){
+                HingeJoint hj = (HingeJoint)effectorJoint;
+                JointMotor motor = hj.motor;
+                motor.targetVelocity = a;
+                hj.motor = motor;
+            }
         }
 
         //Debug.Log($"Neuron {ng.nr.id} has inputs {a}, {b}, and {c}.");
@@ -196,6 +199,24 @@ public class Creature : MonoBehaviour
         this.fitness = fitness;
         ConnectNeurons(neurons);
         ConnectNeurons(effectors);
+    }
+
+    public void SetAlive(bool value) {
+        if (value && !isAlive) {
+            isAlive = true;
+            foreach (Segment s in segments)
+            {
+                s.RestoreState();
+                s.myRigidbody.isKinematic = false;
+            }
+        } else if (!value && isAlive){
+            isAlive = false;
+            foreach (Segment s in segments)
+            {
+                s.StoreState();
+                s.myRigidbody.isKinematic = true;
+            }
+        }
     }
 
     void FeedForward()
@@ -396,7 +417,7 @@ public class Creature : MonoBehaviour
     }
 
 
-    public Neuron AddNeuron(NeuronGenotype ng, HingeJoint effectorJoint, Segment segment, byte segmentId)
+    public Neuron AddNeuron(NeuronGenotype ng, Joint effectorJoint, Segment segment, byte segmentId)
     {
         //Debug.Log("Adding neuron" + ng.nr.id);
         Neuron n = new Neuron(ng, segmentId, segment);

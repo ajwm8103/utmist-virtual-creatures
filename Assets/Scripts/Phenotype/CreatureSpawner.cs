@@ -278,7 +278,7 @@ public class CreatureSpawner : MonoBehaviour
                 Neuron addedNeuron;
                 if (nm.nr.id == 12)
                 {
-                    addedNeuron = c.AddNeuron(nm, spawnedSegmentGameObject.GetComponent<HingeJoint>(), spawnedSegment, 1);
+                    addedNeuron = c.AddNeuron(nm, spawnedSegmentGameObject.GetComponent<Joint>(), spawnedSegment, 1);
                 }
                 else if (nm.nr.id <= 11)
                 {

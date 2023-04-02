@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 public abstract class TrainingAlgorithm : MonoBehaviour
 {
@@ -16,4 +17,11 @@ public abstract class TrainingAlgorithm : MonoBehaviour
     }
 
     public abstract void ResetPing(Environment env, float fitness, bool isDQ);
+
+    public void SaveTraining(){
+        Debug.Log("Saving Current TrainingSave");
+        string path = EditorUtility.SaveFilePanel("Save Training Save As", "C:", save.saveName + ".save", "save");
+        save.SaveData(path, true);
+        Debug.Log(Application.persistentDataPath);
+    }
 }

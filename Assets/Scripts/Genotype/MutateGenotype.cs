@@ -69,7 +69,7 @@ public class MutateGenotype
             }
         }
 
-        float currentScaleFactor = 1f;
+        float currentScaleFactor = 0.75f;
         public Dictionary<string, MutationPreference> mutationFrequencies = new Dictionary<string, MutationPreference>()
         {
             {"s_r", new MutationPreference(0.25f, 0.25f)}, // Red (byte)
@@ -93,6 +93,7 @@ public class MutateGenotype
             {"n_w2", new MutationPreference(0.25f, 0.25f)}, // Weight 2 (float, -15:15)
             {"n_w3", new MutationPreference(0.25f, 0.25f)}, // Weight 3 (float, -15:15)
             {"n_relocateinput", new MutationPreference(0.25f, 0.25f)}, // Relocate Input
+            {"n_e", new MutationPreference(0.7f, 0.25f)}, // Effector generate
         };
 
         public Dictionary<string, float[]> floatClamps = new Dictionary<string, float[]>() {
@@ -511,7 +512,7 @@ public class MutateGenotype
         return null;
     }
 
-    public static void GenerateRandomNeuronGenotype(CreatureGenotype cg, List<List<byte>> connectionPaths, List<byte> segmentIds, List<NeuronReference> rootNeuronReferences)
+    public static void GenerateRandomNeuronGenotype(CreatureGenotype cg, List<List<byte>> connectionPaths, List<byte> segmentIds, List<NeuronReference> rootNeuronReferences, MutationPreferenceSetting mp)
     {
         // Select random SegmentGenotype
         byte segmentId = (byte)Random.Range(0, cg.segments.Count);
@@ -525,20 +526,26 @@ public class MutateGenotype
         spawnedNeuronReference.relativityNullable = null;
         spawnedNeuronReference.relativeLevelNullable = null;
 
-        // Pick unused id
-        for (byte i = 13; i < 255; i++)
-        {
-            if (segmentGenotype.GetNeuron(i) == null)
+        // Pick unused id and set a neuron type
+        byte type;  byte typeInputs;
+        if (segmentId != 0 && segmentId != 1 && mp.CoinFlip("n_e") && segmentGenotype.GetNeuron(12) == null) {
+            spawnedNeuronReference.id = 12;
+            type = 0;
+            typeInputs = 1;
+        } else {
+            for (byte i = 13; i < 255; i++)
             {
-                // Found unused id, add node here
-                spawnedNeuronReference.id = i;
-                break;
+                if (segmentGenotype.GetNeuron(i) == null)
+                {
+                    // Found unused id, add node here
+                    spawnedNeuronReference.id = i;
+                    break;
+                }
             }
-        }
 
-        // Set a neuron type
-        byte type = (byte)Random.Range(0, 23);
-        byte typeInputs = NeuronGenotype.GetTypeInputs(type);
+            type = (byte)Random.Range(0, 23);
+            typeInputs = NeuronGenotype.GetTypeInputs(type);
+        }
 
         // Find all valid inputs for the node and connect them
         // Valid inputs will be within the node, the parent of the node, a child of the node, or the ghost
@@ -1137,7 +1144,7 @@ public class MutateGenotype
 
 
             // 2. New random node added to graph.
-            GenerateRandomNeuronGenotype(cg, connectionPaths, segmentIds, neuronReferences); // please work please
+            GenerateRandomNeuronGenotype(cg, connectionPaths, segmentIds, neuronReferences, mp); // please work please
 
             // 3. Connection parameters subjected to mutation.
             // Sometimes pointer moved to point to a different node at random.

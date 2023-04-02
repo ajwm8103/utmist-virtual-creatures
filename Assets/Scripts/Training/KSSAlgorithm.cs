@@ -218,7 +218,7 @@ namespace KSS
             }
 
             // Update stats text
-            tm.statsText.text = string.Format("Gen: {0}, Creatures Remaining: {1}", currentGenerationIndex.ToString(), untestedRemaining.ToString());
+            tm.statsText.text = string.Format("Gen: {0}, Creatures Remaining: {1}", (currentGenerationIndex + 1).ToString(), untestedRemaining.ToString());
         }
 
         public override void ResetPing(Environment env, float fitness, bool isDQ)
