@@ -5,7 +5,7 @@ using UnityEngine;
 public abstract class TrainingAlgorithm : MonoBehaviour
 {
     [SerializeField]
-    private TrainingManager tm;
+    protected TrainingManager tm;
     [SerializeField]
     protected TrainingSave save;
     

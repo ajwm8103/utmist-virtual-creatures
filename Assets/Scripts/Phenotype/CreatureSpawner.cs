@@ -327,7 +327,9 @@ public class CreatureSpawner : MonoBehaviour
         if (currentSegmentGenotype == null)
             return;
 
-        GameObject spawnedSegmentGameObject = Instantiate(segmentPrefab, position, Quaternion.identity);
+        cg.EulerToQuat(); //Debug, remove later (this changes internal rotation storage stuff to make inspector editing easier.)
+        Quaternion spawnAngle = new Quaternion(cg.orientationX, cg.orientationY, cg.orientationZ, cg.orientationW);
+        GameObject spawnedSegmentGameObject = Instantiate(segmentPrefab, position, spawnAngle);
         spawnedSegmentGameObject.transform.parent = c.transform;
         spawnedSegmentGameObject.name = $"Segment {currentSegmentGenotype.id}";
 
@@ -403,31 +405,4 @@ public class CreatureSpawner : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position + spawnPos, 0.1f);
     }
 
-}
-
-[CustomEditor(typeof(CreatureSpawner))]
-public class CreatureSpawnerEditor : Editor
-{
-    public override void OnInspectorGUI()
-    {
-        DrawDefaultInspector();
-        CreatureSpawner spawner = target as CreatureSpawner;
-
-        if (GUILayout.Button("Save Current Creature"))
-        {
-            Debug.Log("Saving Current Creature");
-            string path = EditorUtility.SaveFilePanel("Save Creature As", "C:", "Creature.creature", "creature");
-            CreatureGenotype cg = spawner.creatureGenotype;
-            cg.SaveData(path, true);
-            Debug.Log(Application.persistentDataPath);
-        }
-
-        if (GUILayout.Button("Load Creature Genotype"))
-        {
-            Debug.Log("Loading Creature");
-            string path = EditorUtility.OpenFilePanel("Creature.creature", "C:", "creature");
-            CreatureGenotype cg = CreatureGenotype.LoadData(path, true);
-            spawner.creatureGenotype = cg;
-        }
-    }
 }

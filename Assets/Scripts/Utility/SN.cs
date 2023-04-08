@@ -2,6 +2,7 @@ using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
+#pragma warning disable 0659
 
 /// <summary>
 /// Serializable Nullable (SN) Does the same as C# System.Nullable, except it's an ordinary

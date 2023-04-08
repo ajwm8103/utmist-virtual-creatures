@@ -10,12 +10,14 @@ public class ViewerController : MonoBehaviour
 
     Vector2 rotation = Vector2.zero;
     public float speed = 3;
+    TrainingManager tm;
 
     // Start is called before the first frame update
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        tm = TrainingManager.instance;
     }
 
     // Update is called once per frame
@@ -48,5 +50,16 @@ public class ViewerController : MonoBehaviour
         rotation.y += Input.GetAxis("Mouse X");
         rotation.x += -Input.GetAxis("Mouse Y");
         transform.eulerAngles = (Vector2)rotation * speed;
+
+        if (Input.GetKey(KeyCode.F)) {
+            Creature bestCreature = tm.GetBestLivingCreature();
+            if (bestCreature != null){
+                Vector3 com = bestCreature.GetCentreOfMass();
+                if (com != null && !float.IsNaN(com.x) && !float.IsNaN(com.y) && !float.IsNaN(com.z))
+                {
+                    transform.position = bestCreature.GetCentreOfMass() + Vector3.up * 3;
+                }
+            }
+        }
     }
 }

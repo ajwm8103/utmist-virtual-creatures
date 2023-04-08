@@ -9,6 +9,7 @@ public class FluidManager : MonoBehaviour
     [Header("Fluid Properties")]
     public float fluidDensity = 1000f;
     public float viscosityDrag = 1f;
+    public bool fluidEnabled = true;
 
     private void Awake()
     {

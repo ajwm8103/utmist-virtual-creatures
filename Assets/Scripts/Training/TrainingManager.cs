@@ -1,8 +1,10 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using System.Runtime.Serialization.Formatters.Binary;
 
 [System.Serializable]
@@ -97,7 +99,7 @@ public class TrainingManager : MonoBehaviour
     public CreatureGenotype creatureGenotype;
 
     // References to components
-    [SerializeField]
+    public Text statsText;
     private TrainingAlgorithm algo;
     private Transform envHolder;
 
@@ -160,6 +162,11 @@ public class TrainingManager : MonoBehaviour
             algo = (TrainingAlgorithm)gameObject.AddComponent(typeof(KSS.KSSAlgorithm));
             algo.Setup(this);
         }
+    }
+
+    public Creature GetBestLivingCreature()
+    {
+        return environments.OrderByDescending(x => x.currentCreature.totalReward).First().currentCreature;
     }
 
     // Update is called once per frame

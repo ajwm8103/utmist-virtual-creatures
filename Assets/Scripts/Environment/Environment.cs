@@ -42,6 +42,7 @@ public abstract class Environment : MonoBehaviour
     private float frameReward;
     private bool isDQ = false;
     private bool isStandalone; // true when just testing one
+    private Vector3 lastCom;
 
     // References to other Components
     public Creature currentCreature;
@@ -63,7 +64,7 @@ public abstract class Environment : MonoBehaviour
     {
         tm = TrainingManager.instance;
         isStandalone = tm == null;
-        if (isStandalone){
+        if (isStandalone) {
             Setup(EnvironmentSettings.GetDefault(envCode));
         }
     }
@@ -84,10 +85,19 @@ public abstract class Environment : MonoBehaviour
 
         timePassed += Time.fixedDeltaTime;
         bool isOutOfTime = timePassed >= es.maxTime && es.maxTime > 0;
-        bool isExtremelyFar = (transform.position - currentCreature.GetCentreOfMass()).sqrMagnitude >= 1000;
-        if (isOutOfTime || isExtremelyFar)
+        Vector3 currentCom = currentCreature.GetCentreOfMass();
+        bool isExtremelyFar = (transform.position - currentCom).sqrMagnitude >= 1000;
+        if (lastCom == null) {
+            lastCom = currentCom;
+        }
+
+        bool isTooFast = ((currentCom - lastCom).magnitude / Time.fixedDeltaTime) > 10f && timePassed > 0.2f;
+        bool isNan = !float.IsNaN(currentCom.x) || !float.IsNaN(currentCom.y) || !float.IsNaN(currentCom.z);
+        bool isBad = isExtremelyFar || isTooFast;
+        if (isOutOfTime || isBad)
         {
-            if (isExtremelyFar){
+            if (isBad)
+            {
                 isDQ = true;
             }
             //m_BlueAgentGroup.GroupEpisodeInterrupted();
@@ -97,6 +107,8 @@ public abstract class Environment : MonoBehaviour
             //m_redAgent.agent.EpisodeInterrupted();
             ResetEnv();
         }
+        //Debug.Log(currentCom + " " + lastCom);
+        lastCom = currentCom;
     }
 
     // Spawn creature by passing transform params to Scene CreatureSpawner
