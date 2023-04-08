@@ -13,9 +13,165 @@ MonoBehaviour:
   m_Name: Test
   m_EditorClassIdentifier: 
   cg:
-    name: 
+    name: Fish42
     stage: 0
-    segments: []
+    segments:
+    - r: 1
+      g: 1
+      b: 1
+      id: 0
+      connections: []
+      neurons:
+      - type: 17
+        inputs:
+        - relativityNullable:
+            v: 3
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 
+          id: 3
+        weights:
+        - -5.795737
+        nr:
+          relativityNullable:
+            v: 0
+            hasValue: 0
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 
+          id: 13
+      recursiveLimit: 1
+      dimensionX: 1
+      dimensionY: 1
+      dimensionZ: 1
+      jointType: 0
+    - r: 255
+      g: 0
+      b: 0
+      id: 1
+      connections:
+      - id: 0
+        destination: 2
+        anchorX: 0.5
+        anchorY: 0
+        anchorZ: 0
+        orientationX: 0.0001577735
+        orientationY: -0.004018278
+        orientationZ: 0.7072792
+        orientationW: -0.7069228
+        eulerX: 0
+        eulerY: 0
+        eulerZ: -90
+        scale: 1
+        reflected: 0
+        terminalOnly: 0
+      neurons:
+      - type: 0
+        inputs: []
+        weights: []
+        nr:
+          relativityNullable:
+            v: 4
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 
+          id: 3
+      recursiveLimit: 1
+      dimensionX: 1
+      dimensionY: 1
+      dimensionZ: 0.5452094
+      jointType: 0
+    - r: 0
+      g: 0
+      b: 125
+      id: 2
+      connections:
+      - id: 0
+        destination: 2
+        anchorX: 0
+        anchorY: 0.5
+        anchorZ: 0
+        orientationX: 0
+        orientationY: 0
+        orientationZ: 0
+        orientationW: 0
+        eulerX: 0
+        eulerY: 0
+        eulerZ: 0
+        scale: 1
+        reflected: 0
+        terminalOnly: 0
+      neurons:
+      - type: 21
+        inputs:
+        - relativityNullable:
+            v: 1
+            hasValue: 1
+          relativeLevelNullable:
+            v: 1
+            hasValue: 1
+          connectionPath: 
+          id: 3
+        - relativityNullable:
+            v: 1
+            hasValue: 1
+          relativeLevelNullable:
+            v: 1
+            hasValue: 1
+          connectionPath: 
+          id: 3
+        - relativityNullable:
+            v: 1
+            hasValue: 1
+          relativeLevelNullable:
+            v: 1
+            hasValue: 1
+          connectionPath: 
+          id: 3
+        weights:
+        - 1
+        - 1
+        - 0
+        nr:
+          relativityNullable:
+            v: 4
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 0000
+          id: 13
+      - type: 0
+        inputs:
+        - relativityNullable:
+            v: 2
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 
+          id: 13
+        weights:
+        - 350
+        nr:
+          relativityNullable:
+            v: 4
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 0000
+          id: 12
+      recursiveLimit: 2
+      dimensionX: 0.2
+      dimensionY: 2
+      dimensionZ: 0.45997602
+      jointType: 3
     orientationX: 0
     orientationY: 0
     orientationZ: 0

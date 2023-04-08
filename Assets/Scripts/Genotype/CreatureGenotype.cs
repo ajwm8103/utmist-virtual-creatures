@@ -262,6 +262,11 @@ public class SegmentGenotype
         return null;
     }
 
+    /// <summary>
+    /// Returns the first connection (if any) of that id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     public SegmentConnectionGenotype GetConnection(byte id)
     {
         foreach (SegmentConnectionGenotype scm in connections)
@@ -361,6 +366,74 @@ public class CreatureGenotype
         }
 
         return parentsDict;
+    }
+
+    /// <summary>
+    /// Traces through the creature genotype, returning a list of all the connections to a certain segment genotype
+    /// </summary>
+    /// <param name="isFull"></param>
+    /// <param name="isRecursive"></param>
+    /// <returns></returns>
+    public Dictionary<byte, List<SegmentConnectionGenotype>> GetSegmentConnections(bool isFull, bool isRecursive){
+        Dictionary<byte, List<SegmentConnectionGenotype>> segmentConnectionsByDest = new Dictionary<byte, List<SegmentConnectionGenotype>>();
+
+        if (isFull){
+            foreach (SegmentGenotype sg in segments)
+            {
+                foreach (SegmentConnectionGenotype scg in sg.connections)
+                {
+                    if (!isRecursive && scg.id == sg.id) continue;
+                    if (segmentConnectionsByDest.ContainsKey(scg.destination))
+                    {
+                        segmentConnectionsByDest[scg.destination].Add(scg);
+                    }
+                    else
+                    {
+                        segmentConnectionsByDest.Add(scg.destination, new List<SegmentConnectionGenotype>() { scg });
+                    }
+
+                }
+            }
+        } else {
+            
+        }
+
+        return segmentConnectionsByDest;
+    }
+
+    /// <summary>
+    /// Returns a dictionary with key: destination, value: (parentId, number of connections to it)
+    /// </summary>
+    /// <param name="isFull"></param>
+    /// <returns></returns>
+    public Dictionary<byte, byte[]> GetSegmentParents(bool isFull)
+    {
+        Dictionary<byte, byte[]> segmentParentsByDest = new Dictionary<byte, byte[]>();
+
+        if (isFull)
+        {
+            foreach (SegmentGenotype sg in segments)
+            {
+                foreach (SegmentConnectionGenotype scg in sg.connections)
+                {
+                    if (scg.id == sg.id) continue;
+                    if (segmentParentsByDest.ContainsKey(scg.destination))
+                    {
+                        segmentParentsByDest[scg.destination][1]++;
+                    }
+                    else
+                    {
+                        segmentParentsByDest.Add(scg.destination, new byte[2] { sg.id, 1 });
+                    }
+                }
+            }
+        }
+        else
+        {
+
+        }
+
+        return segmentParentsByDest;
     }
 
     public CreatureGenotype Clone()
