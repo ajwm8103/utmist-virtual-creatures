@@ -9,18 +9,24 @@ public class MusclePreferenceSetting
     public float segmentLength = 0.5f; // l_s
     public float momentArm = 0.04f; // d
     public float refLength = 0.5f; // l_ref
-    public float refAngle = 110 * Math.PI / 180; // phi_ref
+    public float refAngle = 110 * Mathf.PI / 180; // phi_ref
     public float maxForce = 22000f; // F_max
-    public float optLength 0.1f; // l_opt
-    public float width = 0.4 * optLength; // w
-    public float maxVelocity = -12 * optLength; //v_max
+    public float optLength = 0.1f; // l_opt
+    public float width; // w
+    public float maxVelocity; //v_max
     public float eccentricForceEnhancement = 1.5f; // N
     public float curvatureConst = 5f; // K
     public float restLength = 0.4f; // l_ref
-    public float refStrain = 0.04 * restLength; // epsilon_ref
+    public float refStrain; // epsilon_ref
     public float couplingConst = 0.01f; // tau
     public float timeDelay = 0.015f; // delta_P
     public float activationRate = 100; // c_a
+
+    public MusclePreferenceSetting(){
+        width = 0.4f * optLength;
+        maxVelocity = -12 * optLength;
+        refStrain = 0.04f * restLength;
+    }
 }
 
 public class Muscle
@@ -28,8 +34,9 @@ public class Muscle
     public MusclePreferenceSetting mps;
 
     public float excitationSignal; // u
-    public float contractileLength = optLength; // initial value
+    public float contractileLength = 0.1f; // initial value (l_opt)
     public float contractileVelocity = 0; // initial value
+    public float muscleActivation;
 
     // Start is called before the first frame update
     void Start()
@@ -44,13 +51,13 @@ public class Muscle
         float tempLength = UpdateContractileLength(muscleActivation, contractileLength, contractileVelocity, mps);
         contractileVelocity = tempVelocity;
         contractileLength = tempLength;
-        muscleActivation = UpdateMuscleActivation(muscleActivation, mps);
+        muscleActivation = UpdateMuscleActivation(muscleActivation, excitationSignal, mps);
     }
 
 
     public float ForceLength(float contractileLength, MusclePreferenceSetting mps)
     {
-        return Math.Exp(Math.Log(0.05) * (Math.Abs((contractileLength - mps.optLength) / (mps.optLength * width))^3));
+        return Mathf.Exp(Mathf.Log(0.05f) * (Mathf.Abs((contractileLength - mps.optLength) / Mathf.Pow((mps.optLength * mps.width), 3f))));
     }
     
     public float ForceVelocity(float contractileVelocity, MusclePreferenceSetting mps)
@@ -61,7 +68,7 @@ public class Muscle
         }
         else
         {
-            return mps.eccentricForceEnhancement + (mps.eccentricForceEnhancement - 1) * (mps.maxVelocity + contractileVelocity) / (7.56 * mps.curvatureConst * contractileVelocity - mps.maxVelocity);
+            return mps.eccentricForceEnhancement + (mps.eccentricForceEnhancement - 1) * (mps.maxVelocity + contractileVelocity) / (7.56f * mps.curvatureConst * contractileVelocity - mps.maxVelocity);
         }
     }
 
@@ -75,19 +82,19 @@ public class Muscle
         float epsilon = (lengthSEE - mps.restLength)/mps.restLength;
         if (epsilon > 0)
         {
-            return (epsilon/mps.refStrain)^2;
+            return Mathf.Pow(epsilon / mps.refStrain, 2f);
         }
         return 0f;
     }
 
     public float ForcePEE(float contractileLength, float contractileVelocity, MusclePreferenceSetting mps)
     {
-        return (maxForce * ((contractileLength - optLength) / (optLength * 0.56 * optLength))^2) * ForceVelocity(contractileVelocity, mps);
+        return mps.maxForce * ((contractileLength - mps.optLength) / Mathf.Pow(mps.optLength * 0.56f * mps.optLength, 2f)) * ForceVelocity(contractileVelocity, mps);
     }
 
     public float UpdateContractileVelocity(float muscleActivation, float contractileLength, float contractileVelocity, MusclePreferenceSetting mps)
     {
-        return muscleActivation * maxForce * ForceLength(contractileLength, mps) / ForceContractileElement(muscleActivation, contractileLength, contractileVelocity, mps);
+        return muscleActivation * mps.maxForce * ForceLength(contractileLength, mps) / ForceContractileElement(muscleActivation, contractileLength, contractileVelocity, mps);
     }
 
     public float UpdateContractileLength(float muscleActivation, float contractileLength, float contractileVelocity, MusclePreferenceSetting mps)
