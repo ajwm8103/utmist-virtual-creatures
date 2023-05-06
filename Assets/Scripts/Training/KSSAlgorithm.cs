@@ -17,6 +17,8 @@ namespace KSS
         [HideInInspector]
         public List<Generation> generations;
 
+        public CreatureGenotypeEval best;
+
         // Data on creatures goes here TODO
     }
 
@@ -49,7 +51,13 @@ namespace KSS
             else
             {
                 // Mutated generation
-                for (int i = 0; i < size; i++)
+                int parentCount = 10;
+                for (int i = 0; i < parentCount; i++)
+                {
+                    CreatureGenotypeEval cgEval = new CreatureGenotypeEval(initialGenotype.Clone());
+                    g.cgEvals.Add(cgEval);
+                }
+                for (int i = 0; i < size- parentCount; i++)
                 {
                     // CreatureGenotypeEval cgEval = new CreatureGenotypeEval(initialGenotype);
                     CreatureGenotypeEval cgEval = new CreatureGenotypeEval(MutateGenotype.MutateCreatureGenotype(initialGenotype, mp));
@@ -67,40 +75,66 @@ namespace KSS
             int remainingCount = size - topEvals.Count;
 
             List<CreatureGenotypeEval> topSoftmaxEvals = new List<CreatureGenotypeEval>();
-            float maxFitness = topEvals.Max(x => (float)x.fitness);
-            float denom = topEvals.Select(x => Mathf.Exp((float)x.fitness - maxFitness)).Sum();
-            
+
+            float minFitness = topEvals.Min(x => (float)x.fitness.Value);
+            float maxFitness = topEvals.Max(x => (float)x.fitness.Value);
+            float scalingFactor = (maxFitness != minFitness) ? 1.0f / (maxFitness - minFitness) : 1.0f;
+
+            float exponent = 0.5f;
+            float temperature = 0.1f; // You can adjust this value to find the right balance
+            float denom = topEvals.Select(x => Mathf.Pow((float)(x.fitness.Value - minFitness) * scalingFactor, 1 / temperature)).Sum();
+            //float denom = topEvals.Select(x => Mathf.Exp((float)x.fitness.Value - maxFitness)).Sum();
+            topEvals = topEvals.OrderByDescending(x => x.fitness.Value).ToList();
+
+
             foreach (CreatureGenotypeEval topEval in topEvals)
             {
                 g.cgEvals.Add(new CreatureGenotypeEval(topEval.cg));
                 CreatureGenotypeEval topSoftmaxEval = topEval.ShallowCopy();
-                topSoftmaxEval.fitness = Mathf.Exp((float)topSoftmaxEval.fitness - maxFitness);
+                //topSoftmaxEval.fitness = Mathf.Exp((float)topSoftmaxEval.fitness.Value - maxFitness);
+                //topSoftmaxEval.fitness = Mathf.Pow((float)topSoftmaxEval.fitness.Value, exponent);
+                topSoftmaxEval.fitness = Mathf.Pow((float)(topSoftmaxEval.fitness.Value - minFitness) * scalingFactor, 1 / temperature);
                 topSoftmaxEvals.Add(topSoftmaxEval);
             }
 
-            topSoftmaxEvals = topSoftmaxEvals.OrderByDescending(x => x.fitness).ToList();
+            topSoftmaxEvals = topSoftmaxEvals.OrderByDescending(x => x.fitness.Value).ToList();
+
+            List<int> intValues = new List<int>();
+
+            // Calculate the integer values for each percentage
+            int sizeChildren = size - topEvals.Count;
             foreach (CreatureGenotypeEval topSoftmaxEval in topSoftmaxEvals)
             {
-                int childrenCount = Mathf.RoundToInt(remainingCount * (float)topSoftmaxEval.fitness / denom);
-                //Debug.Log(remainingCount + " " + childrenCount + " " + topSoftmaxEval.fitness + " " + denom);
-                if (remainingCount == 0) break;
-                remainingCount -= childrenCount;
-                denom -= (float)topSoftmaxEval.fitness;
-                //Debug.Log(remainingCount + " " + denom);
-                Debug.Log(topSoftmaxEval.cg.name + " " + childrenCount);
-                for (int i = 0; i < childrenCount; i++)
+                intValues.Add((int)(sizeChildren * (float)topSoftmaxEval.fitness.Value / denom));
+            }
+
+            // Calculate the difference between the sum of the integer values and the desired size
+            int diff = sizeChildren - intValues.Sum();
+
+            // Distribute the difference across the integer values
+            for (int i = 0; i < diff; i++)
+            {
+                intValues[i % intValues.Count]++;
+            }
+
+            for (int i = 0; i < intValues.Count; i++)
+            {
+                CreatureGenotype cg = topSoftmaxEvals[i].cg;
+                int childrenCount = intValues[i];
+                if (i <= 3) Debug.Log(string.Format("{0} ({1}, {2}), children; {3}/{4}", cg.name, topEvals[i].fitness.Value, topSoftmaxEvals[i].fitness.Value / denom, childrenCount, sizeChildren));
+                for (int j = 0; j < childrenCount; j++)
                 {
-                    g.cgEvals.Add(new CreatureGenotypeEval(MutateGenotype.MutateCreatureGenotype(topSoftmaxEval.cg, mp)));
+                    g.cgEvals.Add(new CreatureGenotypeEval(MutateGenotype.MutateCreatureGenotype(cg, mp)));
                 }
             }
 
             if (g.cgEvals.Count != size){
                 Debug.Log(remainingCount);
-                Debug.Log(topSoftmaxEvals.Select(x => x.fitness).ToList());
+                Debug.Log(topSoftmaxEvals.Select(x => x.fitness.Value).ToList());
 
                 foreach (CreatureGenotypeEval topSoftmaxEval in topSoftmaxEvals)
                 {
-                    Debug.Log(topSoftmaxEval.fitness);
+                    Debug.Log(topSoftmaxEval.fitness.Value);
                 }
 
                 throw new System.Exception("Wrong generation size!");
@@ -115,13 +149,20 @@ namespace KSS
     [System.Serializable]
     public class CreatureGenotypeEval {
         public CreatureGenotype cg;
-        public float? fitness; // total reward
+        public SN<float> fitness; // total reward
         public EvalStatus evalStatus = EvalStatus.NOT_EVALUATED;
 
         public CreatureGenotypeEval(CreatureGenotype cg){
             this.cg = cg;
             fitness = 0;
             evalStatus = EvalStatus.NOT_EVALUATED;
+        }
+
+        public CreatureGenotypeEval(CreatureGenotype cg, float fitness)
+        {
+            this.cg = cg;
+            this.fitness = fitness;
+            evalStatus = EvalStatus.EVALUATED;
         }
 
         public CreatureGenotypeEval ShallowCopy(){
@@ -218,7 +259,7 @@ namespace KSS
             }
 
             // Update stats text
-            tm.statsText.text = string.Format("Gen: {0}, Creatures Remaining: {1}", currentGenerationIndex.ToString(), untestedRemaining.ToString());
+            tm.statsText.text = string.Format("Gen: {0}, Creatures Remaining: {1}", (currentGenerationIndex + 1).ToString(), untestedRemaining.ToString());
         }
 
         public override void ResetPing(Environment env, float fitness, bool isDQ)
@@ -268,15 +309,18 @@ namespace KSS
 
         private List<CreatureGenotypeEval> SelectTopEvals(Generation g, MutateGenotype.MutationPreferenceSetting mp)
         {
+            List<CreatureGenotypeEval> cleanedEvals = new List<CreatureGenotypeEval>(g.cgEvals);
             List<CreatureGenotypeEval> topEvals = new List<CreatureGenotypeEval>();
-            List<CreatureGenotypeEval> sortedEvals = g.cgEvals.OrderByDescending(x => x.fitness).ToList();
-            sortedEvals.RemoveAll(x => x.evalStatus == EvalStatus.DISQUALIFIED);
+            cleanedEvals.RemoveAll(x => x.evalStatus == EvalStatus.DISQUALIFIED);
+            cleanedEvals.RemoveAll(x => x.fitness.HasValue == false);
+            List<CreatureGenotypeEval> sortedEvals = cleanedEvals.OrderByDescending(x => x.fitness.Value).ToList();
+
             int topCount = Mathf.RoundToInt(optimizationSettings.populationSize * optimizationSettings.survivalRatio);
             int positiveCount = 0;
             for (int i = 0; i < topCount; i++)
             {
-                CreatureGenotypeEval eval = g.cgEvals[i];
-                if (eval.evalStatus == EvalStatus.EVALUATED && eval.fitness != null && eval.fitness >= 0) {
+                CreatureGenotypeEval eval = sortedEvals[i];
+                if (eval.evalStatus == EvalStatus.EVALUATED && eval.fitness != null && eval.fitness.Value >= 0) {
                     topEvals.Add(eval);
                     positiveCount++;
                 } else {
@@ -286,21 +330,44 @@ namespace KSS
                 }
             }
 
-            Debug.Log(positiveCount + " Creatures with >=0 fitness.");
-            Debug.Log("Best: " + topEvals.Max(x => x.fitness));
+            Debug.Log(string.Format("{0}/{1} Creatures with >=0 fitness.", positiveCount, topCount));
+            CreatureGenotypeEval bestEval = GetBestCreatureEval();
+            Debug.Log("Best: " + topEvals.Max(x => x.fitness.Value));
+            bestEval.cg.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\" + currentGenerationIndex + "," + bestEval.cg.name + ".creature", true);
+            saveK.best = bestEval;
             return topEvals;
         }
 
         public CreatureGenotype GetBestCreatureGenotype(){
+            foreach (Generation generation in saveK.generations)
+            {
+                
+            }
             List<CreatureGenotypeEval> topEvals = SelectTopEvals(currentGeneration, optimizationSettings.mp);
 
             return topEvals[0].cg;
         }
 
+        public CreatureGenotypeEval GetBestCreatureEval(){
+            CreatureGenotypeEval bestEval = new CreatureGenotypeEval(null, -999f);
+            foreach (Generation generation in saveK.generations)
+            {
+                foreach (CreatureGenotypeEval cgEval in generation.cgEvals)
+                {
+                    if (cgEval.evalStatus == EvalStatus.EVALUATED && cgEval.fitness > bestEval.fitness)
+                    {
+                        bestEval = cgEval;
+                    }
+                }
+            }
+
+            return bestEval;
+        }
+
         private CreatureGenotype SelectBestGenotype(Generation g)
         {
-            CreatureGenotypeEval bestEval = g.cgEvals.OrderByDescending(cgEval => cgEval.fitness).FirstOrDefault();
-            Debug.Log("Best: " + bestEval.fitness);
+            CreatureGenotypeEval bestEval = g.cgEvals.OrderByDescending(cgEval => cgEval.fitness.Value).FirstOrDefault();
+            Debug.Log("Best: " + bestEval.fitness.Value);
             return bestEval.cg;
         }
     }

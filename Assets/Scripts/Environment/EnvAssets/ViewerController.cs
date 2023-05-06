@@ -7,17 +7,20 @@ public class ViewerController : MonoBehaviour
     [Header("Controls")]
     public float verticalSpeed = 4;
     public float horizontalSpeed = 4;
+    public LayerMask layerMask;
 
     Vector2 rotation = Vector2.zero;
     public float speed = 3;
+    private Camera mainCamera;
     TrainingManager tm;
+    private bool trackingCursor = false;
+    bool IsMouseOverGameWindow { get { return !(0 > Input.mousePosition.x || 0 > Input.mousePosition.y || Screen.width < Input.mousePosition.x || Screen.height < Input.mousePosition.y); } }
 
     // Start is called before the first frame update
     void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
         tm = TrainingManager.instance;
+        mainCamera = GetComponentInChildren<Camera>();
     }
 
     // Update is called once per frame
@@ -47,9 +50,15 @@ public class ViewerController : MonoBehaviour
             transform.position += v3 * Input.GetAxis("Vertical") * horizontalSpeed * Time.deltaTime;
             transform.position += -Vector3.Cross(v3, Vector3.up).normalized * Input.GetAxis("Horizontal") * horizontalSpeed * Time.deltaTime;
         }
-        rotation.y += Input.GetAxis("Mouse X");
-        rotation.x += -Input.GetAxis("Mouse Y");
-        transform.eulerAngles = (Vector2)rotation * speed;
+
+
+
+        if (trackingCursor)
+        {
+            rotation.y += Input.GetAxis("Mouse X");
+            rotation.x += -Input.GetAxis("Mouse Y");
+            transform.eulerAngles = (Vector2)rotation * speed;
+        }
 
         if (Input.GetKey(KeyCode.F)) {
             Creature bestCreature = tm.GetBestLivingCreature();
@@ -58,6 +67,41 @@ public class ViewerController : MonoBehaviour
                 if (com != null && !float.IsNaN(com.x) && !float.IsNaN(com.y) && !float.IsNaN(com.z))
                 {
                     transform.position = bestCreature.GetCentreOfMass() + Vector3.up * 3;
+                }
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            trackingCursor = false;
+        }
+
+        if (Input.GetMouseButtonDown(0) && !UIMouseHoverManager.instance.overUIElement && IsMouseOverGameWindow) {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            trackingCursor = true;
+        }
+
+        if (Input.GetMouseButtonDown(1) && trackingCursor){
+            DisplayStatsPanel dsp = DisplayStatsPanel.instance;
+            if (dsp != null){
+                // Calculate the center of the screen
+                Vector3 screenCenter = new Vector3(Screen.width / 2, Screen.height / 2, 0);
+
+                // Create a ray from the camera through the center of the screen
+                Ray ray = mainCamera.ScreenPointToRay(screenCenter);
+
+                RaycastHit hit;
+                if (Physics.Raycast(ray, out hit, 100f, layerMask))
+                {
+                    // Check if the hit object has a Segment component
+                    Segment segment = hit.collider.gameObject.GetComponent<Segment>();
+                    if (segment != null)
+                    {
+                        //Debug.Log(segment.creature);
+                        dsp.UpdateCreatureStats(segment.creature);
+                    }
                 }
             }
         }

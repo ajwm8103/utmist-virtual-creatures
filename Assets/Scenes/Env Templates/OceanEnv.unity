@@ -427,6 +427,120 @@ MonoBehaviour:
     actDim: 0
   creatureGenotypeHistory: []
   counter: 4
+--- !u!1 &1059666755
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1059666760}
+  - component: {fileID: 1059666759}
+  - component: {fileID: 1059666758}
+  - component: {fileID: 1059666757}
+  - component: {fileID: 1059666756}
+  m_Layer: 5
+  m_Name: Canvas
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1059666756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1059666755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3264ae3460896b4089f13bbd15bf2c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  overUIElement: 0
+--- !u!114 &1059666757
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1059666755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreReversedGraphics: 1
+  m_BlockingObjects: 0
+  m_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!114 &1059666758
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1059666755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_UiScaleMode: 0
+  m_ReferencePixelsPerUnit: 100
+  m_ScaleFactor: 1
+  m_ReferenceResolution: {x: 800, y: 600}
+  m_ScreenMatchMode: 0
+  m_MatchWidthOrHeight: 0
+  m_PhysicalUnit: 3
+  m_FallbackScreenDPI: 96
+  m_DefaultSpriteDPI: 96
+  m_DynamicPixelsPerUnit: 1
+  m_PresetInfoIsWorld: 0
+--- !u!223 &1059666759
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1059666755}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 0
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_AdditionalShaderChannelsFlag: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 0
+  m_TargetDisplay: 0
+--- !u!224 &1059666760
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1059666755}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0, y: 0, z: 0}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0, y: 0}
 --- !u!1 &2095058623
 GameObject:
   m_ObjectHideFlags: 0
@@ -744,9 +858,20 @@ MonoBehaviour:
   segmentPrefab: {fileID: 6837624401485191407, guid: 56ac4567187132f4f921d8ae50078f2e, type: 3}
   spawnPos: {x: 0, y: 4.5, z: 0}
   creatureGenotype:
-    name: Fish
+    name: Fish7328
     stage: 0
     segments:
+    - r: 1
+      g: 1
+      b: 1
+      id: 0
+      connections: []
+      neurons: []
+      recursiveLimit: 1
+      dimensionX: 1
+      dimensionY: 1
+      dimensionZ: 1
+      jointType: 0
     - r: 255
       g: 0
       b: 0
@@ -754,18 +879,18 @@ MonoBehaviour:
       connections:
       - id: 0
         destination: 2
-        anchorX: 0.5
-        anchorY: 0
-        anchorZ: 0
-        orientationX: 0
-        orientationY: 0
-        orientationZ: 0
-        orientationW: 0
+        anchorX: 0.46970677
+        anchorY: -0.21002644
+        anchorZ: 0.5
+        orientationX: 0.58926904
+        orientationY: -0.034784164
+        orientationZ: 0.5032914
+        orientationW: 0.6310703
         eulerX: 0
         eulerY: 0
-        eulerZ: -90
-        scale: 1
-        reflected: 0
+        eulerZ: 0
+        scale: 1.0406672
+        reflected: 1
         terminalOnly: 0
       neurons:
       - type: 0
@@ -773,79 +898,14 @@ MonoBehaviour:
         weights: []
         nr:
           relativityNullable:
-            v: 0
-            hasValue: 0
+            v: 4
+            hasValue: 1
           relativeLevelNullable:
             v: 0
             hasValue: 0
           connectionPath: 
           id: 3
-      recursiveLimit: 1
-      dimensionX: 1
-      dimensionY: 1
-      dimensionZ: 1
-      jointType: 0
-    - r: 0
-      g: 0
-      b: 125
-      id: 2
-      connections:
-      - id: 0
-        destination: 2
-        anchorX: 0
-        anchorY: 0.5
-        anchorZ: 0
-        orientationX: 0
-        orientationY: 0
-        orientationZ: 0
-        orientationW: 0
-        eulerX: 0
-        eulerY: 0
-        eulerZ: 0
-        scale: 1
-        reflected: 0
-        terminalOnly: 0
-      neurons:
-      - type: 21
-        inputs:
-        - relativityNullable:
-            v: 1
-            hasValue: 1
-          relativeLevelNullable:
-            v: 1
-            hasValue: 1
-          connectionPath: 
-          id: 3
-        - relativityNullable:
-            v: 1
-            hasValue: 1
-          relativeLevelNullable:
-            v: 1
-            hasValue: 1
-          connectionPath: 
-          id: 3
-        - relativityNullable:
-            v: 1
-            hasValue: 1
-          relativeLevelNullable:
-            v: 1
-            hasValue: 1
-          connectionPath: 
-          id: 3
-        weights:
-        - 1
-        - 1
-        - 0
-        nr:
-          relativityNullable:
-            v: 0
-            hasValue: 0
-          relativeLevelNullable:
-            v: 0
-            hasValue: 0
-          connectionPath: 
-          id: 13
-      - type: 0
+      - type: 5
         inputs:
         - relativityNullable:
             v: 2
@@ -854,9 +914,9 @@ MonoBehaviour:
             v: 0
             hasValue: 0
           connectionPath: 
-          id: 13
+          id: 3
         weights:
-        - 350
+        - 11.5527
         nr:
           relativityNullable:
             v: 0
@@ -865,12 +925,44 @@ MonoBehaviour:
             v: 0
             hasValue: 0
           connectionPath: 
+          id: 13
+      recursiveLimit: 1
+      dimensionX: 0.48608917
+      dimensionY: 1
+      dimensionZ: 1
+      jointType: 0
+    - r: 14
+      g: 193
+      b: 230
+      id: 2
+      connections: []
+      neurons:
+      - type: 0
+        inputs:
+        - relativityNullable:
+            v: 1
+            hasValue: 1
+          relativeLevelNullable:
+            v: 2
+            hasValue: 1
+          connectionPath: 
+          id: 3
+        weights:
+        - -9.84984
+        nr:
+          relativityNullable:
+            v: 4
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 00
           id: 12
       recursiveLimit: 1
-      dimensionX: 0.2
-      dimensionY: 2
-      dimensionZ: 1
-      jointType: 3
+      dimensionX: 1.0664471
+      dimensionY: 0.7934261
+      dimensionZ: 0.4329997
+      jointType: 2
     orientationX: 0
     orientationY: 0
     orientationZ: 0
@@ -1210,7 +1302,7 @@ MonoBehaviour:
           id: 3
         weights:
         - 1
-        - 1
+        - 15
         - 0
         nr:
           relativityNullable:
@@ -1232,7 +1324,7 @@ MonoBehaviour:
           connectionPath: 
           id: 13
         weights:
-        - 350
+        - 2.3
         nr:
           relativityNullable:
             v: 0

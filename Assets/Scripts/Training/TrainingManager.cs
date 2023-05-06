@@ -107,7 +107,7 @@ public class TrainingManager : MonoBehaviour
     {
         if (instance != null)
         {
-            Destroy(gameObject); // Can't have two controllers active at once
+            Destroy(gameObject); // Can't have two managers active at once
         }
         else
         {
@@ -148,6 +148,7 @@ public class TrainingManager : MonoBehaviour
                 Environment instantiatedEnv = Instantiate(envPrefab, Vector3.right * i * sizeX, envPrefab.transform.rotation).GetComponent<Environment>();
                 instantiatedEnv.Setup(ts.envSettings);
                 instantiatedEnv.transform.parent = envHolder;
+                instantiatedEnv.gameObject.name += i.ToString();
                 environments.Add(instantiatedEnv);
                 Transform oneOff = instantiatedEnv.transform.Find("OneOffHolder");
                 if (oneOff != null && i != 0) {
@@ -164,9 +165,21 @@ public class TrainingManager : MonoBehaviour
         }
     }
 
+    public void SaveTraining(){
+        algo.SaveTraining();
+    }
+
     public Creature GetBestLivingCreature()
     {
-        return environments.OrderByDescending(x => x.currentCreature.totalReward).First().currentCreature;
+        try
+        {
+            return environments.OrderByDescending(x => x.currentCreature.totalReward).First().currentCreature;
+        }
+        catch (Exception)
+        {
+
+            return null;
+        }
     }
 
     // Update is called once per frame

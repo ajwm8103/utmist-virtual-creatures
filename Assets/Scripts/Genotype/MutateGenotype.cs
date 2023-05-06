@@ -54,7 +54,7 @@ public class MutateGenotype
     {
         public bool mutateMorphology = true;
         public bool mutateNeural = true;
-        public float stdevSizeAdjustmentFactor = 0.3f;
+        public float stdevSizeAdjustmentFactor = 0.02f;
 
         [System.Serializable]
         public struct MutationPreference
@@ -69,7 +69,7 @@ public class MutateGenotype
             }
         }
 
-        float currentScaleFactor = 1f;
+        float currentScaleFactor = 0.75f;
         public Dictionary<string, MutationPreference> mutationFrequencies = new Dictionary<string, MutationPreference>()
         {
             {"s_r", new MutationPreference(0.25f, 0.25f)}, // Red (byte)
@@ -93,6 +93,7 @@ public class MutateGenotype
             {"n_w2", new MutationPreference(0.25f, 0.25f)}, // Weight 2 (float, -15:15)
             {"n_w3", new MutationPreference(0.25f, 0.25f)}, // Weight 3 (float, -15:15)
             {"n_relocateinput", new MutationPreference(0.25f, 0.25f)}, // Relocate Input
+            {"n_e", new MutationPreference(0.7f, 0.25f)}, // Effector generate
         };
 
         public Dictionary<string, float[]> floatClamps = new Dictionary<string, float[]>() {
@@ -204,6 +205,7 @@ public class MutateGenotype
         // Remove all unconnected segments
 
         // List all connected segments
+
         Dictionary<byte, List<SegmentConnectionGenotype>> segmentConnectionsByDest = new Dictionary<byte, List<SegmentConnectionGenotype>>();
         /*foreach (SegmentGenotype sm in cm.segments)
         {
@@ -273,6 +275,7 @@ public class MutateGenotype
                     // Update all connections with this as a destination
                     if (segmentConnectionsByDest.ContainsKey(oldId))
                     {
+                        SegmentGenotype parentSegmentGenotype = cg.GetSegment(oldId);
                         foreach (SegmentConnectionGenotype scg in segmentConnectionsByDest[oldId])
                         {
                             scg.destination = i;
@@ -294,6 +297,7 @@ public class MutateGenotype
         neuronReferences = new List<NeuronReference>();
 
         TraceConnections(cg, null, null, new List<byte>(), segmentIds, connectionPaths, neuronReferences, null);
+        cg.counter = 0;
     }
 
     public static void TraceConnectionOther(CreatureGenotype cg, SegmentGenotype sg, out List<byte> segmentIds,
@@ -305,6 +309,7 @@ public class MutateGenotype
         SegmentConnectionGenotype scg = new SegmentConnectionGenotype(); // dummy connection
         scg.destination = sg.id;
         TraceConnections(cg, null, scg, new List<byte>(), segmentIds, connectionPaths, neuronReferences, sg.id);
+        cg.counter = 0;
     }
 
     /// <summary>
@@ -344,6 +349,7 @@ public class MutateGenotype
         if (cg.counter == 60)
         {
             Debug.Log("Likely looping trace, save for debug.");
+            Debug.Log(cg.segments.Count);
             string name = "/debug_" + Random.Range(0, 100) + ".creature";
             cg.SaveData(name, false);
             Debug.Log("Saved to " + Application.persistentDataPath + name);
@@ -414,7 +420,7 @@ public class MutateGenotype
                         continue;
                     }
                     Dictionary<byte, byte> recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
-                    List<byte> connectionPathClone = connectionPath.Select(item => (byte)item).ToList();
+                    List<byte> connectionPathClone = connectionPath.Select(item => item).ToList();
                     connectionPathClone.Add(connection.id);
                     TraceConnections(cg, recursiveLimitClone, connection, connectionPathClone, segmentIds, connectionPaths, neuronReferences, initialSegmentId);
                 }
@@ -481,7 +487,64 @@ public class MutateGenotype
     public static CreatureGenotype GenerateRandomCreatureGenotype(MutationPreferenceSetting mp)
     {
         // TODO: May need reference to MutationPreferenceSetting?
-        return null;
+
+        CreatureGenotype cg = new CreatureGenotype();
+        cg.name = CreatureGenotype.GenerateName(null);
+
+        cg.segments = new List<SegmentGenotype>();
+
+
+        SegmentGenotype rootSegmentGenotype = GenerateRandomSegmentGenotype(ref cg, mp);
+        rootSegmentGenotype.id = 1;
+        if (cg.GetSegment(0) == null)
+        {
+
+            cg.segments.Insert(0, SegmentGenotype.ghost);
+        }
+
+        for (int i = 0; i <= 5; i++)
+        {
+            NeuronGenotype ng1 = new NeuronGenotype(new NeuronReference());
+            ng1.nr.id = (byte)i;
+            ng1.nr.relativeLevelNullable = null;
+            ng1.nr.relativityNullable = null;
+            rootSegmentGenotype.neurons.Add(ng1);
+        }
+
+        SegmentGenotype childSegmentGenotype = GenerateRandomSegmentGenotype(ref cg, mp);
+        childSegmentGenotype.id = 2;
+
+        for (int i = 0; i <= 5; i++)
+        {
+            NeuronGenotype ng1 = new NeuronGenotype(new NeuronReference());
+            ng1.nr.id = (byte)i;
+            ng1.nr.relativeLevelNullable = null;
+            ng1.nr.relativityNullable = null;
+            childSegmentGenotype.neurons.Add(ng1);
+        }
+
+        SegmentConnectionGenotype scg = new SegmentConnectionGenotype();
+        scg.id = 0;
+        scg.destination = 2;
+        scg.anchorX = 0.5f;
+        scg.anchorY = 0f;
+        scg.anchorZ = 0f;
+        scg.eulerZ = -90f;
+        scg.scale = 1f;
+        scg.reflected = false;
+        scg.terminalOnly = false;
+        rootSegmentGenotype.connections.Add(scg);
+
+
+        List<List<byte>> connectionPaths; List<byte> segmentIds; List<NeuronReference> neuronReferences;
+        TraceConnectionRoot(cg, out segmentIds, out connectionPaths, out neuronReferences);
+
+        for (int i = 0; i < 8; i++)
+        {
+            cg = MutateCreatureGenotype(cg, mp);
+        }
+
+        return cg;
     }
 
     public static SegmentGenotype GenerateRandomSegmentGenotype(ref CreatureGenotype cg, MutationPreferenceSetting mp)
@@ -511,7 +574,150 @@ public class MutateGenotype
         return null;
     }
 
-    public static void GenerateRandomNeuronGenotype(CreatureGenotype cg, List<List<byte>> connectionPaths, List<byte> segmentIds, List<NeuronReference> rootNeuronReferences)
+    public static List<NeuronReference> GetPossibleReferences(CreatureGenotype cg, SegmentGenotype segmentGenotype, List<NeuronReference> rootNeuronReferences, List<byte> segmentIds)
+    {
+        List<NeuronReference> possibleNeurons = new List<NeuronReference>();
+        byte segmentId = segmentGenotype.id;
+
+        // Always add ghost neurons
+        foreach (NeuronGenotype ng in cg.GetSegment(0).neurons)
+        {
+            if (ng.nr.id != 12) // Remove effectors
+            {
+                NeuronReference nr = new NeuronReference();
+                nr.relativityNullable = NeuronReferenceRelativity.GHOST;
+                nr.id = ng.nr.id;
+                possibleNeurons.Add(nr);
+            }
+        }
+
+        // Always add own neurons if not ghost
+        if (segmentId != 0)
+        {
+            foreach (NeuronGenotype ng in segmentGenotype.neurons)
+            {
+                if (ng.nr.id != 12) // Remove effectors
+                {
+                    NeuronReference nr = new NeuronReference();
+                    nr.relativityNullable = NeuronReferenceRelativity.SELF;
+                    nr.id = ng.nr.id;
+                    possibleNeurons.Add(nr);
+                }
+            }
+        }
+
+        if (segmentId == 0)
+        {
+            // Is Ghost, add all from root
+            foreach (NeuronReference nr in rootNeuronReferences)
+            {
+                if (nr.id != 12) // Is sensor or neuron, and not repeating ghost
+                {
+                    possibleNeurons.Add(nr);
+                }
+            }
+        }
+        else if (segmentId == 1)
+        {
+            // Is root, add all from root
+            // Trace outward
+            List<byte> otherSegmentIds; List<List<byte>> otherConnectionPaths; List<NeuronReference> otherNeuronReferences;
+            // TODO: Adjust below line to start from non-root node outward
+            TraceConnectionOther(cg, segmentGenotype, out otherSegmentIds, out otherConnectionPaths, out otherNeuronReferences);
+
+            foreach (NeuronReference nr in otherNeuronReferences)
+            {
+                if (nr.id != 12) // Is sensor or neuron, and not repeating ghost
+                {
+                    possibleNeurons.Add(nr);
+                }
+            }
+        }
+        else
+        {
+            // Non-root, so trace outward
+            List<byte> otherSegmentIds; List<List<byte>> otherConnectionPaths; List<NeuronReference> otherNeuronReferences;
+            // TODO: Adjust below line to start from non-root node outward
+            TraceConnectionOther(cg, segmentGenotype, out otherSegmentIds, out otherConnectionPaths, out otherNeuronReferences);
+
+            //Debug.Log("otherNeuronReferences count " + otherNeuronReferences.Count);
+            // Add child segments' neurons
+            foreach (NeuronReference nr in otherNeuronReferences)
+            {
+                if (nr.id != 12) // Is not an effector
+                {
+                    possibleNeurons.Add(nr);
+                }
+            }
+
+            // Find segment's id in segmentIds
+            /*SegmentGenotype currentSG; int i = 0;
+            while (currentSG != segmentGenotype){
+                currentSG = currentSG.connections[connectionPaths[i]]
+            }*/
+            /*int segmentIndex = segmentIds.IndexOf(segmentId);
+
+            if (segmentIndex == -1)
+            {
+                foreach (SegmentGenotype sg in cg.segments)
+                {
+                    Debug.Log("sg id " + sg.id + " recursiveLimit " + sg.recursiveLimit);
+                    foreach (SegmentConnectionGenotype scg in sg.connections)
+                    {
+                        Debug.Log("Connection id " + scg.id + " to segment id " + scg.destination);
+                        Debug.Log("Terminal only " + scg.terminalOnly);
+                    }
+                }
+                foreach (byte idd in segmentIds)
+                {
+                    Debug.Log("idd " + idd);
+                }
+                throw new System.Exception("No segmentId " + segmentId + " out of " + cg.segments.Count + " segments.");
+            }*/
+
+            List<SegmentGenotype> parentGenotypes = new List<SegmentGenotype>();
+            Dictionary<byte, byte> parentsDict = cg.GetParentsDict();
+            byte currentId = segmentId;
+            int counter = 0;
+            while (currentId != 1)
+            {
+                if (!parentsDict.ContainsKey(currentId)) break;
+                
+                byte nextId = parentsDict[currentId];
+                if (nextId != currentId)
+                {
+                    // Found a parent segment
+                    parentGenotypes.Add(cg.GetSegment(nextId));
+                }
+                currentId = nextId;
+
+                counter++;
+                if (counter >= 50) break;
+            }
+
+            //Debug.Log("parentGenotypes count " + parentGenotypes.Count);
+            // Add parent segments' neurons
+            for (int i = 0; i < parentGenotypes.Count; i++)
+            {
+                //Debug.Log("n " + parentGenotypes[i].neurons.Count);
+                foreach (NeuronGenotype ng in parentGenotypes[i].neurons)
+                {
+                    if (ng.nr.id != 12) // Is not an effector
+                    {
+                        NeuronReference nr = new NeuronReference();
+                        nr.id = ng.nr.id;
+                        nr.relativityNullable = NeuronReferenceRelativity.PARENT;
+                        nr.relativeLevel = (byte)(i + 1);
+                        possibleNeurons.Add(nr);
+                    }
+                }
+            }
+        }
+
+        return possibleNeurons;
+    }
+
+    public static void GenerateRandomNeuronGenotype(CreatureGenotype cg, List<List<byte>> connectionPaths, List<byte> segmentIds, List<NeuronReference> rootNeuronReferences, MutationPreferenceSetting mp)
     {
         // Select random SegmentGenotype
         byte segmentId = (byte)Random.Range(0, cg.segments.Count);
@@ -525,26 +731,33 @@ public class MutateGenotype
         spawnedNeuronReference.relativityNullable = null;
         spawnedNeuronReference.relativeLevelNullable = null;
 
-        // Pick unused id
-        for (byte i = 13; i < 255; i++)
-        {
-            if (segmentGenotype.GetNeuron(i) == null)
+        // Pick unused id and set a neuron type
+        byte type;  byte typeInputs;
+        if (segmentId != 0 && segmentId != 1 && mp.CoinFlip("n_e") && segmentGenotype.GetNeuron(12) == null) {
+            spawnedNeuronReference.id = 12;
+            type = 0;
+            typeInputs = 1;
+        } else {
+            for (byte i = 13; i < 255; i++)
             {
-                // Found unused id, add node here
-                spawnedNeuronReference.id = i;
-                break;
+                if (segmentGenotype.GetNeuron(i) == null)
+                {
+                    // Found unused id, add node here
+                    spawnedNeuronReference.id = i;
+                    break;
+                }
             }
-        }
 
-        // Set a neuron type
-        byte type = (byte)Random.Range(0, 23);
-        byte typeInputs = NeuronGenotype.GetTypeInputs(type);
+            type = (byte)Random.Range(0, 23);
+            typeInputs = NeuronGenotype.GetTypeInputs(type);
+        }
 
         // Find all valid inputs for the node and connect them
         // Valid inputs will be within the node, the parent of the node, a child of the node, or the ghost
         // Make list of all those then select randomly
-        List<NeuronReference> possibleNeurons = new List<NeuronReference>();
+        List<NeuronReference> possibleNeurons = GetPossibleReferences(cg, segmentGenotype, rootNeuronReferences, segmentIds);
 
+        /*
         // Always add ghost neurons
         foreach (NeuronGenotype ng in cg.GetSegment(0).neurons)
         {
@@ -615,10 +828,6 @@ public class MutateGenotype
             }
 
             // Find segment's id in segmentIds
-            /*SegmentGenotype currentSG; int i = 0;
-            while (currentSG != segmentGenotype){
-                currentSG = currentSG.connections[connectionPaths[i]]
-            }*/
             int segmentIndex = segmentIds.IndexOf(segmentId);
 
             if (segmentIndex == -1) {
@@ -669,7 +878,7 @@ public class MutateGenotype
                     }
                 }
             }
-        }
+        }*/
 
         if (possibleNeurons.Count == 0){
             throw new System.Exception("No possible Neurons for segmentId " + segmentId);
@@ -862,25 +1071,55 @@ public class MutateGenotype
         //return true;
     }
 
-    // TODELETE B/C DEBUG
-    public List<List<byte>> cp1 = new List<List<byte>>();
-    public List<NeuronReference> nr1 = new List<NeuronReference>();
+    public static List<byte> GetSegmentGenotypeDestinations(CreatureGenotype cg, SegmentGenotype sg, Dictionary<byte, byte[]> segmentParentsByDest){
+        // Check if the segment is truly unconnected
+        List<byte> possibleDestinations = new List<byte>();
+
+        // Check all existing segments
+        foreach (SegmentGenotype sgPossible in cg.segments)
+        {
+            byte sgPossibleId = sgPossible.id;
+            if (sgPossibleId == 0) continue;
+
+            if (sgPossibleId == sg.id)
+            {
+                // Segment is self
+                possibleDestinations.Add(sgPossibleId);
+            }
+            else if (segmentParentsByDest.ContainsKey(sgPossibleId))
+            {
+                // Segment is not self, but has parents
+                byte[] data = segmentParentsByDest[sgPossibleId];
+                if (data[0] == sg.id)
+                {
+                    possibleDestinations.Add(sgPossibleId);
+                }
+            }
+            else
+            {
+                // Segment is not self, has no parents
+                possibleDestinations.Add(sgPossibleId);
+            }
+        }
+
+        return possibleDestinations;
+    }
 
     public static CreatureGenotype MutateCreatureGenotype(CreatureGenotype cg, MutationPreferenceSetting mp)
     {
         //Debug.Log("----MUTATING CREATURE----");
         cg = cg.Clone();
+        cg.counter = 0;
         SimplifyCreatureGenotype(ref cg);
 
         // test
-        cg.name += Random.Range(0, 100);
+        //cg.name += Random.Range(0, 100);
+        cg.name = CreatureGenotype.GenerateName(cg.name);
 
         // Get list of segment connection paths and all neuron connection paths for random selection
 
         List<List<byte>> connectionPaths; List<byte> segmentIds; List<NeuronReference> neuronReferences;
         TraceConnectionRoot(cg, out segmentIds, out connectionPaths, out neuronReferences);
-        //cp1 = connectionPaths;
-        //nr1 = neuronReferences;
 
 
         // Mutations are performed on a per element basis
@@ -947,35 +1186,127 @@ public class MutateGenotype
             // 3. Connection parameters subjected to mutation.
             // Sometimes pointer moved to point to a different node at random.
             // This is how neural nodes stay - they become the input of another neuron
+            Dictionary<byte, byte[]> segmentParentsByDestNoSelf = cg.GetSegmentParents(true, false);
+            Dictionary<byte, byte[]> segmentParentsByDestOnlySelf = cg.GetSegmentParents(true, true);
             foreach (SegmentGenotype sg in cg.segments)
             {
-                foreach (SegmentConnectionGenotype scg in sg.connections)
+                if (sg.id == 0) continue;
+                for (int i = 0; i < sg.connections.Count; i++)
                 {
                     if (mp.CoinFlip("s_dest"))
                     {
                         // Gather possible SegmentGenotypes
-                        List<byte> possibleDestinations = new List<byte>();
-                        foreach (SegmentGenotype sgSearch in cg.segments)
-                        {
-                            if (sgSearch.id == 0) continue;
-                            possibleDestinations.Add(sgSearch.id);
-                        }
+                        // Select random other node and connect to it
+                        SegmentConnectionGenotype scg2 = sg.connections[i];
+                        sg.connections.Remove(scg2);
 
-                        // Check all unconnected nodes, hence excluding the current destination from the list
-                        foreach (SegmentGenotype sgSearch in cg.segments)
-                        {
-                            foreach (SegmentConnectionGenotype scgSearch in sgSearch.connections)
+                        // Update segment parents dict
+                        bool wasSelf = scg2.destination == sg.id;
+                        byte[] data;
+                        if (wasSelf){
+                            data = segmentParentsByDestOnlySelf[scg2.destination];
+                            data[0]--;
+                            if (data[0] <= 0)
                             {
-                                if (possibleDestinations.Any(x => x == scgSearch.destination)) {
-                                    possibleDestinations.Remove(scgSearch.destination);
-                                }
+                                segmentParentsByDestOnlySelf.Remove(scg2.destination);
+                            }
+                            else
+                            {
+                                segmentParentsByDestOnlySelf[scg2.destination] = data;
+                            }
+                        } else {
+                            data = segmentParentsByDestNoSelf[scg2.destination];
+                            data[1]--;
+                            if (data[1] <= 0)
+                            {
+                                segmentParentsByDestNoSelf.Remove(scg2.destination);
+                            }
+                            else
+                            {
+                                segmentParentsByDestNoSelf[scg2.destination] = data;
                             }
                         }
 
+                        List<byte> possibleDestinations = GetSegmentGenotypeDestinations(cg, sg, segmentParentsByDestNoSelf);
+
+                        // Select random destination
+                        byte destId;
                         if (possibleDestinations.Count != 0){
-                            scg.destination = possibleDestinations[Random.Range(0, possibleDestinations.Count)];
+                            int destIdx = Random.Range(0, possibleDestinations.Count);
+                            destId = possibleDestinations[destIdx];
+                            scg2.destination = destId;
+                        } else {
+                            destId = scg2.destination;
+                        }
+                        sg.connections.Insert(i, scg2);
+
+                        // Update parents list
+                        bool isSelf = destId == sg.id;
+                        byte[] data2;
+                        if (isSelf){
+                            if (segmentParentsByDestOnlySelf.ContainsKey(destId))
+                            {
+                                data2 = segmentParentsByDestOnlySelf[destId];
+                                data2[0]++;
+                                segmentParentsByDestOnlySelf[destId] = data2;
+                            }
+                            else
+                            {
+                                segmentParentsByDestOnlySelf.Add(destId, new byte[1] { 1 });
+                            }
+                        } else {
+                            if (segmentParentsByDestNoSelf.ContainsKey(destId))
+                            {
+                                data2 = segmentParentsByDestNoSelf[destId];
+                                data2[1]++;
+                                segmentParentsByDestNoSelf[destId] = data2;
+                            }
+                            else
+                            {
+                                segmentParentsByDestNoSelf.Add(destId, new byte[2] { sg.id, 1 });
+                            }
+                        }
+
+                        // Fix any neurons in the old destination
+                        if (destId != scg2.destination){
+                            SegmentGenotype segmentGenotype = cg.GetSegment(scg2.destination);
+                            foreach (NeuronGenotype ng in segmentGenotype.neurons)
+                            {
+                                for (int j = 0; j < ng.inputs.Length; j++)
+                                {
+                                    if (ng.inputs[j].relativityNullable.Value == NeuronReferenceRelativity.PARENT)
+                                    {
+                                        // Find new input
+                                        List<NeuronReference> possibleNeurons = GetPossibleReferences(cg, segmentGenotype, neuronReferences, segmentIds);
+
+                                        if (possibleNeurons.Count == 0)
+                                        {
+                                            continue;
+                                        }
+
+                                        // Select random input NeuronReferences
+
+                                        // Select random id
+                                        int selectedNeuronId = Random.Range(0, possibleNeurons.Count);
+
+                                        NeuronReference neuronInput = possibleNeurons[selectedNeuronId];
+                                        if (neuronInput.relativityNullable.Equals(null))
+                                        {
+                                            //Debug.Log("null");
+                                            throw new System.Exception("Null neuron input relativity.");
+                                        }
+                                        else
+                                        {
+                                            //Debug.Log((NeuronReferenceRelativity)neuronInputs[i].relativityNullable);
+                                        }
+
+                                        ng.inputs[j] = neuronInput;
+                                    }
+                                }
+                            }
                         }
                     }
+                    SegmentConnectionGenotype scg = sg.connections[i];
                     if (mp.CoinFlip("s_a"))
                     {
                         // Actually horrible
@@ -1012,20 +1343,51 @@ public class MutateGenotype
             foreach (SegmentGenotype sg in cg.segments)
             {
                 sg.connections.RemoveAll(connection => mp.CoinFlip("s_removec"));
-                /*List<SegmentConnectionGenotype> toRemove = new List<SegmentConnectionGenotype>();
                 foreach (SegmentConnectionGenotype scg in sg.connections)
                 {
-                    if (mp.CoinFlip("s_removec"))
-                    {
-                        toRemove.Add(scg);
+                    if (mp.CoinFlip("s_removec")){
+                        // Fix any neurons in the old destination
+                        SegmentGenotype segmentGenotype = cg.GetSegment(scg.destination);
+                        foreach (NeuronGenotype ng in segmentGenotype.neurons)
+                        {
+                            for (int j = 0; j < ng.inputs.Length; j++)
+                            {
+                                if (ng.inputs[j].relativityNullable.Value == NeuronReferenceRelativity.PARENT)
+                                {
+                                    // Find new input
+                                    List<NeuronReference> possibleNeurons = GetPossibleReferences(cg, segmentGenotype, neuronReferences, segmentIds);
+
+                                    if (possibleNeurons.Count == 0)
+                                    {
+                                        continue;
+                                    }
+
+                                    // Select random input NeuronReferences
+
+                                    // Select random id
+                                    int selectedNeuronId = Random.Range(0, possibleNeurons.Count);
+
+                                    NeuronReference neuronInput = possibleNeurons[selectedNeuronId];
+                                    if (neuronInput.relativityNullable.Equals(null))
+                                    {
+                                        //Debug.Log("null");
+                                        throw new System.Exception("Null neuron input relativity.");
+                                    }
+                                    else
+                                    {
+                                        //Debug.Log((NeuronReferenceRelativity)neuronInputs[i].relativityNullable);
+                                    }
+
+                                    ng.inputs[j] = neuronInput;
+                                }
+                            }
+                        }
                     }
                 }
-                foreach (SegmentConnectionGenotype scg in toRemove)
-                {
-                    sg.connections.Remove(scg);
-                }*/
             }
 
+            segmentParentsByDestNoSelf = cg.GetSegmentParents(true, false);
+            segmentParentsByDestOnlySelf = cg.GetSegmentParents(true, true);
             foreach (SegmentGenotype sg in cg.segments)
             {
                 if (sg.id != 0 && mp.CoinFlip("s_addc"))
@@ -1039,15 +1401,67 @@ public class MutateGenotype
                             SegmentConnectionGenotype scg = new SegmentConnectionGenotype();
                             scg.id = i;
 
-                            if (sg.connections.Where(c => c.destination == sg.id) != null)
-                            {
-                                // Already exists a self-connection
-                                scg.destination = generatedSegmentGenotype.id;
-                            } else {
-                                // All other options create loops
-                                scg.destination = (RandomBool() ? generatedSegmentGenotype : sg).id;
+                            // TODO: This is garbage, GetSegmentConnections isnt what i need cause i dont have the parent
+
+                            // Check if the segment is truly unconnected
+
+                            Dictionary<byte, List<SegmentConnectionGenotype>> segmentConnectionsByDest = cg.GetSegmentConnections(true, false);
+                            List<byte> possibleDestinations = new List<byte>();
+
+                            // Check all existing segments
+                            foreach (SegmentGenotype sgPossible in cg.segments){
+                                byte sgPossibleId = sgPossible.id;
+                                if (sgPossibleId == 0) continue;
+
+                                if (sgPossibleId == sg.id){
+                                    // Segment is self
+                                    possibleDestinations.Add(sgPossibleId);
+                                }
+                                else if (segmentParentsByDestNoSelf.ContainsKey(sgPossibleId)){
+                                    // Segment is not self, but has parents
+                                    byte[] data = segmentParentsByDestNoSelf[sgPossibleId];
+                                    if (data[0] == sg.id){
+                                        possibleDestinations.Add(sgPossibleId);
+                                    }
+                                } else {
+                                    // Segment is not self, has no parents
+                                    possibleDestinations.Add(sgPossibleId);
+                                }
                             }
-                            //scg.destination = cg.segments[Random.Range(0, cg.segments.Count)].id;
+
+                            // Select random destination
+                            int destIdx = Random.Range(0, possibleDestinations.Count);
+                            byte destId = possibleDestinations[destIdx];
+                            scg.destination = destId;
+
+                            // Update parents list
+                            bool isSelf = destId == sg.id;
+                            if (isSelf)
+                            {
+                                if (segmentParentsByDestOnlySelf.ContainsKey(destId))
+                                {
+                                    byte[] data = segmentParentsByDestOnlySelf[destId];
+                                    data[0]++;
+                                    segmentParentsByDestOnlySelf[destId] = data;
+                                }
+                                else
+                                {
+                                    segmentParentsByDestOnlySelf.Add(destId, new byte[1] { 1 });
+                                }
+                            }
+                            else
+                            {
+                                if (segmentParentsByDestNoSelf.ContainsKey(destId))
+                                {
+                                    byte[] data = segmentParentsByDestNoSelf[destId];
+                                    data[1]++;
+                                    segmentParentsByDestNoSelf[destId] = data;
+                                }
+                                else
+                                {
+                                    segmentParentsByDestNoSelf.Add(destId, new byte[2] { sg.id, 1 });
+                                }
+                            }
 
                             // Anchors
                             switch (Random.Range(0, 3))
@@ -1137,7 +1551,7 @@ public class MutateGenotype
 
 
             // 2. New random node added to graph.
-            GenerateRandomNeuronGenotype(cg, connectionPaths, segmentIds, neuronReferences); // please work please
+            GenerateRandomNeuronGenotype(cg, connectionPaths, segmentIds, neuronReferences, mp); // please work please
 
             // 3. Connection parameters subjected to mutation.
             // Sometimes pointer moved to point to a different node at random.
@@ -1146,26 +1560,38 @@ public class MutateGenotype
             {
                 foreach (NeuronGenotype ng in sg.neurons)
                 {
-                    foreach (NeuronReference nr in ng.inputs)
+                    for (int i = 0; i < ng.inputs.Length; i++)
                     {
+
                         if (mp.CoinFlip("n_relocateinput"))
                         {
                             // Mutate LOL
+                            List<NeuronReference> possibleNeurons = GetPossibleReferences(cg, sg, neuronReferences, segmentIds);
 
-                            // Pick a random segment path
-                            int segmentSelectionId = Random.Range(0, connectionPaths.Count);
-                            List<byte> segmentPath = connectionPaths[segmentSelectionId];
+                            if (possibleNeurons.Count == 0)
+                            {
+                                continue;
+                            }
 
-                            byte segmentId = segmentIds[segmentSelectionId];
-                            SegmentGenotype SegmentGenotype = cg.GetSegment(segmentId);
+                            // Select random input NeuronReferences
 
-                            if (segmentId == 0){
-                                // Ghost
+                            // Select random id
+                            int selectedNeuronId = Random.Range(0, possibleNeurons.Count);
 
-                            } else if (segmentId == sg.id) {
-                                // Self
+                            //Debug.Log(i);
+                            //Debug.Log(selectedNeuronId);
+                            NeuronReference neuronInput = possibleNeurons[selectedNeuronId];
+                            if (neuronInput.relativityNullable.Equals(null))
+                            {
+                                //Debug.Log("null");
+                                throw new System.Exception("Null neuron input relativity.");
+                            }
+                            else
+                            {
+                                //Debug.Log((NeuronReferenceRelativity)neuronInputs[i].relativityNullable);
+                            }
 
-                            }// else if (segmentId)
+                            ng.inputs[i] = neuronInput;
                         }
                     }
                 }
