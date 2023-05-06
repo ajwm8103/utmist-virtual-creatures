@@ -119,7 +119,7 @@ public class CreatureSpawner : MonoBehaviour
     {
         counter++;
         //Debug.Log(counter);
-        if (counter == 20){
+        if (counter == 80){
             Debug.Log("Likely looping, save for debug.");
             string name = "/debug_" + Random.Range(0, 100) + ".creature";
             cg.SaveData(name, false);

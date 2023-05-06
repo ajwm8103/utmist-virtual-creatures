@@ -75,7 +75,7 @@ public class RLSettings : OptimizationSettings {
 public class KSSSettings : OptimizationSettings {
     public override TrainingStage stage { get { return TrainingStage.KSS; } }
     public int populationSize = 300;
-    public int totalGenerations = 50;
+    public int totalGenerations = 200;
     public float survivalRatio = 1f / 5f;
     public MutateGenotype.MutationPreferenceSetting mp;
 }
