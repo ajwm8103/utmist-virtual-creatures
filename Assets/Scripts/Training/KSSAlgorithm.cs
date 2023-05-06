@@ -333,10 +333,15 @@ namespace KSS
             Debug.Log(string.Format("{0}/{1} Creatures with >=0 fitness.", positiveCount, topCount));
             CreatureGenotypeEval bestEval = GetBestCreatureEval();
             Debug.Log("Best: " + topEvals.Max(x => x.fitness.Value));
-            bestEval.cg.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\" + currentGenerationIndex + "," + bestEval.cg.name + ".creature", true);
-            
             saveK.best = bestEval;
-            saveK.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\" + currentGenerationIndex + ",save.save", true);
+
+            bestEval.cg.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\" + currentGenerationIndex + "," + bestEval.cg.name + ".creature", true);
+
+            saveK.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\MAINSAVE.save", true);
+            if (currentGenerationIndex % 25 == 0)
+            {
+                saveK.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\" + currentGenerationIndex + ",save.save", true);
+            }
             return topEvals;
         }
 
