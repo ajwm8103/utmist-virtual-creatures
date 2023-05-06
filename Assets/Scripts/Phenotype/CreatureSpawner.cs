@@ -204,7 +204,7 @@ public class CreatureSpawner : MonoBehaviour
                     j.useMotor = true;
                     JointMotor motor = j.motor;
                     motor.targetVelocity = 0;
-                    motor.force = 100;
+                    motor.force = 250;
                     j.motor = motor;
                 }
                 break;
@@ -217,7 +217,7 @@ public class CreatureSpawner : MonoBehaviour
                     j.useMotor = true;
                     JointMotor motor = j.motor;
                     motor.targetVelocity = 0;
-                    motor.force = 100;
+                    motor.force = 250;
                     j.motor = motor;
                 }
                 break;
@@ -230,7 +230,7 @@ public class CreatureSpawner : MonoBehaviour
                     j.useMotor = true;
                     JointMotor motor = j.motor;
                     motor.targetVelocity = 0;
-                    motor.force = 100;
+                    motor.force = 250;
                     j.motor = motor;
                 }
                 break;

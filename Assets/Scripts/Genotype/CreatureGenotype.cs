@@ -26,12 +26,21 @@ public class NeuronGenotype
     public NeuronGenotype(NeuronReference nr)
     {
         this.nr = nr;
+        type = 0;
+        weights = new float[0];
+        inputs = new NeuronReference[0];
+
     }
 
     public NeuronGenotype Clone()
     {
-        NeuronGenotype ng = new NeuronGenotype(type, (NeuronReference[])inputs.Clone(), nr);
-        ng.weights = (float[])weights.Clone();
+        NeuronGenotype ng;
+        if (inputs.Length == 0){
+            ng = new NeuronGenotype(nr);
+        } else {
+            ng = new NeuronGenotype(type, (NeuronReference[])inputs.Clone(), nr);
+            ng.weights = (float[])weights.Clone();
+        }
         return ng;
     }
     public static byte GetTypeInputs(byte type)
@@ -346,6 +355,48 @@ public class CreatureGenotype
         orientationY = q.y;
         orientationZ = q.z;
         orientationW = q.w;
+    }
+
+    private static readonly List<string> LatinWordParts = new List<string>
+    {
+        "aero", "albus", "ama", "ambi", "angui", "aqua", "ardea", "arvo", "aurum", "avium",
+        "bellus", "bestia", "caelum", "canis", "cattus", "collis", "corvus", "crescens", "dextro",
+        "dominus", "draco", "equus", "faunus", "felis", "ferox", "flumen", "gigas", "herba",
+        "ignis", "leo", "lupus", "magnus", "mare", "montis", "mortis", "natura", "nox", "oliv",
+        "ornis", "pelagus", "planta", "pontus", "pratum", "pulcher", "rex", "saxum", "serpens",
+        "silva", "sol", "stellis", "terra", "umbra", "ventus", "vermis", "vesper", "vita"
+    };
+
+    public static string GenerateName(string parentName)
+    {
+        // Select two random Latin word parts
+        int idx1 = Random.Range(0, LatinWordParts.Count);
+        int idx2 = Random.Range(0, LatinWordParts.Count);
+        string part1 = LatinWordParts[idx1];
+        string part2 = LatinWordParts[idx2];
+
+        // Combine the two word parts
+        string generatedName = part1 + part2;
+
+        // If there's a parent, add a prefix from its name
+        if (!string.IsNullOrEmpty(parentName))
+        {
+            string uniquePart = parentName;
+
+            // Check if the parent has a prefix
+            if (parentName.Contains("-"))
+            {
+                // Split the parent's name and extract the unique part
+                string[] nameParts = parentName.Split('-');
+                uniquePart = nameParts.Length > 1 ? nameParts[1] : parentName;
+            }
+
+            // Take the first three letters of the unique part as the prefix
+            string parentPrefix = uniquePart.Substring(0, Mathf.Min(3, uniquePart.Length));
+            generatedName = parentPrefix + "-" + generatedName;
+        }
+
+        return generatedName;
     }
 
     /// <summary>

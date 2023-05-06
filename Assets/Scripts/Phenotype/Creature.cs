@@ -361,12 +361,20 @@ public class Creature : MonoBehaviour
             int relativityLeft = guidingNR.relativeLevel;
             Segment currentSegment = requestingNeuron.segment;
             while (relativityLeft != 0){
-                Segment nextSegment = currentSegment.parent.Item2;
-                if (nextSegment.id != currentSegment.id)
+                try
                 {
-                    relativityLeft--;
+                    Segment nextSegment = currentSegment.parent.Item2;
+                    if (nextSegment.id != currentSegment.id)
+                    {
+                        relativityLeft--;
+                    }
+                    currentSegment = nextSegment;
                 }
-                currentSegment = nextSegment;
+                catch (System.Exception)
+                {
+
+                    break;
+                }
             }
 
             foreach (Neuron n in currentSegment.neurons)
