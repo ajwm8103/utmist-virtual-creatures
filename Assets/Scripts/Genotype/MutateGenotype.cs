@@ -97,11 +97,11 @@ public class MutateGenotype
         };
 
         public Dictionary<string, float[]> floatClamps = new Dictionary<string, float[]>() {
-            {"s_dx", new float[2]{0.05f,1.2f}},
-            {"s_dy", new float[2]{0.05f,1.2f}},
-            {"s_dz", new float[2]{0.05f,1.2f}},
+            {"s_dx", new float[2]{0.3f,1.5f}},
+            {"s_dy", new float[2]{0.3f,1.5f}},
+            {"s_dz", new float[2]{0.3f,1.5f}},
             {"s_o", new float[2]{0f,360f}},
-            {"s_s", new float[2]{0.2f,1.2f}},
+            {"s_s", new float[2]{0.5f,1.5f}},
             {"n_w1", new float[2]{-15f,15f}},
             {"n_w2", new float[2]{-15f,15f}},
             {"n_w3", new float[2]{-15f,15f}},
@@ -1179,7 +1179,9 @@ public class MutateGenotype
             }
 
             // 2. New random node added to graph.
-            SegmentGenotype generatedSegmentGenotype = GenerateRandomSegmentGenotype(ref cg, mp);
+            if (cg.segments.Count <= 6) {
+                SegmentGenotype generatedSegmentGenotype = GenerateRandomSegmentGenotype(ref cg, mp);
+            }
 
             // TODO: Bring back commented out - mutate connection params and add connection
 

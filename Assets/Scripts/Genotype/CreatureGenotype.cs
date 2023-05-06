@@ -205,6 +205,7 @@ public enum JointType
     HingeX,
     HingeY,
     HingeZ,
+    Configurable,
     Spherical,
 }
 

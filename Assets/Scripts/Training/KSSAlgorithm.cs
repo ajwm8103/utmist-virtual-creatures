@@ -121,7 +121,7 @@ namespace KSS
             {
                 CreatureGenotype cg = topSoftmaxEvals[i].cg;
                 int childrenCount = intValues[i];
-                if (i <= 3) Debug.Log(string.Format("{0} ({1}, {2}), children; {3}/{4}", cg.name, topEvals[i].fitness.Value, topSoftmaxEvals[i].fitness.Value / denom, childrenCount, sizeChildren));
+                if (i <= 1) Debug.Log(string.Format("{0} ({1}, {2}), children; {3}/{4}", cg.name, topEvals[i].fitness.Value, topSoftmaxEvals[i].fitness.Value / denom, childrenCount, sizeChildren));
                 for (int j = 0; j < childrenCount; j++)
                 {
                     g.cgEvals.Add(new CreatureGenotypeEval(MutateGenotype.MutateCreatureGenotype(cg, mp)));
@@ -333,8 +333,15 @@ namespace KSS
             Debug.Log(string.Format("{0}/{1} Creatures with >=0 fitness.", positiveCount, topCount));
             CreatureGenotypeEval bestEval = GetBestCreatureEval();
             Debug.Log("Best: " + topEvals.Max(x => x.fitness.Value));
-            bestEval.cg.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\" + currentGenerationIndex + "," + bestEval.cg.name + ".creature", true);
             saveK.best = bestEval;
+
+            bestEval.cg.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\" + currentGenerationIndex + "," + bestEval.cg.name + ".creature", true);
+
+            saveK.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\MAINSAVE.save", true);
+            if (currentGenerationIndex % 25 == 0)
+            {
+                saveK.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\" + currentGenerationIndex + ",save.save", true);
+            }
             return topEvals;
         }
 
