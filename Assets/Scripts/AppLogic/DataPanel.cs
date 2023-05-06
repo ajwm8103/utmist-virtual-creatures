@@ -5,6 +5,8 @@ using System.Linq;
 
 public class DataPanel : MonoBehaviour
 {
+    public GameObject dataPanelHolderActive;
+    public GameObject dataPanelHolderInactive;
     public GameObject[] dataPages;
     public int selectedPageIdx = 0;
 
@@ -18,6 +20,17 @@ public class DataPanel : MonoBehaviour
     void Update()
     {
         
+    }
+
+    public void ShowPanel()
+    {
+        dataPanelHolderActive.SetActive(true);
+        dataPanelHolderInactive.SetActive(false);
+    }
+
+    public void HidePanel(){
+        dataPanelHolderActive.SetActive(false);
+        dataPanelHolderInactive.SetActive(true);
     }
 
     public void ShiftLeft(){

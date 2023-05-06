@@ -67,19 +67,19 @@ namespace KSS
             int remainingCount = size - topEvals.Count;
 
             List<CreatureGenotypeEval> topSoftmaxEvals = new List<CreatureGenotypeEval>();
-            float maxFitness = topEvals.Max(x => (float)x.fitness);
-            float denom = topEvals.Select(x => Mathf.Exp((float)x.fitness - maxFitness)).Sum();
+            float maxFitness = topEvals.Max(x => (float)x.fitness.Value);
+            float denom = topEvals.Select(x => Mathf.Exp((float)x.fitness.Value - maxFitness)).Sum();
             
             foreach (CreatureGenotypeEval topEval in topEvals)
             {
                 g.cgEvals.Add(new CreatureGenotypeEval(topEval.cg));
                 CreatureGenotypeEval topSoftmaxEval = topEval.ShallowCopy();
-                topSoftmaxEval.fitness = Mathf.Exp((float)topSoftmaxEval.fitness - maxFitness);
+                topSoftmaxEval.fitness = Mathf.Exp((float)topSoftmaxEval.fitness.Value - maxFitness);
                 topSoftmaxEvals.Add(topSoftmaxEval);
             }
 
-            topSoftmaxEvals = topSoftmaxEvals.OrderByDescending(x => x.fitness).ToList();
-            foreach (CreatureGenotypeEval topSoftmaxEval in topSoftmaxEvals)
+            topSoftmaxEvals = topSoftmaxEvals.OrderByDescending(x => x.fitness.Value).ToList();
+            /*foreach (CreatureGenotypeEval topSoftmaxEval in topSoftmaxEvals)
             {
                 int childrenCount = Mathf.RoundToInt(remainingCount * (float)topSoftmaxEval.fitness / denom);
                 //Debug.Log(remainingCount + " " + childrenCount + " " + topSoftmaxEval.fitness + " " + denom);
@@ -87,20 +87,49 @@ namespace KSS
                 remainingCount -= childrenCount;
                 denom -= (float)topSoftmaxEval.fitness;
                 //Debug.Log(remainingCount + " " + denom);
-                Debug.Log(topSoftmaxEval.cg.name + " " + childrenCount);
+                Debug.Log(topSoftmaxEval.cg.name + " " + childrenCount + "/" + (size - topEvals.Count));
                 for (int i = 0; i < childrenCount; i++)
                 {
                     g.cgEvals.Add(new CreatureGenotypeEval(MutateGenotype.MutateCreatureGenotype(topSoftmaxEval.cg, mp)));
+                }
+            }*/
+
+            List<int> intValues = new List<int>();
+
+            // Calculate the integer values for each percentage
+            int sizeChildren = size - topEvals.Count;
+            foreach (CreatureGenotypeEval topSoftmaxEval in topSoftmaxEvals)
+            {
+                intValues.Add((int)(sizeChildren * (float)topSoftmaxEval.fitness.Value / denom));
+            }
+
+            // Calculate the difference between the sum of the integer values and the desired size
+            int diff = sizeChildren - intValues.Sum();
+
+            // Distribute the difference across the integer values
+            for (int i = 0; i < diff; i++)
+            {
+                intValues[i % intValues.Count]++;
+            }
+
+            for (int i = 0; i < intValues.Count; i++)
+            {
+                CreatureGenotype cg = topSoftmaxEvals[i].cg;
+                int childrenCount = intValues[i];
+                if (i <= 4) Debug.Log(cg.name + " " + childrenCount + "/" + sizeChildren);
+                for (int j = 0; j < childrenCount; j++)
+                {
+                    g.cgEvals.Add(new CreatureGenotypeEval(MutateGenotype.MutateCreatureGenotype(cg, mp)));
                 }
             }
 
             if (g.cgEvals.Count != size){
                 Debug.Log(remainingCount);
-                Debug.Log(topSoftmaxEvals.Select(x => x.fitness).ToList());
+                Debug.Log(topSoftmaxEvals.Select(x => x.fitness.Value).ToList());
 
                 foreach (CreatureGenotypeEval topSoftmaxEval in topSoftmaxEvals)
                 {
-                    Debug.Log(topSoftmaxEval.fitness);
+                    Debug.Log(topSoftmaxEval.fitness.Value);
                 }
 
                 throw new System.Exception("Wrong generation size!");
@@ -114,8 +143,9 @@ namespace KSS
     public enum EvalStatus { NOT_EVALUATED, EVALUATED, DISQUALIFIED };
     [System.Serializable]
     public class CreatureGenotypeEval {
+        [HideInInspector]
         public CreatureGenotype cg;
-        public float? fitness; // total reward
+        public SN<float> fitness; // total reward
         public EvalStatus evalStatus = EvalStatus.NOT_EVALUATED;
 
         public CreatureGenotypeEval(CreatureGenotype cg){
@@ -152,7 +182,7 @@ namespace KSS
         private int currentGenerationIndex = 0;
         [SerializeField]
         private int untestedRemaining;
-        private Generation currentGeneration;
+        public Generation currentGeneration;
         private List<EnvTracker> trackers;
         private bool isSetup = false;
         //private bool generationInProgress = false;
@@ -269,14 +299,15 @@ namespace KSS
         private List<CreatureGenotypeEval> SelectTopEvals(Generation g, MutateGenotype.MutationPreferenceSetting mp)
         {
             List<CreatureGenotypeEval> topEvals = new List<CreatureGenotypeEval>();
-            List<CreatureGenotypeEval> sortedEvals = g.cgEvals.OrderByDescending(x => x.fitness).ToList();
+            List<CreatureGenotypeEval> sortedEvals = g.cgEvals.OrderByDescending(x => x.fitness.Value).ToList();
             sortedEvals.RemoveAll(x => x.evalStatus == EvalStatus.DISQUALIFIED);
+
             int topCount = Mathf.RoundToInt(optimizationSettings.populationSize * optimizationSettings.survivalRatio);
             int positiveCount = 0;
             for (int i = 0; i < topCount; i++)
             {
-                CreatureGenotypeEval eval = g.cgEvals[i];
-                if (eval.evalStatus == EvalStatus.EVALUATED && eval.fitness != null && eval.fitness >= 0) {
+                CreatureGenotypeEval eval = sortedEvals[i];
+                if (eval.evalStatus == EvalStatus.EVALUATED && eval.fitness != null && eval.fitness.Value >= 0) {
                     topEvals.Add(eval);
                     positiveCount++;
                 } else {
@@ -286,8 +317,8 @@ namespace KSS
                 }
             }
 
-            Debug.Log(positiveCount + " Creatures with >=0 fitness.");
-            Debug.Log("Best: " + topEvals.Max(x => x.fitness));
+            Debug.Log(string.Format("{0}/{1} Creatures with >=0 fitness.", positiveCount, topCount));
+            Debug.Log("Best: " + topEvals.Max(x => x.fitness.Value));
             return topEvals;
         }
 
@@ -299,8 +330,8 @@ namespace KSS
 
         private CreatureGenotype SelectBestGenotype(Generation g)
         {
-            CreatureGenotypeEval bestEval = g.cgEvals.OrderByDescending(cgEval => cgEval.fitness).FirstOrDefault();
-            Debug.Log("Best: " + bestEval.fitness);
+            CreatureGenotypeEval bestEval = g.cgEvals.OrderByDescending(cgEval => cgEval.fitness.Value).FirstOrDefault();
+            Debug.Log("Best: " + bestEval.fitness.Value);
             return bestEval.cg;
         }
     }

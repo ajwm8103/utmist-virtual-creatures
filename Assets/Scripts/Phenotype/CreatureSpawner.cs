@@ -309,6 +309,7 @@ public class CreatureSpawner : MonoBehaviour
                 var connectionPathClone = connectionPath.Select(item => (byte)item).ToList();
                 connectionPathClone.Add(connection.id);
                 Segment childSegment = SpawnSegment(cg, c, recursiveLimitClone, connection, spawnedSegmentGameObject, parentGlobalScale * myConnection.scale, otherReflectBool, connectionPathClone);
+                childSegment.SetCreature(c);
                 childSegment.SetParent(connection.id, spawnedSegment);
                 spawnedSegment.AddChild(connection.id, childSegment);
             }
@@ -335,6 +336,7 @@ public class CreatureSpawner : MonoBehaviour
 
         Segment spawnedSegment = spawnedSegmentGameObject.GetComponent<Segment>();
         spawnedSegment.SetId(1);
+        spawnedSegment.SetCreature(c);
 
         Vector3 dimVector = new Vector3(currentSegmentGenotype.dimensionX, currentSegmentGenotype.dimensionY, currentSegmentGenotype.dimensionZ);
         //spawnedSegment.GetComponent<BoxCollider>().size = dimVector;
@@ -374,10 +376,10 @@ public class CreatureSpawner : MonoBehaviour
                 }
                 spawnedSegment.AddNeuron(addedNeuron);
             }
-        } else if (cg.stage == TrainingStage.RL){
-            // Add Segment
-            c.segments.Add(spawnedSegmentGameObject.GetComponent<Segment>());
         }
+
+        // Add Segment
+        c.segments.Add(spawnedSegmentGameObject.GetComponent<Segment>());
         
 
 
@@ -392,6 +394,7 @@ public class CreatureSpawner : MonoBehaviour
                 }
                 var recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
                 Segment childSegment = SpawnSegment(cg, c, recursiveLimitClone, connection, spawnedSegmentGameObject, 1, false, new List<byte>() { connection.id });
+                childSegment.SetCreature(c);
                 childSegment.SetParent(connection.id, spawnedSegment);
                 spawnedSegment.AddChild(connection.id, childSegment);
             }

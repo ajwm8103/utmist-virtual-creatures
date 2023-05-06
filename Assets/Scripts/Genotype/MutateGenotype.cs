@@ -417,7 +417,7 @@ public class MutateGenotype
                         continue;
                     }
                     Dictionary<byte, byte> recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
-                    List<byte> connectionPathClone = connectionPath.Select(item => (byte)item).ToList();
+                    List<byte> connectionPathClone = connectionPath.Select(item => item).ToList();
                     connectionPathClone.Add(connection.id);
                     TraceConnections(cg, recursiveLimitClone, connection, connectionPathClone, segmentIds, connectionPaths, neuronReferences, initialSegmentId);
                 }
@@ -1039,10 +1039,6 @@ public class MutateGenotype
         return possibleDestinations;
     }
 
-    // TODELETE B/C DEBUG
-    public List<List<byte>> cp1 = new List<List<byte>>();
-    public List<NeuronReference> nr1 = new List<NeuronReference>();
-
     public static CreatureGenotype MutateCreatureGenotype(CreatureGenotype cg, MutationPreferenceSetting mp)
     {
         //Debug.Log("----MUTATING CREATURE----");
@@ -1056,8 +1052,6 @@ public class MutateGenotype
 
         List<List<byte>> connectionPaths; List<byte> segmentIds; List<NeuronReference> neuronReferences;
         TraceConnectionRoot(cg, out segmentIds, out connectionPaths, out neuronReferences);
-        //cp1 = connectionPaths;
-        //nr1 = neuronReferences;
 
 
         // Mutations are performed on a per element basis
@@ -1124,7 +1118,8 @@ public class MutateGenotype
             // 3. Connection parameters subjected to mutation.
             // Sometimes pointer moved to point to a different node at random.
             // This is how neural nodes stay - they become the input of another neuron
-            Dictionary<byte, byte[]> segmentParentsByDest = cg.GetSegmentParents(true);
+            Dictionary<byte, byte[]> segmentParentsByDestNoSelf = cg.GetSegmentParents(true, false);
+            Dictionary<byte, byte[]> segmentParentsByDestOnlySelf = cg.GetSegmentParents(true, true);
             foreach (SegmentGenotype sg in cg.segments)
             {
                 if (sg.id == 0) continue;
@@ -1138,15 +1133,33 @@ public class MutateGenotype
                         sg.connections.Remove(scg2);
 
                         // Update segment parents dict
-                        byte[] data = segmentParentsByDest[scg2.destination];
-                        data[1]--;
-                        if (data[1] <= 0){
-                            segmentParentsByDest.Remove(scg2.destination);
+                        bool wasSelf = scg2.destination == sg.id;
+                        byte[] data;
+                        if (wasSelf){
+                            data = segmentParentsByDestOnlySelf[scg2.destination];
+                            data[0]--;
+                            if (data[0] <= 0)
+                            {
+                                segmentParentsByDestOnlySelf.Remove(scg2.destination);
+                            }
+                            else
+                            {
+                                segmentParentsByDestOnlySelf[scg2.destination] = data;
+                            }
                         } else {
-                            segmentParentsByDest[scg2.destination] = data;
+                            data = segmentParentsByDestNoSelf[scg2.destination];
+                            data[1]--;
+                            if (data[1] <= 0)
+                            {
+                                segmentParentsByDestNoSelf.Remove(scg2.destination);
+                            }
+                            else
+                            {
+                                segmentParentsByDestNoSelf[scg2.destination] = data;
+                            }
                         }
 
-                        List<byte> possibleDestinations = GetSegmentGenotypeDestinations(cg, sg, segmentParentsByDest);
+                        List<byte> possibleDestinations = GetSegmentGenotypeDestinations(cg, sg, segmentParentsByDestNoSelf);
 
                         // Select random destination
                         byte destId;
@@ -1160,15 +1173,69 @@ public class MutateGenotype
                         sg.connections.Insert(i, scg2);
 
                         // Update parents list
-                        if (segmentParentsByDest.ContainsKey(destId))
-                        {
-                            byte[] data2 = segmentParentsByDest[destId];
-                            data2[1]++;
-                            segmentParentsByDest[destId] = data2;
+                        bool isSelf = destId == sg.id;
+                        byte[] data2;
+                        if (isSelf){
+                            if (segmentParentsByDestOnlySelf.ContainsKey(destId))
+                            {
+                                data2 = segmentParentsByDestOnlySelf[destId];
+                                data2[0]++;
+                                segmentParentsByDestOnlySelf[destId] = data2;
+                            }
+                            else
+                            {
+                                segmentParentsByDestOnlySelf.Add(destId, new byte[1] { 1 });
+                            }
+                        } else {
+                            if (segmentParentsByDestNoSelf.ContainsKey(destId))
+                            {
+                                data2 = segmentParentsByDestNoSelf[destId];
+                                data2[1]++;
+                                segmentParentsByDestNoSelf[destId] = data2;
+                            }
+                            else
+                            {
+                                segmentParentsByDestNoSelf.Add(destId, new byte[2] { sg.id, 1 });
+                            }
                         }
-                        else
-                        {
-                            segmentParentsByDest.Add(destId, new byte[2] { sg.id, 1 });
+
+                        // Fix any neurons in the old destination
+                        if (destId != scg2.destination){
+                            SegmentGenotype segmentGenotype = cg.GetSegment(scg2.destination);
+                            foreach (NeuronGenotype ng in segmentGenotype.neurons)
+                            {
+                                for (int j = 0; j < ng.inputs.Length; j++)
+                                {
+                                    if (ng.inputs[j].relativityNullable.Value == NeuronReferenceRelativity.PARENT)
+                                    {
+                                        // Find new input
+                                        List<NeuronReference> possibleNeurons = GetPossibleReferences(cg, segmentGenotype, neuronReferences, segmentIds);
+
+                                        if (possibleNeurons.Count == 0)
+                                        {
+                                            continue;
+                                        }
+
+                                        // Select random input NeuronReferences
+
+                                        // Select random id
+                                        int selectedNeuronId = Random.Range(0, possibleNeurons.Count);
+
+                                        NeuronReference neuronInput = possibleNeurons[selectedNeuronId];
+                                        if (neuronInput.relativityNullable.Equals(null))
+                                        {
+                                            //Debug.Log("null");
+                                            throw new System.Exception("Null neuron input relativity.");
+                                        }
+                                        else
+                                        {
+                                            //Debug.Log((NeuronReferenceRelativity)neuronInputs[i].relativityNullable);
+                                        }
+
+                                        ng.inputs[j] = neuronInput;
+                                    }
+                                }
+                            }
                         }
                     }
                     SegmentConnectionGenotype scg = sg.connections[i];
@@ -1210,7 +1277,8 @@ public class MutateGenotype
                 sg.connections.RemoveAll(connection => mp.CoinFlip("s_removec"));
             }
 
-            segmentParentsByDest = cg.GetSegmentParents(true);
+            segmentParentsByDestNoSelf = cg.GetSegmentParents(true, false);
+            segmentParentsByDestOnlySelf = cg.GetSegmentParents(true, true);
             foreach (SegmentGenotype sg in cg.segments)
             {
                 if (sg.id != 0 && mp.CoinFlip("s_addc"))
@@ -1240,9 +1308,9 @@ public class MutateGenotype
                                     // Segment is self
                                     possibleDestinations.Add(sgPossibleId);
                                 }
-                                else if (segmentParentsByDest.ContainsKey(sgPossibleId)){
+                                else if (segmentParentsByDestNoSelf.ContainsKey(sgPossibleId)){
                                     // Segment is not self, but has parents
-                                    byte[] data = segmentParentsByDest[sgPossibleId];
+                                    byte[] data = segmentParentsByDestNoSelf[sgPossibleId];
                                     if (data[0] == sg.id){
                                         possibleDestinations.Add(sgPossibleId);
                                     }
@@ -1258,12 +1326,32 @@ public class MutateGenotype
                             scg.destination = destId;
 
                             // Update parents list
-                            if (segmentParentsByDest.ContainsKey(destId)){
-                                byte[] data = segmentParentsByDest[destId];
-                                data[1]++;
-                                segmentParentsByDest[destId] = data;
-                            } else {
-                                segmentParentsByDest.Add(destId, new byte[2] { sg.id, 1 });
+                            bool isSelf = destId == sg.id;
+                            if (isSelf)
+                            {
+                                if (segmentParentsByDestOnlySelf.ContainsKey(destId))
+                                {
+                                    byte[] data = segmentParentsByDestOnlySelf[destId];
+                                    data[0]++;
+                                    segmentParentsByDestOnlySelf[destId] = data;
+                                }
+                                else
+                                {
+                                    segmentParentsByDestOnlySelf.Add(destId, new byte[1] { 1 });
+                                }
+                            }
+                            else
+                            {
+                                if (segmentParentsByDestNoSelf.ContainsKey(destId))
+                                {
+                                    byte[] data = segmentParentsByDestNoSelf[destId];
+                                    data[1]++;
+                                    segmentParentsByDestNoSelf[destId] = data;
+                                }
+                                else
+                                {
+                                    segmentParentsByDestNoSelf.Add(destId, new byte[2] { sg.id, 1 });
+                                }
                             }
 
                             /*

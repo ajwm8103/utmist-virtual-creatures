@@ -25,6 +25,7 @@ public class Neuron
     {
         this.ng = ng;
         this.segmentId = segmentId;
+        a = 1; b = 1; c = 1; outValue = 0; dummy1 = 0;
     }
 
     public Neuron(NeuronGenotype ng, byte segmentId, Segment segment)
@@ -32,6 +33,7 @@ public class Neuron
         this.ng = ng;
         this.segmentId = segmentId;
         this.segment = segment;
+        a = 1; b = 1; c = 1; outValue = 0; dummy1 = 0;
     }
 
     public void GetInputs()
@@ -40,7 +42,13 @@ public class Neuron
         if (neuronA != null) a = neuronA.outValue * ng.weights[0];
         if (neuronB != null) b = neuronB.outValue * ng.weights[1];
         if (neuronC != null) c = neuronC.outValue * ng.weights[2];
-
+        if (float.IsNaN(a) || float.IsNaN(b) || float.IsNaN(c)){
+            if (segment != null){
+                Debug.Log("trolling " + segment.transform.parent.parent.parent.name);
+            } else {
+                Debug.Log("trolling");
+            }
+        }
 
         if (ng.nr.id == 12) // joint effector
         {
@@ -49,7 +57,7 @@ public class Neuron
             if (effectorJoint is HingeJoint){
                 HingeJoint hj = (HingeJoint)effectorJoint;
                 JointMotor motor = hj.motor;
-                motor.targetVelocity = Mathf.Clamp(a, -15f, 15f);
+                motor.targetVelocity = 10f * Mathf.Clamp(a, -15f, 15f);
                 hj.motor = motor;
             }
         }
@@ -95,7 +103,7 @@ public class Neuron
             11 => Mathf.Sin(a), // sin
             12 => Mathf.Cos(a), // cos
             13 => Mathf.Atan(a), // atan
-            14 => Mathf.Log10(a), // log
+            14 => Mathf.Log10(Mathf.Abs(a)), // log
             15 => Mathf.Exp(a), // expt
             16 => 1 / (1 + Mathf.Exp(-a)), // sigmoid
             17 => outValue + Time.deltaTime * ((a + dummy1) * 0.5f), // integrate
@@ -106,6 +114,12 @@ public class Neuron
             22 => b * (Time.time * a - Mathf.Floor(Time.time * a)) + c, // oscillate-saw
             _ => 0
         };
+
+        if (float.IsNaN(outValue)){
+            outValue = 0f;
+        }
+
+        outValue = Mathf.Clamp(outValue, -300f, 300f);
 
         if (ng.type == 17 || ng.type == 18) // integrate or differentiate
         {
@@ -171,7 +185,7 @@ public class Creature : MonoBehaviour
     public CreatureGenotype cg;
     private bool isAlive = true; // false => display mode
     public Fitness fitness { get; private set; }
-    public float totalReward;
+    public float totalReward = 0;
     public List<Neuron> sensors = new List<Neuron>();
     public List<Neuron> neurons = new List<Neuron>();
     public List<Neuron> effectors = new List<Neuron>();

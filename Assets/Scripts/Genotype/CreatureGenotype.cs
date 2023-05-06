@@ -348,6 +348,10 @@ public class CreatureGenotype
         orientationW = q.w;
     }
 
+    /// <summary>
+    /// Returns a dictionary of <child, parents></child>
+    /// </summary>
+    /// <returns></returns>
     public Dictionary<byte, byte> GetParentsDict(){
         Dictionary<byte, byte> parentsDict = new Dictionary<byte, byte>(); // (segmentId, parentId)
         Queue<SegmentGenotype> segmentsToSearch = new Queue<SegmentGenotype>();
@@ -406,7 +410,7 @@ public class CreatureGenotype
     /// </summary>
     /// <param name="isFull"></param>
     /// <returns></returns>
-    public Dictionary<byte, byte[]> GetSegmentParents(bool isFull)
+    public Dictionary<byte, byte[]> GetSegmentParents(bool isFull, bool onlySelf)
     {
         Dictionary<byte, byte[]> segmentParentsByDest = new Dictionary<byte, byte[]>();
 
@@ -416,14 +420,24 @@ public class CreatureGenotype
             {
                 foreach (SegmentConnectionGenotype scg in sg.connections)
                 {
-                    if (scg.id == sg.id) continue;
-                    if (segmentParentsByDest.ContainsKey(scg.destination))
-                    {
-                        segmentParentsByDest[scg.destination][1]++;
-                    }
-                    else
-                    {
-                        segmentParentsByDest.Add(scg.destination, new byte[2] { sg.id, 1 });
+                    if (scg.destination == sg.id && onlySelf){
+                        if (segmentParentsByDest.ContainsKey(scg.destination))
+                        {
+                            segmentParentsByDest[scg.destination][0]++;
+                        }
+                        else
+                        {
+                            segmentParentsByDest.Add(scg.destination, new byte[1] { 1 });
+                        }
+                    } else if (scg.destination != sg.id && !onlySelf) {
+                        if (segmentParentsByDest.ContainsKey(scg.destination))
+                        {
+                            segmentParentsByDest[scg.destination][1]++;
+                        }
+                        else
+                        {
+                            segmentParentsByDest.Add(scg.destination, new byte[2] { sg.id, 1 });
+                        }
                     }
                 }
             }

@@ -148,6 +148,7 @@ public class TrainingManager : MonoBehaviour
                 Environment instantiatedEnv = Instantiate(envPrefab, Vector3.right * i * sizeX, envPrefab.transform.rotation).GetComponent<Environment>();
                 instantiatedEnv.Setup(ts.envSettings);
                 instantiatedEnv.transform.parent = envHolder;
+                instantiatedEnv.gameObject.name += i.ToString();
                 environments.Add(instantiatedEnv);
                 Transform oneOff = instantiatedEnv.transform.Find("OneOffHolder");
                 if (oneOff != null && i != 0) {

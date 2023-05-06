@@ -7,9 +7,11 @@ public class ViewerController : MonoBehaviour
     [Header("Controls")]
     public float verticalSpeed = 4;
     public float horizontalSpeed = 4;
+    public LayerMask layerMask;
 
     Vector2 rotation = Vector2.zero;
     public float speed = 3;
+    private Camera mainCamera;
     TrainingManager tm;
     private bool trackingCursor = false;
     bool IsMouseOverGameWindow { get { return !(0 > Input.mousePosition.x || 0 > Input.mousePosition.y || Screen.width < Input.mousePosition.x || Screen.height < Input.mousePosition.y); } }
@@ -18,6 +20,7 @@ public class ViewerController : MonoBehaviour
     void Start()
     {
         tm = TrainingManager.instance;
+        mainCamera = GetComponentInChildren<Camera>();
     }
 
     // Update is called once per frame
@@ -78,6 +81,29 @@ public class ViewerController : MonoBehaviour
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             trackingCursor = true;
+        }
+
+        if (Input.GetMouseButtonDown(1) && trackingCursor){
+            DisplayStatsPanel dsp = DisplayStatsPanel.instance;
+            if (dsp != null){
+                // Calculate the center of the screen
+                Vector3 screenCenter = new Vector3(Screen.width / 2, Screen.height / 2, 0);
+
+                // Create a ray from the camera through the center of the screen
+                Ray ray = mainCamera.ScreenPointToRay(screenCenter);
+
+                RaycastHit hit;
+                if (Physics.Raycast(ray, out hit, 100f, layerMask))
+                {
+                    // Check if the hit object has a Segment component
+                    Segment segment = hit.collider.gameObject.GetComponent<Segment>();
+                    if (segment != null)
+                    {
+                        //Debug.Log(segment.creature);
+                        dsp.UpdateCreatureStats(segment.creature);
+                    }
+                }
+            }
         }
     }
 }

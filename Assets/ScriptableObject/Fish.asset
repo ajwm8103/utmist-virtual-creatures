@@ -103,7 +103,7 @@ MonoBehaviour:
           id: 3
         weights:
         - 1
-        - 1
+        - 15
         - 0
         nr:
           relativityNullable:
@@ -125,7 +125,7 @@ MonoBehaviour:
           connectionPath: 
           id: 13
         weights:
-        - 350
+        - 2.3
         nr:
           relativityNullable:
             v: 0

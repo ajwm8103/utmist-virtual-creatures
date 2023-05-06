@@ -69,6 +69,7 @@ public class Segment : MonoBehaviour
     public Dictionary<byte, Segment> children { get; private set; }
     public System.Tuple<byte, Segment> parent { get; private set; }
     public List<Neuron> neurons;
+    public Creature creature { get; private set; }
 
     private RigidbodyState storedState;
 
@@ -135,6 +136,10 @@ public class Segment : MonoBehaviour
 
     public void SetParent(byte connectionId, Segment s){
         parent = new System.Tuple<byte, Segment>(connectionId, s);
+    }
+
+    public void SetCreature(Creature c){
+        creature = c;
     }
 
     public void AddChild(byte connectionId, Segment s){
