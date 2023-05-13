@@ -73,6 +73,7 @@ public abstract class Environment : MonoBehaviour
     {
         this.es = es;
         fitness = GetComponent<Fitness>();
+        //fitness.firstFrame = true;
         tm = TrainingManager.instance;
         cs = CreatureSpawner.instance;
         spawnTransform = transform.Find("SpawnTransform");
@@ -84,7 +85,16 @@ public abstract class Environment : MonoBehaviour
         if (!busy) return;
 
         timePassed += Time.fixedDeltaTime;
-        bool isOutOfTime = timePassed >= es.maxTime && es.maxTime > 0;
+        bool isOutOfTime;
+        try
+        {
+            isOutOfTime = timePassed >= es.maxTime && es.maxTime > 0;
+        }
+        catch (Exception)
+        {
+            Debug.Log(es);
+            throw;
+        }
         Vector3 currentCom = currentCreature.GetCentreOfMass();
         bool isExtremelyFar = (transform.position - currentCom).sqrMagnitude >= 1000;
         if (lastCom == null) {

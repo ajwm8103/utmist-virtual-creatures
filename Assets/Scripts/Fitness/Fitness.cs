@@ -6,7 +6,10 @@ using UnityEngine;
 // Should not do anything more than return a frame reward. Will not hold a total reward.
 public abstract class Fitness : MonoBehaviour
 {
+    public bool firstFrame = true;
     public Environment myEnvironment;
     public abstract float UpdateFrameReward();
-    public abstract void Reset();
+    public virtual void Reset(){
+        firstFrame = true;
+    }
 }

@@ -119,7 +119,7 @@ public class CreatureSpawner : MonoBehaviour
     {
         counter++;
         //Debug.Log(counter);
-        if (counter == 20){
+        if (counter == 80){
             Debug.Log("Likely looping, save for debug.");
             string name = "/debug_" + Random.Range(0, 100) + ".creature";
             cg.SaveData(name, false);
@@ -204,7 +204,7 @@ public class CreatureSpawner : MonoBehaviour
                     j.useMotor = true;
                     JointMotor motor = j.motor;
                     motor.targetVelocity = 0;
-                    motor.force = 100;
+                    motor.force = 250;
                     j.motor = motor;
                 }
                 break;
@@ -217,7 +217,7 @@ public class CreatureSpawner : MonoBehaviour
                     j.useMotor = true;
                     JointMotor motor = j.motor;
                     motor.targetVelocity = 0;
-                    motor.force = 100;
+                    motor.force = 250;
                     j.motor = motor;
                 }
                 break;
@@ -230,7 +230,7 @@ public class CreatureSpawner : MonoBehaviour
                     j.useMotor = true;
                     JointMotor motor = j.motor;
                     motor.targetVelocity = 0;
-                    motor.force = 100;
+                    motor.force = 250;
                     j.motor = motor;
                 }
                 break;
@@ -278,7 +278,7 @@ public class CreatureSpawner : MonoBehaviour
                 Neuron addedNeuron;
                 if (nm.nr.id == 12)
                 {
-                    addedNeuron = c.AddNeuron(nm, spawnedSegmentGameObject.GetComponent<HingeJoint>(), spawnedSegment, 1);
+                    addedNeuron = c.AddNeuron(nm, spawnedSegmentGameObject.GetComponent<Joint>(), spawnedSegment, 1);
                 }
                 else if (nm.nr.id <= 11)
                 {
@@ -309,6 +309,7 @@ public class CreatureSpawner : MonoBehaviour
                 var connectionPathClone = connectionPath.Select(item => (byte)item).ToList();
                 connectionPathClone.Add(connection.id);
                 Segment childSegment = SpawnSegment(cg, c, recursiveLimitClone, connection, spawnedSegmentGameObject, parentGlobalScale * myConnection.scale, otherReflectBool, connectionPathClone);
+                childSegment.SetCreature(c);
                 childSegment.SetParent(connection.id, spawnedSegment);
                 spawnedSegment.AddChild(connection.id, childSegment);
             }
@@ -335,6 +336,7 @@ public class CreatureSpawner : MonoBehaviour
 
         Segment spawnedSegment = spawnedSegmentGameObject.GetComponent<Segment>();
         spawnedSegment.SetId(1);
+        spawnedSegment.SetCreature(c);
 
         Vector3 dimVector = new Vector3(currentSegmentGenotype.dimensionX, currentSegmentGenotype.dimensionY, currentSegmentGenotype.dimensionZ);
         //spawnedSegment.GetComponent<BoxCollider>().size = dimVector;
@@ -374,10 +376,10 @@ public class CreatureSpawner : MonoBehaviour
                 }
                 spawnedSegment.AddNeuron(addedNeuron);
             }
-        } else if (cg.stage == TrainingStage.RL){
-            // Add Segment
-            c.segments.Add(spawnedSegmentGameObject.GetComponent<Segment>());
         }
+
+        // Add Segment
+        c.segments.Add(spawnedSegmentGameObject.GetComponent<Segment>());
         
 
 
@@ -392,6 +394,7 @@ public class CreatureSpawner : MonoBehaviour
                 }
                 var recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
                 Segment childSegment = SpawnSegment(cg, c, recursiveLimitClone, connection, spawnedSegmentGameObject, 1, false, new List<byte>() { connection.id });
+                childSegment.SetCreature(c);
                 childSegment.SetParent(connection.id, spawnedSegment);
                 spawnedSegment.AddChild(connection.id, childSegment);
             }
