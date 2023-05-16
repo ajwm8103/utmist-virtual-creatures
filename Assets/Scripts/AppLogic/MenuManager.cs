@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -74,6 +75,14 @@ public class MenuManager : MonoBehaviour
     public void ShowChooseEvolutionMenu()
     {
         menus.ForEach(o => o.SetActive(false));
+
+        string[] fileArray = Directory.GetFiles(OptionsPersist.instance.VCSaves, "*.save");
+
+        foreach (string filePath in fileArray)
+        {
+            Debug.Log(filePath);
+        }
+
         chooseEvolution.SetActive(true);
     }
 

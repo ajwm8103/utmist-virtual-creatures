@@ -12,9 +12,10 @@ TrueTypeFontImporter:
   - Minecraft
   fallbackFontReferences:
   - {fileID: 12800000, guid: 94d220da37a3425449d81942f4658a7c, type: 3}
+  - {fileID: 12800000, guid: fd5af10781887b74a91aa6c865b4a114, type: 3}
   - {fileID: 12800000, guid: b38487b72ab9d674d975b9768bc0263b, type: 3}
   customCharacters: 
-  fontRenderingMode: 0
+  fontRenderingMode: 2
   ascentCalculationMode: 1
   useLegacyBoundsCalculation: 0
   shouldRoundAdvanceValue: 1
