@@ -74,10 +74,24 @@ public class RLSettings : OptimizationSettings {
 [System.Serializable]
 public class KSSSettings : OptimizationSettings {
     public override TrainingStage stage { get { return TrainingStage.KSS; } }
-    public int populationSize = 300;
-    public int totalGenerations = 200;
-    public float survivalRatio = 1f / 5f;
+    public int populationSize;
+    public int totalGenerations;
+    public float survivalRatio;
     public MutateGenotype.MutationPreferenceSetting mp;
+
+    public KSSSettings(int ps, int tg, float sr)
+    {
+        this.populationSize = ps;
+        this.totalGenerations = tg;
+        this.survivalRatio = sr;
+    }
+
+    public KSSSettings()
+    {
+        this.populationSize = 300;
+        this.totalGenerations = 200;
+        this.survivalRatio = 1f / 5f;
+    }
 }
 
 /// <summary>
