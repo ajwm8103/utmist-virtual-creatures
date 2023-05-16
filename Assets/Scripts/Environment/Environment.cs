@@ -83,6 +83,7 @@ public abstract class Environment : MonoBehaviour
     public virtual void FixedUpdate()
     {
         if (!busy) return;
+        if (tm == null) tm = TrainingManager.instance;
 
         timePassed += Time.fixedDeltaTime;
         bool isOutOfTime;
@@ -92,8 +93,13 @@ public abstract class Environment : MonoBehaviour
         }
         catch (Exception)
         {
-            Debug.Log(es);
-            throw;
+            if (isStandalone){
+                es = EnvironmentSettings.GetDefault(envCode);
+            } else {
+                es = tm.ts.envSettings;
+            }
+
+            isOutOfTime = timePassed >= es.maxTime && es.maxTime > 0;
         }
         Vector3 currentCom = currentCreature.GetCentreOfMass();
         bool isExtremelyFar = (transform.position - currentCom).sqrMagnitude >= 1000;

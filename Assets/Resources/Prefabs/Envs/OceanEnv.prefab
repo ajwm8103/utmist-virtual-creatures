@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 6214767711178805832}
   - component: {fileID: 2165496788870377694}
   - component: {fileID: 188977948223374200}
-  - component: {fileID: 2835615611464039850}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -62,7 +61,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 9d775ac53ae60dd4bb7ea92c24ed15ae, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -84,19 +83,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &2835615611464039850
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4034797341096020855}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &5519278538132110892
 GameObject:
   m_ObjectHideFlags: 0
@@ -179,7 +165,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fluidDensity: 1000
   viscosityDrag: 1
-  fluidEnabled: 0
+  fluidEnabled: 1
 --- !u!1 &5601391390443011213
 GameObject:
   m_ObjectHideFlags: 0
@@ -228,7 +214,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &5601391390957089979
 Transform:
   m_ObjectHideFlags: 0
@@ -272,8 +258,8 @@ MonoBehaviour:
   dynamicMaterial: 0
   settings: {fileID: 0}
   useVolumeBlending: 0
-  startDistance: 0
-  fogDensity: 8
+  startDistance: 2
+  fogDensity: 5
   heightFogDepth: 25
   heightFogDensity: 50
   heightFogBrightness: 0.5
@@ -305,7 +291,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &5977242794750260583
 Transform:
   m_ObjectHideFlags: 0
@@ -436,7 +422,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6472731533670679721
 Transform:
   m_ObjectHideFlags: 0
@@ -762,7 +748,6 @@ GameObject:
   - component: {fileID: 2731916901915930640}
   - component: {fileID: 2460178071511044212}
   - component: {fileID: 874117456643709334}
-  - component: {fileID: 1109043899992944805}
   m_Layer: 0
   m_Name: Quad
   m_TagString: Untagged
@@ -835,20 +820,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &1109043899992944805
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6722237070049462268}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 4
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &8854125627623541470
 GameObject:
   m_ObjectHideFlags: 0

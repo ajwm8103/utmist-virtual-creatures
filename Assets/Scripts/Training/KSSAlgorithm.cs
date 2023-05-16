@@ -80,7 +80,7 @@ namespace KSS
             float maxFitness = topEvals.Max(x => (float)x.fitness.Value);
             float scalingFactor = (maxFitness != minFitness) ? 1.0f / (maxFitness - minFitness) : 1.0f;
 
-            float exponent = 0.5f;
+            // float exponent = 0.5f;
             float temperature = 0.1f; // You can adjust this value to find the right balance
             float denom = topEvals.Select(x => Mathf.Pow((float)(x.fitness.Value - minFitness) * scalingFactor, 1 / temperature)).Sum();
             //float denom = topEvals.Select(x => Mathf.Exp((float)x.fitness.Value - maxFitness)).Sum();
@@ -304,6 +304,8 @@ namespace KSS
                 //CreatureGenotype bestGenotype = SelectBestGenotype(currentGeneration);
                 //currentGeneration = Generation.FromInitial(optimizationSettings.populationSize, bestGenotype, optimizationSettings.mp);
                 saveK.generations.Add(currentGeneration);
+
+                // Delete last
             }
         }
 
@@ -337,11 +339,7 @@ namespace KSS
 
             bestEval.cg.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\" + currentGenerationIndex + "," + bestEval.cg.name + ".creature", true);
 
-            saveK.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\MAINSAVE.save", true);
-            if (currentGenerationIndex % 25 == 0)
-            {
-                saveK.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\" + currentGenerationIndex + ",save.save", true);
-            }
+            //saveK.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\MAINSAVE.save", true);
             return topEvals;
         }
 
