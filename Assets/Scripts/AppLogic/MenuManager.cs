@@ -21,6 +21,29 @@ public class MenuManager : MonoBehaviour
 
     private List<GameObject> menus;
 
+    // settings ui
+    public InputField populationField;
+    public InputField generationField;
+    public InputField ratioNumeratorField;
+    public InputField ratioDenominatorField;
+    public Toggle lockNeuralMutationsToggle;
+    public Toggle lockPhysicalMutationsToggle;
+
+    // evolution settings values
+    private CreatureGenotype initialGenotype;
+    //private int populationSize;
+    //private int totalGenerations;
+    //private float survivalRatioNumerator;
+    //private float survivalRatioDenominator;
+    //private bool lockNeuralMutations;
+    //private bool lockPhysicalMutations;
+    public int populationSize;
+    public int totalGenerations;
+    public float survivalRatioNumerator;
+    public float survivalRatioDenominator;
+    public bool lockNeuralMutations;
+    public bool lockPhysicalMutations;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -61,6 +84,38 @@ public class MenuManager : MonoBehaviour
         menus.ForEach(o => o.SetActive(false));
         evolutionSettingsMenu.SetActive(true);
     }
+
+
+    public void SetPopulationSize(string input)
+    {
+        populationSize = int.Parse(input);
+    }
+
+    public void SetTotalGenerations(string input)
+    {
+        totalGenerations = int.Parse(input);
+    }
+
+    public void SetSurvivalRatioNumerator(string input)
+    {
+        survivalRatioNumerator = int.Parse(input);
+    }
+
+    public void SetSurvivalRatioDenominator(string input)
+    {
+        survivalRatioDenominator = int.Parse(input);
+    }
+
+    public void LockNeuralMutation(bool input)
+    {
+        lockNeuralMutations = input;
+    }
+
+    public void LockPhysicalMutation(bool input)
+    {
+        lockPhysicalMutations = input;
+    }
+
 
     public void LoadLocal()
     {
