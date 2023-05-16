@@ -338,7 +338,7 @@ namespace KSS
             Debug.Log("Best: " + topEvals.Max(x => x.fitness.Value));
             saveK.best = bestEval;
 
-            bestEval.cg.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\" + currentGenerationIndex + "," + bestEval.cg.name + ".creature", true);
+            // bestEval.cg.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\" + currentGenerationIndex + "," + bestEval.cg.name + ".creature", true);
 
             //saveK.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\MAINSAVE.save", true);
             return topEvals;
