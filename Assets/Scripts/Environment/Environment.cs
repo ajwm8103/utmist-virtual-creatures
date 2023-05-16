@@ -93,7 +93,7 @@ public abstract class Environment : MonoBehaviour
         }
         catch (Exception)
         {
-            if (isStandalone){
+            if (isStandalone) {
                 es = EnvironmentSettings.GetDefault(envCode);
             } else {
                 es = tm.ts.envSettings;
@@ -109,10 +109,11 @@ public abstract class Environment : MonoBehaviour
 
         bool isTooFast = ((currentCom - lastCom).magnitude / Time.fixedDeltaTime) > 10f && timePassed > 0.2f;
         bool isNan = !float.IsNaN(currentCom.x) || !float.IsNaN(currentCom.y) || !float.IsNaN(currentCom.z);
-        bool isBad = isExtremelyFar || isTooFast;
-        if (isOutOfTime || isBad)
+        bool isDQActivate = isExtremelyFar || isTooFast;
+        bool isTooSlow = timePassed > 0.8f && timePassed < 2f && currentCreature.totalReward < 0.01f;
+        if (isOutOfTime || isDQActivate || isTooSlow)
         {
-            if (isBad)
+            if (isDQActivate)
             {
                 isDQ = true;
             }

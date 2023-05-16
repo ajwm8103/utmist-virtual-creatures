@@ -305,7 +305,8 @@ namespace KSS
                 //currentGeneration = Generation.FromInitial(optimizationSettings.populationSize, bestGenotype, optimizationSettings.mp);
                 saveK.generations.Add(currentGeneration);
 
-                // Delete last
+                // Delete last generation (TODO: turn this into a top 60 preserving + median + worst
+                saveK.generations[saveK.generations.Count - 2].cgEvals = null;
             }
         }
 
