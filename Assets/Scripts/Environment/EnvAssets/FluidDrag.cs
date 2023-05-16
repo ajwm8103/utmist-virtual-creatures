@@ -33,8 +33,11 @@ public class FluidDrag : MonoBehaviour
 
         // Store local parameters
         fluidManager = FluidManager.instance;
-        fluidDensity = fluidManager.fluidDensity;
-        viscosityDrag = fluidManager.viscosityDrag;
+        if (fluidManager != null)
+        {
+            fluidDensity = fluidManager.fluidDensity;
+            viscosityDrag = fluidManager.viscosityDrag;
+        }
     }
 
     float LinearDragFloat(float A, float dot)
@@ -50,7 +53,7 @@ public class FluidDrag : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (!fluidManager.fluidEnabled) return;
+        if (fluidManager == null || !fluidManager.fluidEnabled) return;
         // F_drag = 0.5 * C_D * A * rho * v^2
         // Cache positive axis vectors:
         Vector3 forward = transform.forward;

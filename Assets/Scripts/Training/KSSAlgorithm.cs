@@ -308,7 +308,9 @@ namespace KSS
                 saveK.generations.Add(currentGeneration);
 
                 // Delete last generation (TODO: turn this into a top 60 preserving + median + worst
-                saveK.generations[saveK.generations.Count - 2].cgEvals = null;
+                if (saveK.generations.Count != 2){
+                    //saveK.generations[saveK.generations.Count - 2].cgEvals = null;
+                }
             }
         }
 
