@@ -111,7 +111,7 @@ public class FluidDrag : MonoBehaviour
 
         myRigidbody.AddForceAtPosition(fluidDragVecPosX * 2, xpos_face_center);
 
-        Debug.Log(string.Format("Forces {3}, {0}, {1}, {2}", fluidDragVecPosZ, fluidDragVecPosY, fluidDragVecPosX, name));
+        // Debug.Log(string.Format("Forces {3}, {0}, {1}, {2}", fluidDragVecPosZ, fluidDragVecPosY, fluidDragVecPosX, name));
 
         //=== FOR EACH FACE of rigidbody box: ----------------------------------------
         //=== Get Velocity: ---------------------------------------------
