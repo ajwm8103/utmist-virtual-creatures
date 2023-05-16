@@ -89,8 +89,20 @@ public class MenuManager : MonoBehaviour
     public void ShowEvolutionSettingsMenu()
     {
         menus.ForEach(o => o.SetActive(false));
+
+        populationSize = int.Parse(populationInput.text);
+        totalGenerations = int.Parse(generationInput.text);
+
+        ratioNumerator = float.Parse(ratioNumeratorInput.text);
+
+        ratioDenominator = float.Parse(ratioDenominatorInput.text);
+
+        lockNeuralMutations = lockNeuralMutationsToggle.isOn;
+
+        lockPhysicalMutations = lockPhysicalMutationsToggle.isOn;
+
         evolutionSettingsMenu.SetActive(true);
-    }
+}
 
 
     public void EditSaveName()
