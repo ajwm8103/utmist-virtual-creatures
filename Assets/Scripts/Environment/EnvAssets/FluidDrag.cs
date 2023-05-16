@@ -26,6 +26,11 @@ public class FluidDrag : MonoBehaviour
         sa_y = transform.localScale.x * transform.localScale.z;
         sa_z = transform.localScale.x * transform.localScale.y;
 
+        float areaConstraint = myRigidbody.mass / (Time.fixedDeltaTime * viscosityDrag);
+        sa_x = Mathf.Min(sa_x, areaConstraint);
+        sa_y = Mathf.Min(sa_y, areaConstraint);
+        sa_z = Mathf.Min(sa_z, areaConstraint);
+
         // Store local parameters
         fluidManager = FluidManager.instance;
         fluidDensity = fluidManager.fluidDensity;
@@ -106,6 +111,8 @@ public class FluidDrag : MonoBehaviour
 
         myRigidbody.AddForceAtPosition(fluidDragVecPosX * 2, xpos_face_center);
 
+        // Debug.Log(string.Format("Forces {3}, {0}, {1}, {2}", fluidDragVecPosZ, fluidDragVecPosY, fluidDragVecPosX, name));
+
         //=== FOR EACH FACE of rigidbody box: ----------------------------------------
         //=== Get Velocity: ---------------------------------------------
         //=== Apply Opposing Force ----------------------------------------
@@ -131,4 +138,19 @@ public class FluidDrag : MonoBehaviour
 
     }
 
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.white;
+        Vector3 forward = transform.forward;
+        Vector3 up = transform.up;
+        Vector3 right = transform.right;
+
+        Vector3 xpos_face_center = (up * transform.localScale.y / 2) + (right * transform.localScale.x / 2) + transform.position;
+        Vector3 ypos_face_center = (up * transform.localScale.y) + transform.position;
+        Vector3 zpos_face_center = (up * transform.localScale.y / 2) + (forward * transform.localScale.z / 2) + transform.position;
+
+        Gizmos.DrawWireSphere(xpos_face_center, 0.1f);
+        Gizmos.DrawWireSphere(ypos_face_center, 0.1f);
+        Gizmos.DrawWireSphere(zpos_face_center, 0.1f);
+    }
 }

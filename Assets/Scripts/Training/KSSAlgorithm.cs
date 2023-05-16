@@ -304,6 +304,8 @@ namespace KSS
                 //CreatureGenotype bestGenotype = SelectBestGenotype(currentGeneration);
                 //currentGeneration = Generation.FromInitial(optimizationSettings.populationSize, bestGenotype, optimizationSettings.mp);
                 saveK.generations.Add(currentGeneration);
+
+                // Delete last
             }
         }
 
