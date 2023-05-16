@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 6214767711178805832}
   - component: {fileID: 2165496788870377694}
   - component: {fileID: 188977948223374200}
-  - component: {fileID: 2835615611464039850}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -62,7 +61,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 9d775ac53ae60dd4bb7ea92c24ed15ae, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -84,19 +83,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &2835615611464039850
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4034797341096020855}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &5519278538132110892
 GameObject:
   m_ObjectHideFlags: 0
@@ -272,8 +258,8 @@ MonoBehaviour:
   dynamicMaterial: 0
   settings: {fileID: 0}
   useVolumeBlending: 0
-  startDistance: 0
-  fogDensity: 8
+  startDistance: 2
+  fogDensity: 5
   heightFogDepth: 25
   heightFogDensity: 50
   heightFogBrightness: 0.5
@@ -436,7 +422,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6472731533670679721
 Transform:
   m_ObjectHideFlags: 0

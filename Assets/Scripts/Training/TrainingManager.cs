@@ -91,7 +91,7 @@ public class TrainingManager : MonoBehaviour
 
     public TrainingSave save { get; private set; }
     [SerializeField]
-    private TrainingSettings ts;
+    public TrainingSettings ts { get; private set; }
     [SerializeField]
     private TrainingStage stage;
 
