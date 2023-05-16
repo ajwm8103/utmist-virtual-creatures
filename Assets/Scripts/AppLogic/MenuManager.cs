@@ -22,27 +22,25 @@ public class MenuManager : MonoBehaviour
     private List<GameObject> menus;
 
     // settings ui
-    public InputField populationField;
-    public InputField generationField;
-    public InputField ratioNumeratorField;
-    public InputField ratioDenominatorField;
+    public GameObject saveTitle;
+    public GameObject saveTitleInput;
+    public InputField populationInput;
+    public InputField generationInput;
+    public InputField ratioNumeratorInput;
+    public InputField ratioDenominatorInput;
     public Toggle lockNeuralMutationsToggle;
     public Toggle lockPhysicalMutationsToggle;
 
+    public string saveName;
+
     // evolution settings values
     private CreatureGenotype initialGenotype;
-    //private int populationSize;
-    //private int totalGenerations;
-    //private float survivalRatioNumerator;
-    //private float survivalRatioDenominator;
-    //private bool lockNeuralMutations;
-    //private bool lockPhysicalMutations;
-    public int populationSize;
-    public int totalGenerations;
-    public float ratioNumerator;
-    public float ratioDenominator;
-    public bool lockNeuralMutations;
-    public bool lockPhysicalMutations;
+    private int populationSize;
+    private int totalGenerations;
+    private float ratioNumerator;
+    private float ratioDenominator;
+    private bool lockNeuralMutations;
+    private bool lockPhysicalMutations;
 
     // Start is called before the first frame update
     void Start()
@@ -85,6 +83,20 @@ public class MenuManager : MonoBehaviour
         evolutionSettingsMenu.SetActive(true);
     }
 
+
+    public void EditSaveName()
+    {
+        saveTitle.SetActive(false);
+        saveTitleInput.SetActive(true);
+    }
+
+    public void SetSaveName(string input)
+    {
+        saveName = input;
+        saveTitle.SetActive(true);
+        saveTitle.GetComponent<Text>().text = input;
+        saveTitleInput.SetActive(false);
+    }
 
     public void SetPopulationSize(string input)
     {
@@ -131,6 +143,7 @@ public class MenuManager : MonoBehaviour
         KSSSave save = new KSSSave();
         save.isNew = true;
         save.ts = ts;
+        save.saveName = saveName;
 
         // Send to EvolutionSettingsPersist
         EvolutionSettingsPersist esp = EvolutionSettingsPersist.instance;

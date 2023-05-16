@@ -2073,7 +2073,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Evolution #1
+  m_Text: Placeholder Save
 --- !u!222 &682649018
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3837,7 +3837,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1381720034}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1782599931}
+        m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
+        m_MethodName: EditSaveName
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1381720034
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4546,18 +4558,15 @@ MonoBehaviour:
   chooseEvolution: {fileID: 5817651606346384933}
   evolutionSettingsMenu: {fileID: 5817651607908723222}
   templateCGSO: {fileID: 0}
-  populationField: {fileID: 1497372134}
-  generationField: {fileID: 70232254}
-  ratioNumeratorField: {fileID: 753283528}
-  ratioDenominatorField: {fileID: 1291144086}
+  saveTitle: {fileID: 2019010406}
+  saveTitleInput: {fileID: 1895475969}
+  populationInput: {fileID: 1497372134}
+  generationInput: {fileID: 70232254}
+  ratioNumeratorInput: {fileID: 753283528}
+  ratioDenominatorInput: {fileID: 1291144086}
   lockNeuralMutationsToggle: {fileID: 1148320018}
   lockPhysicalMutationsToggle: {fileID: 92115934}
-  populationSize: 0
-  totalGenerations: 0
-  ratioNumerator: 0
-  ratioDenominator: 0
-  lockNeuralMutations: 0
-  lockPhysicalMutations: 0
+  saveName: 
 --- !u!82 &1782599932
 AudioSource:
   m_ObjectHideFlags: 0
@@ -5201,7 +5210,7 @@ GameObject:
   - component: {fileID: 1876810271}
   - component: {fileID: 1876810270}
   m_Layer: 5
-  m_Name: Evolution Button
+  m_Name: Save List Item
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5496,7 +5505,19 @@ MonoBehaviour:
   m_CharacterLimit: 0
   m_OnSubmit:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1782599931}
+        m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
+        m_MethodName: SetSaveName
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_OnDidEndEdit:
     m_PersistentCalls:
       m_Calls: []
@@ -5641,7 +5662,7 @@ GameObject:
   - component: {fileID: 2019010409}
   - component: {fileID: 2019010408}
   m_Layer: 5
-  m_Name: Evolution Title
+  m_Name: Save Title
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5700,7 +5721,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Evolution #1
+  m_Text: Unnamed Save
 --- !u!222 &2019010409
 CanvasRenderer:
   m_ObjectHideFlags: 0
