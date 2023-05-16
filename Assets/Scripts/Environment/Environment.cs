@@ -41,6 +41,7 @@ public abstract class Environment : MonoBehaviour
     private bool updatedFrameReward;
     private float frameReward;
     private bool isDQ = false;
+    private bool hasDoneKillCheck = false;
     private bool isStandalone; // true when just testing one
     private Vector3 lastCom;
 
@@ -76,6 +77,7 @@ public abstract class Environment : MonoBehaviour
         //fitness.firstFrame = true;
         tm = TrainingManager.instance;
         cs = CreatureSpawner.instance;
+        hasDoneKillCheck = false;
         spawnTransform = transform.Find("SpawnTransform");
         creatureHolder = transform.Find("CreatureHolder");
     }
@@ -93,7 +95,7 @@ public abstract class Environment : MonoBehaviour
         }
         catch (Exception)
         {
-            if (isStandalone){
+            if (isStandalone) {
                 es = EnvironmentSettings.GetDefault(envCode);
             } else {
                 es = tm.ts.envSettings;
@@ -107,12 +109,20 @@ public abstract class Environment : MonoBehaviour
             lastCom = currentCom;
         }
 
+
+
         bool isTooFast = ((currentCom - lastCom).magnitude / Time.fixedDeltaTime) > 10f && timePassed > 0.2f;
         bool isNan = !float.IsNaN(currentCom.x) || !float.IsNaN(currentCom.y) || !float.IsNaN(currentCom.z);
-        bool isBad = isExtremelyFar || isTooFast;
-        if (isOutOfTime || isBad)
+        bool isDQActivate = isExtremelyFar || isTooFast;
+        bool isTooSlow = false;
+        if (timePassed > 0.8f && !hasDoneKillCheck){
+            hasDoneKillCheck = true;
+            isTooSlow = Mathf.Abs(currentCreature.totalReward) < 0.00005f;
+        }
+        
+        if (isOutOfTime || isDQActivate || isTooSlow)
         {
-            if (isBad)
+            if (isDQActivate)
             {
                 isDQ = true;
             }
@@ -158,6 +168,7 @@ public abstract class Environment : MonoBehaviour
         }
 
         isDQ = false;
+        hasDoneKillCheck = false;
         timePassed = 0;
     }
 

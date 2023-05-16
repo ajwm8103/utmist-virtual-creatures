@@ -305,7 +305,8 @@ namespace KSS
                 //currentGeneration = Generation.FromInitial(optimizationSettings.populationSize, bestGenotype, optimizationSettings.mp);
                 saveK.generations.Add(currentGeneration);
 
-                // Delete last
+                // Delete last generation (TODO: turn this into a top 60 preserving + median + worst
+                saveK.generations[saveK.generations.Count - 2].cgEvals = null;
             }
         }
 
@@ -337,7 +338,7 @@ namespace KSS
             Debug.Log("Best: " + topEvals.Max(x => x.fitness.Value));
             saveK.best = bestEval;
 
-            bestEval.cg.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\" + currentGenerationIndex + "," + bestEval.cg.name + ".creature", true);
+            // bestEval.cg.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\" + currentGenerationIndex + "," + bestEval.cg.name + ".creature", true);
 
             //saveK.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\MAINSAVE.save", true);
             return topEvals;
