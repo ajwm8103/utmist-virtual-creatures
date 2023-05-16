@@ -14,6 +14,7 @@ public class MenuManager : MonoBehaviour
 
     [Header("References")]
     public GameObject mainMenu;
+    public GameObject chooseEvolution;
     public GameObject evolutionSettingsMenu;
     public GameObject evolutionLSMenu;
     // TEMP
@@ -24,7 +25,7 @@ public class MenuManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        menus = new List<GameObject>() { mainMenu, evolutionSettingsMenu, evolutionLSMenu };
+        menus = new List<GameObject>() { mainMenu, chooseEvolution, evolutionSettingsMenu, evolutionLSMenu };
         ShowMainMenu();
     }
 
@@ -48,6 +49,12 @@ public class MenuManager : MonoBehaviour
     {
         menus.ForEach(o => o.SetActive(false));
         mainMenu.SetActive(true);
+    }
+
+    public void ShowChooseEvolutionMenu()
+    {
+        menus.ForEach(o => o.SetActive(false));
+        chooseEvolution.SetActive(true);
     }
 
     public void ShowEvolutionSettingsMenu()

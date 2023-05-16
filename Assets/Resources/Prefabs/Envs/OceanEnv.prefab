@@ -179,7 +179,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fluidDensity: 1000
   viscosityDrag: 1
-  fluidEnabled: 0
+  fluidEnabled: 1
 --- !u!1 &5601391390443011213
 GameObject:
   m_ObjectHideFlags: 0
@@ -228,7 +228,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &5601391390957089979
 Transform:
   m_ObjectHideFlags: 0
@@ -305,7 +305,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &5977242794750260583
 Transform:
   m_ObjectHideFlags: 0

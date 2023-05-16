@@ -6,7 +6,7 @@ public class FluidDrag : MonoBehaviour
 {
     private float viscosityDrag = 1f;
     private float fluidDensity = 1000f;
-    private float dragScaling = 1f;
+    // private float dragScaling = 1f;
     private Rigidbody myRigidbody;
     private FluidManager fluidManager;
 
@@ -53,12 +53,12 @@ public class FluidDrag : MonoBehaviour
         Vector3 right = transform.right;
 
         // Find centers of each of box's faces
-        Vector3 xpos_face_center = (right * transform.localScale.x / 2) + transform.position;
-        Vector3 ypos_face_center = (up * transform.localScale.y / 2) + transform.position;
-        Vector3 zpos_face_center = (forward * transform.localScale.z / 2) + transform.position;
-        Vector3 xneg_face_center = -(right * transform.localScale.x / 2) + transform.position;
-        Vector3 yneg_face_center = -(up * transform.localScale.y / 2) + transform.position;
-        Vector3 zneg_face_center = -(forward * transform.localScale.z / 2) + transform.position;
+        Vector3 xpos_face_center = (up * transform.localScale.y / 2) + (right * transform.localScale.x / 2) + transform.position;
+        Vector3 ypos_face_center = (up * transform.localScale.y) + transform.position;
+        Vector3 zpos_face_center = (up * transform.localScale.y / 2) + (forward * transform.localScale.z / 2) + transform.position;
+        Vector3 xneg_face_center = (up * transform.localScale.y / 2) - (right * transform.localScale.x / 2) + transform.position;
+        Vector3 yneg_face_center = transform.position;
+        Vector3 zneg_face_center = (up * transform.localScale.y / 2) - (forward * transform.localScale.z / 2) + transform.position;
 
         Vector3 pointVelPosZ = myRigidbody.GetPointVelocity(zpos_face_center);
         Vector3 pointVelPosY = myRigidbody.GetPointVelocity(ypos_face_center);
@@ -128,5 +128,7 @@ public class FluidDrag : MonoBehaviour
         // linear drag: Vector3 fluidDragVecPosX = -right * LinearDragFloat(sa_x, Vector3.Dot(right, pointVelPosX));
 	    Vector3 fluidDragVecPosX = -right * dragScaling * QuadraticDragFloat(sa_x, Vector3.Dot(right, pointVelPosX));
         rigidbody.AddForceAtPosition(fluidDragVecPosX, xpos_face_center);*/
+
     }
+
 }
