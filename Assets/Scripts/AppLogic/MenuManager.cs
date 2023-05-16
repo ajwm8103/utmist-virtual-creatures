@@ -39,8 +39,8 @@ public class MenuManager : MonoBehaviour
     //private bool lockPhysicalMutations;
     public int populationSize;
     public int totalGenerations;
-    public float survivalRatioNumerator;
-    public float survivalRatioDenominator;
+    public float ratioNumerator;
+    public float ratioDenominator;
     public bool lockNeuralMutations;
     public bool lockPhysicalMutations;
 
@@ -98,12 +98,12 @@ public class MenuManager : MonoBehaviour
 
     public void SetSurvivalRatioNumerator(string input)
     {
-        survivalRatioNumerator = int.Parse(input);
+        ratioNumerator = float.Parse(input);
     }
 
     public void SetSurvivalRatioDenominator(string input)
     {
-        survivalRatioDenominator = int.Parse(input);
+        ratioDenominator = float.Parse(input);
     }
 
     public void LockNeuralMutation(bool input)
@@ -120,9 +120,11 @@ public class MenuManager : MonoBehaviour
     public void LoadLocal()
     {
         // Compile data from settings window into TrainingSave
-        KSSSettings optimizationSettings = new KSSSettings();
+        KSSSettings optimizationSettings = new KSSSettings(populationSize, totalGenerations, ratioNumerator / ratioDenominator);
         optimizationSettings.num_envs = 50;
         optimizationSettings.mp = new MutateGenotype.MutationPreferenceSetting();
+        optimizationSettings.mp.mutateNeural = !lockNeuralMutations;
+        optimizationSettings.mp.mutateMorphology = !lockPhysicalMutations;
         optimizationSettings.initialGenotype = templateCGSO == null ? null : templateCGSO.cg;
         //optimizationSettings.initialGenotype = CreatureGenotype.LoadData("/Fish.creature", false); // null means start w/ random creatures. TODO: Non-null will mean spawn that with mutations!
         TrainingSettings ts = new TrainingSettings(optimizationSettings, new OceanEnvSettings());

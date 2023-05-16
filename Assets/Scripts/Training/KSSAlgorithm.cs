@@ -225,6 +225,8 @@ namespace KSS
         // Update is called once per frame
         void Update()
         {
+            // TODO: currentGenerationIndex needs a stop condition
+
             if (!isSetup)
                 return;
 
