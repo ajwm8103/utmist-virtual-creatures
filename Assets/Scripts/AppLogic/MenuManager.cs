@@ -16,7 +16,6 @@ public class MenuManager : MonoBehaviour
     public GameObject mainMenu;
     public GameObject chooseEvolution;
     public GameObject evolutionSettingsMenu;
-    public GameObject evolutionLSMenu;
     // TEMP
     public CreatureGenotypeScriptableObject templateCGSO;
 
@@ -25,7 +24,7 @@ public class MenuManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        menus = new List<GameObject>() { mainMenu, chooseEvolution, evolutionSettingsMenu, evolutionLSMenu };
+        menus = new List<GameObject>() { mainMenu, chooseEvolution, evolutionSettingsMenu};
         ShowMainMenu();
     }
 
@@ -61,12 +60,6 @@ public class MenuManager : MonoBehaviour
     {
         menus.ForEach(o => o.SetActive(false));
         evolutionSettingsMenu.SetActive(true);
-    }
-
-    public void ShowEvolutionLSMenu()
-    {
-        menus.ForEach(o => o.SetActive(false));
-        evolutionLSMenu.SetActive(true);
     }
 
     public void LoadLocal()
