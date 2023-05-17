@@ -14,6 +14,7 @@ public class FluidDrag : MonoBehaviour
     private float sa_x;
     private float sa_y;
     private float sa_z;
+    private float volume;
     private float C_D = 1.05f;
 
     // Use this for initialization
@@ -25,6 +26,7 @@ public class FluidDrag : MonoBehaviour
         sa_x = transform.localScale.y * transform.localScale.z;
         sa_y = transform.localScale.x * transform.localScale.z;
         sa_z = transform.localScale.x * transform.localScale.y;
+        volume = transform.localScale.x * transform.localScale.y * transform.localScale.z;
 
         float areaConstraint = myRigidbody.mass / (Time.fixedDeltaTime * viscosityDrag);
         sa_x = Mathf.Min(sa_x, areaConstraint);
@@ -33,11 +35,6 @@ public class FluidDrag : MonoBehaviour
 
         // Store local parameters
         fluidManager = FluidManager.instance;
-        if (fluidManager != null)
-        {
-            fluidDensity = fluidManager.fluidDensity;
-            viscosityDrag = fluidManager.viscosityDrag;
-        }
     }
 
     float LinearDragFloat(float A, float dot)
@@ -54,6 +51,9 @@ public class FluidDrag : MonoBehaviour
     void FixedUpdate()
     {
         if (fluidManager == null || !fluidManager.fluidEnabled) return;
+
+        fluidDensity = fluidManager.fluidDensity;
+        viscosityDrag = fluidManager.viscosityDrag;
         // F_drag = 0.5 * C_D * A * rho * v^2
         // Cache positive axis vectors:
         Vector3 forward = transform.forward;
@@ -67,6 +67,7 @@ public class FluidDrag : MonoBehaviour
         Vector3 xneg_face_center = (up * transform.localScale.y / 2) - (right * transform.localScale.x / 2) + transform.position;
         Vector3 yneg_face_center = transform.position;
         Vector3 zneg_face_center = (up * transform.localScale.y / 2) - (forward * transform.localScale.z / 2) + transform.position;
+        Vector3 com = (up * transform.localScale.y / 2) + transform.position;
 
         Vector3 pointVelPosZ = myRigidbody.GetPointVelocity(zpos_face_center);
         Vector3 pointVelPosY = myRigidbody.GetPointVelocity(ypos_face_center);
@@ -113,6 +114,10 @@ public class FluidDrag : MonoBehaviour
         fluidDragVecPosX.z = right.z * dotX * sa_x * viscosityDrag;
 
         myRigidbody.AddForceAtPosition(fluidDragVecPosX * 2, xpos_face_center);
+
+        //myRigidbody.AddForceAtPosition(-myRigidbody.mass * Physics.gravity, myRigidbody.centerOfMass, ForceMode.Force);
+        //Debug.Log(string.Format("mass {0}, other {1}, {2}", myRigidbody.mass, -fluidDensity * volume, transform.parent.parent.parent.name));
+        myRigidbody.AddForceAtPosition(-fluidDensity * Physics.gravity * volume, com, ForceMode.Force);
 
         // Debug.Log(string.Format("Forces {3}, {0}, {1}, {2}", fluidDragVecPosZ, fluidDragVecPosY, fluidDragVecPosX, name));
 

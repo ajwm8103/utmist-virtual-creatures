@@ -163,7 +163,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de8a2aa32571bb340856f38a6deaf5ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fluidDensity: 1000
+  fluidDensity: 997
   viscosityDrag: 1
   fluidEnabled: 1
 --- !u!1 &5601391390443011213

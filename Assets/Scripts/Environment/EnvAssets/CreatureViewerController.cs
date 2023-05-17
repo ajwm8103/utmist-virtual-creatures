@@ -31,10 +31,11 @@ public class CreatureViewerController : MonoBehaviour
         position.x = 2f * Mathf.Cos(Time.time * 2 * Mathf.PI / rotatePeriod);
         position.y = 1f;
         position.z = 2f * Mathf.Sin(Time.time * 2 * Mathf.PI / rotatePeriod);
-        position += currentCreature.transform.position;
+        Vector3 creatureCOM = currentCreature.GetCentreOfMass();
+        position += creatureCOM;
         transform.position = position;
 
-        transform.LookAt(currentCreature.transform);
+        transform.LookAt(creatureCOM);
     }
 
     public void SetCreature(Creature creature){
