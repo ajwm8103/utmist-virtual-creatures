@@ -2,8 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEditor;
-using static MutateGenotype;
 
 public class CreatureSpawner : MonoBehaviour
 {
@@ -119,7 +117,7 @@ public class CreatureSpawner : MonoBehaviour
     {
         counter++;
         //Debug.Log(counter);
-        if (counter == 20){
+        if (counter == 80){
             Debug.Log("Likely looping, save for debug.");
             string name = "/debug_" + Random.Range(0, 100) + ".creature";
             cg.SaveData(name, false);
@@ -204,7 +202,7 @@ public class CreatureSpawner : MonoBehaviour
                     j.useMotor = true;
                     JointMotor motor = j.motor;
                     motor.targetVelocity = 0;
-                    motor.force = 100;
+                    motor.force = 250;
                     j.motor = motor;
                 }
                 break;
@@ -217,7 +215,7 @@ public class CreatureSpawner : MonoBehaviour
                     j.useMotor = true;
                     JointMotor motor = j.motor;
                     motor.targetVelocity = 0;
-                    motor.force = 100;
+                    motor.force = 250;
                     j.motor = motor;
                 }
                 break;
@@ -230,7 +228,7 @@ public class CreatureSpawner : MonoBehaviour
                     j.useMotor = true;
                     JointMotor motor = j.motor;
                     motor.targetVelocity = 0;
-                    motor.force = 100;
+                    motor.force = 250;
                     j.motor = motor;
                 }
                 break;
@@ -278,7 +276,7 @@ public class CreatureSpawner : MonoBehaviour
                 Neuron addedNeuron;
                 if (nm.nr.id == 12)
                 {
-                    addedNeuron = c.AddNeuron(nm, spawnedSegmentGameObject.GetComponent<HingeJoint>(), spawnedSegment, 1);
+                    addedNeuron = c.AddNeuron(nm, spawnedSegmentGameObject.GetComponent<Joint>(), spawnedSegment, 1);
                 }
                 else if (nm.nr.id <= 11)
                 {
@@ -309,6 +307,7 @@ public class CreatureSpawner : MonoBehaviour
                 var connectionPathClone = connectionPath.Select(item => (byte)item).ToList();
                 connectionPathClone.Add(connection.id);
                 Segment childSegment = SpawnSegment(cg, c, recursiveLimitClone, connection, spawnedSegmentGameObject, parentGlobalScale * myConnection.scale, otherReflectBool, connectionPathClone);
+                childSegment.SetCreature(c);
                 childSegment.SetParent(connection.id, spawnedSegment);
                 spawnedSegment.AddChild(connection.id, childSegment);
             }
@@ -327,12 +326,15 @@ public class CreatureSpawner : MonoBehaviour
         if (currentSegmentGenotype == null)
             return;
 
-        GameObject spawnedSegmentGameObject = Instantiate(segmentPrefab, position, Quaternion.identity);
+        cg.EulerToQuat(); //Debug, remove later (this changes internal rotation storage stuff to make inspector editing easier.)
+        Quaternion spawnAngle = new Quaternion(cg.orientationX, cg.orientationY, cg.orientationZ, cg.orientationW);
+        GameObject spawnedSegmentGameObject = Instantiate(segmentPrefab, position, spawnAngle);
         spawnedSegmentGameObject.transform.parent = c.transform;
         spawnedSegmentGameObject.name = $"Segment {currentSegmentGenotype.id}";
 
         Segment spawnedSegment = spawnedSegmentGameObject.GetComponent<Segment>();
         spawnedSegment.SetId(1);
+        spawnedSegment.SetCreature(c);
 
         Vector3 dimVector = new Vector3(currentSegmentGenotype.dimensionX, currentSegmentGenotype.dimensionY, currentSegmentGenotype.dimensionZ);
         //spawnedSegment.GetComponent<BoxCollider>().size = dimVector;
@@ -372,10 +374,10 @@ public class CreatureSpawner : MonoBehaviour
                 }
                 spawnedSegment.AddNeuron(addedNeuron);
             }
-        } else if (cg.stage == TrainingStage.RL){
-            // Add Segment
-            c.segments.Add(spawnedSegmentGameObject.GetComponent<Segment>());
         }
+
+        // Add Segment
+        c.segments.Add(spawnedSegmentGameObject.GetComponent<Segment>());
         
 
 
@@ -390,6 +392,7 @@ public class CreatureSpawner : MonoBehaviour
                 }
                 var recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
                 Segment childSegment = SpawnSegment(cg, c, recursiveLimitClone, connection, spawnedSegmentGameObject, 1, false, new List<byte>() { connection.id });
+                childSegment.SetCreature(c);
                 childSegment.SetParent(connection.id, spawnedSegment);
                 spawnedSegment.AddChild(connection.id, childSegment);
             }
@@ -403,31 +406,4 @@ public class CreatureSpawner : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position + spawnPos, 0.1f);
     }
 
-}
-
-[CustomEditor(typeof(CreatureSpawner))]
-public class CreatureSpawnerEditor : Editor
-{
-    public override void OnInspectorGUI()
-    {
-        DrawDefaultInspector();
-        CreatureSpawner spawner = target as CreatureSpawner;
-
-        if (GUILayout.Button("Save Current Creature"))
-        {
-            Debug.Log("Saving Current Creature");
-            string path = EditorUtility.SaveFilePanel("Save Creature As", "C:", "Creature.creature", "creature");
-            CreatureGenotype cg = spawner.creatureGenotype;
-            cg.SaveData(path, true);
-            Debug.Log(Application.persistentDataPath);
-        }
-
-        if (GUILayout.Button("Load Creature Genotype"))
-        {
-            Debug.Log("Loading Creature");
-            string path = EditorUtility.OpenFilePanel("Creature.creature", "C:", "creature");
-            CreatureGenotype cg = CreatureGenotype.LoadData(path, true);
-            spawner.creatureGenotype = cg;
-        }
-    }
 }

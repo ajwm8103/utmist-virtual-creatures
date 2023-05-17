@@ -24,12 +24,27 @@ public class SwimmingFitness : Fitness
 	
 	    prevCom = currCom;
         currCom = creature.GetCentreOfMass();
+        if (firstFrame){
+            firstFrame = false;
+            return 0f;
+        }
+
 	    prevSpeed = currSpeed;
         //distance = Vector3.Distance(currCom,prevCom);
-        distance = Vector3.Dot(currCom - prevCom, Vector3.right);
+        distance = Vector3.Dot(currCom - prevCom, Vector3.forward);
 
 	    currSpeed = distance / Time.fixedDeltaTime;
-	    reward += currSpeed;
+        if (float.IsNaN(distance)){
+            Debug.Log("sus");
+            Debug.Log(currCom);
+            Debug.Log(prevCom);
+        }
+
+        if (float.IsNaN(currSpeed))
+        {
+            Debug.Log("sus!!!");
+        }
+        reward += currSpeed;
 	
 	    // Continuing movement is rewarded over that from a single initial push, by giving the velocities during the final phase of the test period a stronger relative weight in the total fitness value
 	    // We do not implement this because I am lazy

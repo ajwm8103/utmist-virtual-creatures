@@ -3,7 +3,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
 using System.Linq;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
@@ -17,7 +16,7 @@ public class Neuron
     public float outValue;
     public float dummy1;
     public NeuronGenotype ng;
-    public HingeJoint effectorJoint;
+    public Joint effectorJoint;
     public Segment segment;
     public byte segmentId { get; private set; }
 
@@ -25,6 +24,7 @@ public class Neuron
     {
         this.ng = ng;
         this.segmentId = segmentId;
+        a = 1; b = 1; c = 1; outValue = 0; dummy1 = 0;
     }
 
     public Neuron(NeuronGenotype ng, byte segmentId, Segment segment)
@@ -32,6 +32,7 @@ public class Neuron
         this.ng = ng;
         this.segmentId = segmentId;
         this.segment = segment;
+        a = 1; b = 1; c = 1; outValue = 0; dummy1 = 0;
     }
 
     public void GetInputs()
@@ -40,15 +41,24 @@ public class Neuron
         if (neuronA != null) a = neuronA.outValue * ng.weights[0];
         if (neuronB != null) b = neuronB.outValue * ng.weights[1];
         if (neuronC != null) c = neuronC.outValue * ng.weights[2];
-
+        if (float.IsNaN(a) || float.IsNaN(b) || float.IsNaN(c)){
+            if (segment != null){
+                Debug.Log("trolling " + segment.transform.parent.parent.parent.name);
+            } else {
+                Debug.Log("trolling");
+            }
+        }
 
         if (ng.nr.id == 12) // joint effector
         {
             // I am an "effector" I must "effect"
             //Debug.Log("Effector output" + a);
-            JointMotor motor = effectorJoint.motor;
-            motor.targetVelocity = a;
-            effectorJoint.motor = motor;
+            if (effectorJoint is HingeJoint){
+                HingeJoint hj = (HingeJoint)effectorJoint;
+                JointMotor motor = hj.motor;
+                motor.targetVelocity = 10f * Mathf.Clamp(a, -15f, 15f);
+                hj.motor = motor;
+            }
         }
 
         //Debug.Log($"Neuron {ng.nr.id} has inputs {a}, {b}, and {c}.");
@@ -92,7 +102,7 @@ public class Neuron
             11 => Mathf.Sin(a), // sin
             12 => Mathf.Cos(a), // cos
             13 => Mathf.Atan(a), // atan
-            14 => Mathf.Log10(a), // log
+            14 => Mathf.Log10(Mathf.Abs(a)), // log
             15 => Mathf.Exp(a), // expt
             16 => 1 / (1 + Mathf.Exp(-a)), // sigmoid
             17 => outValue + Time.deltaTime * ((a + dummy1) * 0.5f), // integrate
@@ -103,6 +113,12 @@ public class Neuron
             22 => b * (Time.time * a - Mathf.Floor(Time.time * a)) + c, // oscillate-saw
             _ => 0
         };
+
+        if (float.IsNaN(outValue)){
+            outValue = 0f;
+        }
+
+        outValue = Mathf.Clamp(outValue, -300f, 300f);
 
         if (ng.type == 17 || ng.type == 18) // integrate or differentiate
         {
@@ -168,7 +184,7 @@ public class Creature : MonoBehaviour
     public CreatureGenotype cg;
     private bool isAlive = true; // false => display mode
     public Fitness fitness { get; private set; }
-    public float totalReward;
+    public float totalReward = 0;
     public List<Neuron> sensors = new List<Neuron>();
     public List<Neuron> neurons = new List<Neuron>();
     public List<Neuron> effectors = new List<Neuron>();
@@ -196,6 +212,24 @@ public class Creature : MonoBehaviour
         this.fitness = fitness;
         ConnectNeurons(neurons);
         ConnectNeurons(effectors);
+    }
+
+    public void SetAlive(bool value) {
+        if (value && !isAlive) {
+            isAlive = true;
+            foreach (Segment s in segments)
+            {
+                s.RestoreState();
+                s.myRigidbody.isKinematic = false;
+            }
+        } else if (!value && isAlive){
+            isAlive = false;
+            foreach (Segment s in segments)
+            {
+                s.StoreState();
+                s.myRigidbody.isKinematic = true;
+            }
+        }
     }
 
     void FeedForward()
@@ -326,12 +360,20 @@ public class Creature : MonoBehaviour
             int relativityLeft = guidingNR.relativeLevel;
             Segment currentSegment = requestingNeuron.segment;
             while (relativityLeft != 0){
-                Segment nextSegment = currentSegment.parent.Item2;
-                if (nextSegment.id != currentSegment.id)
+                try
                 {
-                    relativityLeft--;
+                    Segment nextSegment = currentSegment.parent.Item2;
+                    if (nextSegment.id != currentSegment.id)
+                    {
+                        relativityLeft--;
+                    }
+                    currentSegment = nextSegment;
                 }
-                currentSegment = nextSegment;
+                catch (System.Exception)
+                {
+
+                    break;
+                }
             }
 
             foreach (Neuron n in currentSegment.neurons)
@@ -396,7 +438,7 @@ public class Creature : MonoBehaviour
     }
 
 
-    public Neuron AddNeuron(NeuronGenotype ng, HingeJoint effectorJoint, Segment segment, byte segmentId)
+    public Neuron AddNeuron(NeuronGenotype ng, Joint effectorJoint, Segment segment, byte segmentId)
     {
         //Debug.Log("Adding neuron" + ng.nr.id);
         Neuron n = new Neuron(ng, segmentId, segment);
@@ -431,27 +473,5 @@ public class Creature : MonoBehaviour
             totalMass += mass;
         }
         return com / totalMass;
-    }
-}
-
-[CustomEditor(typeof(Creature))]
-public class CreatureEditor : Editor
-{
-    public override void OnInspectorGUI()
-    {
-        DrawDefaultInspector();
-        Creature creature = target as Creature;
-
-        if (GUILayout.Button("Save Current Creature"))
-        {
-            Debug.Log("Saving Current Creature");
-            CreatureGenotype cg = creature.cg;
-            string path = EditorUtility.SaveFilePanel("Save Your Creature", "C:", "Creature.creature", "creature");
-            if (!string.IsNullOrEmpty(path))
-            {
-                cg.SaveData(path, true);
-                Debug.Log("Saved to " + Application.persistentDataPath);
-            }
-        }
     }
 }

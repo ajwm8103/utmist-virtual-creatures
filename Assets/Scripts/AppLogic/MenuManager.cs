@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,15 +15,38 @@ public class MenuManager : MonoBehaviour
 
     [Header("References")]
     public GameObject mainMenu;
+    public GameObject chooseEvolution;
     public GameObject evolutionSettingsMenu;
-    public GameObject evolutionLSMenu;
+    // TEMP
+    public CreatureGenotypeScriptableObject templateCGSO;
 
     private List<GameObject> menus;
+
+    // settings ui
+    public GameObject saveTitle;
+    public GameObject saveTitleInput;
+    public InputField populationInput;
+    public InputField generationInput;
+    public InputField ratioNumeratorInput;
+    public InputField ratioDenominatorInput;
+    public Toggle lockNeuralMutationsToggle;
+    public Toggle lockPhysicalMutationsToggle;
+
+    public string saveName;
+
+    // evolution settings values
+    private CreatureGenotype initialGenotype;
+    private int populationSize;
+    private int totalGenerations;
+    private float ratioNumerator;
+    private float ratioDenominator;
+    private bool lockNeuralMutations;
+    private bool lockPhysicalMutations;
 
     // Start is called before the first frame update
     void Start()
     {
-        menus = new List<GameObject>() { mainMenu, evolutionSettingsMenu, evolutionLSMenu };
+        menus = new List<GameObject>() { mainMenu, chooseEvolution, evolutionSettingsMenu};
         ShowMainMenu();
     }
 
@@ -48,29 +72,99 @@ public class MenuManager : MonoBehaviour
         mainMenu.SetActive(true);
     }
 
+    public void ShowChooseEvolutionMenu()
+    {
+        menus.ForEach(o => o.SetActive(false));
+
+        string[] fileArray = Directory.GetFiles(OptionsPersist.instance.VCSaves, "*.save");
+
+        foreach (string filePath in fileArray)
+        {
+            Debug.Log(filePath);
+        }
+
+        chooseEvolution.SetActive(true);
+    }
+
     public void ShowEvolutionSettingsMenu()
     {
         menus.ForEach(o => o.SetActive(false));
+
+        populationSize = int.Parse(populationInput.text);
+        totalGenerations = int.Parse(generationInput.text);
+
+        ratioNumerator = float.Parse(ratioNumeratorInput.text);
+
+        ratioDenominator = float.Parse(ratioDenominatorInput.text);
+
+        lockNeuralMutations = lockNeuralMutationsToggle.isOn;
+
+        lockPhysicalMutations = lockPhysicalMutationsToggle.isOn;
+
         evolutionSettingsMenu.SetActive(true);
+}
+
+
+    public void EditSaveName()
+    {
+        saveTitle.SetActive(false);
+        saveTitleInput.SetActive(true);
     }
 
-    public void ShowEvolutionLSMenu()
+    public void SetSaveName(string input)
     {
-        menus.ForEach(o => o.SetActive(false));
-        evolutionLSMenu.SetActive(true);
+        saveName = input;
+        saveTitle.SetActive(true);
+        saveTitle.GetComponent<Text>().text = input;
+        saveTitleInput.SetActive(false);
     }
+
+    public void SetPopulationSize(string input)
+    {
+        populationSize = int.Parse(input);
+    }
+
+    public void SetTotalGenerations(string input)
+    {
+        totalGenerations = int.Parse(input);
+    }
+
+    public void SetSurvivalRatioNumerator(string input)
+    {
+        ratioNumerator = float.Parse(input);
+    }
+
+    public void SetSurvivalRatioDenominator(string input)
+    {
+        ratioDenominator = float.Parse(input);
+    }
+
+    public void LockNeuralMutation(bool input)
+    {
+        lockNeuralMutations = input;
+    }
+
+    public void LockPhysicalMutation(bool input)
+    {
+        lockPhysicalMutations = input;
+    }
+
 
     public void LoadLocal()
     {
         // Compile data from settings window into TrainingSave
-        KSSSettings optimizationSettings = new KSSSettings();
+        KSSSettings optimizationSettings = new KSSSettings(populationSize, totalGenerations, ratioNumerator / ratioDenominator);
         optimizationSettings.num_envs = 50;
         optimizationSettings.mp = new MutateGenotype.MutationPreferenceSetting();
-        optimizationSettings.initialGenotype = CreatureGenotype.LoadData("/Fish.creature", false); // null means start w/ random creatures. TODO: Non-null will mean spawn that with mutations!
+        optimizationSettings.mp.mutateNeural = !lockNeuralMutations;
+        optimizationSettings.mp.mutateMorphology = !lockPhysicalMutations;
+        optimizationSettings.initialGenotype = templateCGSO == null ? null : templateCGSO.cg;
+        //optimizationSettings.initialGenotype = CreatureGenotype.LoadData("/Fish.creature", false); // null means start w/ random creatures. TODO: Non-null will mean spawn that with mutations!
         TrainingSettings ts = new TrainingSettings(optimizationSettings, new OceanEnvSettings());
         KSSSave save = new KSSSave();
         save.isNew = true;
         save.ts = ts;
+        save.saveName = saveName;
 
         // Send to EvolutionSettingsPersist
         EvolutionSettingsPersist esp = EvolutionSettingsPersist.instance;

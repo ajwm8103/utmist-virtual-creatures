@@ -12,6 +12,7 @@ public class NeuronGenotype
     public byte type; // 0,1,2,3..22
 
     public NeuronReference[] inputs;
+    [Range(-15f, 15f)]
     public float[] weights; // -15 - 15
     public NeuronReference nr;
 
@@ -25,12 +26,21 @@ public class NeuronGenotype
     public NeuronGenotype(NeuronReference nr)
     {
         this.nr = nr;
+        type = 0;
+        weights = new float[0];
+        inputs = new NeuronReference[0];
+
     }
 
     public NeuronGenotype Clone()
     {
-        NeuronGenotype ng = new NeuronGenotype(type, (NeuronReference[])inputs.Clone(), nr);
-        ng.weights = (float[])weights.Clone();
+        NeuronGenotype ng;
+        if (inputs.Length == 0){
+            ng = new NeuronGenotype(nr);
+        } else {
+            ng = new NeuronGenotype(type, (NeuronReference[])inputs.Clone(), nr);
+            ng.weights = (float[])weights.Clone();
+        }
         return ng;
     }
     public static byte GetTypeInputs(byte type)
@@ -118,14 +128,21 @@ public class SegmentConnectionGenotype
     public byte id; // 0-255
     public byte destination;
 
+    [Range(-0.5f, 0.5f)]
     public float anchorX; // -0.5 - 0.5
+    [Range(-0.5f, 0.5f)]
     public float anchorY;
+    [Range(-0.5f, 0.5f)]
     public float anchorZ;
 
     // Orientation four vars maybe...check Joint component vars.
+    [HideInInspector]
     public float orientationX;
+    [HideInInspector]
     public float orientationY;
+    [HideInInspector]
     public float orientationZ;
+    [HideInInspector]
     public float orientationW;
 
     // this is only used for player design
@@ -133,7 +150,8 @@ public class SegmentConnectionGenotype
     public float eulerY;
     public float eulerZ;
 
-    public float scale; // 0.20 - 2
+    [Range(0.20f, 2f)]
+    public float scale = 1; // 0.20 - 2
     public bool reflected;
     public bool terminalOnly;
 
@@ -187,6 +205,7 @@ public enum JointType
     HingeX,
     HingeY,
     HingeZ,
+    Configurable,
     Spherical,
 }
 
@@ -210,8 +229,11 @@ public class SegmentGenotype
 
     public byte recursiveLimit; //1-15
 
+    [Range(0.05f, 3f)]
     public float dimensionX; // Random.Range(0.05f, 3f);
+    [Range(0.05f, 3f)]
     public float dimensionY; // Random.Range(0.05f, 3f);
+    [Range(0.05f, 3f)]
     public float dimensionZ; // Random.Range(0.05f, 3f);
 
     public JointType jointType;
@@ -250,6 +272,11 @@ public class SegmentGenotype
         return null;
     }
 
+    /// <summary>
+    /// Returns the first connection (if any) of that id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     public SegmentConnectionGenotype GetConnection(byte id)
     {
         foreach (SegmentConnectionGenotype scm in connections)
@@ -288,6 +315,22 @@ public class CreatureGenotype
     public TrainingStage stage;
     public List<SegmentGenotype> segments;
 
+    // Orientation four vars maybe...check Joint component vars.
+    [HideInInspector]
+    public float orientationX;
+    [HideInInspector]
+    public float orientationY;
+    [HideInInspector]
+    public float orientationZ;
+    [HideInInspector]
+    public float orientationW;
+
+    // this is only used for player design
+    public float eulerX;
+    public float eulerY;
+    public float eulerZ;
+
+    // DEBUG
     public int counter = 0;
 
     public int obsDim;
@@ -306,6 +349,61 @@ public class CreatureGenotype
         return null;
     }
 
+    public void EulerToQuat()
+    {
+        Quaternion q = Quaternion.Euler(eulerX, eulerY, eulerZ);
+        orientationX = q.x;
+        orientationY = q.y;
+        orientationZ = q.z;
+        orientationW = q.w;
+    }
+
+    private static readonly List<string> LatinWordParts = new List<string>
+    {
+        "aero", "albus", "ama", "ambi", "angui", "aqua", "ardea", "arvo", "aurum", "avium",
+        "bellus", "bestia", "caelum", "canis", "cattus", "collis", "corvus", "crescens", "dextro",
+        "dominus", "draco", "equus", "faunus", "felis", "ferox", "flumen", "gigas", "herba",
+        "ignis", "leo", "lupus", "magnus", "mare", "montis", "mortis", "natura", "nox", "oliv",
+        "ornis", "pelagus", "planta", "pontus", "pratum", "pulcher", "rex", "saxum", "serpens",
+        "silva", "sol", "stellis", "terra", "umbra", "ventus", "vermis", "vesper", "vita"
+    };
+
+    public static string GenerateName(string parentName)
+    {
+        // Select two random Latin word parts
+        int idx1 = Random.Range(0, LatinWordParts.Count);
+        int idx2 = Random.Range(0, LatinWordParts.Count);
+        string part1 = LatinWordParts[idx1];
+        string part2 = LatinWordParts[idx2];
+
+        // Combine the two word parts
+        string generatedName = part1 + part2;
+
+        // If there's a parent, add a prefix from its name
+        if (!string.IsNullOrEmpty(parentName))
+        {
+            string uniquePart = parentName;
+
+            // Check if the parent has a prefix
+            if (parentName.Contains("-"))
+            {
+                // Split the parent's name and extract the unique part
+                string[] nameParts = parentName.Split('-');
+                uniquePart = nameParts.Length > 1 ? nameParts[1] : parentName;
+            }
+
+            // Take the first three letters of the unique part as the prefix
+            string parentPrefix = uniquePart.Substring(0, Mathf.Min(3, uniquePart.Length));
+            generatedName = parentPrefix + "-" + generatedName;
+        }
+
+        return generatedName;
+    }
+
+    /// <summary>
+    /// Returns a dictionary of <child, parents></child>
+    /// </summary>
+    /// <returns></returns>
     public Dictionary<byte, byte> GetParentsDict(){
         Dictionary<byte, byte> parentsDict = new Dictionary<byte, byte>(); // (segmentId, parentId)
         Queue<SegmentGenotype> segmentsToSearch = new Queue<SegmentGenotype>();
@@ -324,6 +422,84 @@ public class CreatureGenotype
         }
 
         return parentsDict;
+    }
+
+    /// <summary>
+    /// Traces through the creature genotype, returning a list of all the connections to a certain segment genotype
+    /// </summary>
+    /// <param name="isFull"></param>
+    /// <param name="isRecursive"></param>
+    /// <returns></returns>
+    public Dictionary<byte, List<SegmentConnectionGenotype>> GetSegmentConnections(bool isFull, bool isRecursive){
+        Dictionary<byte, List<SegmentConnectionGenotype>> segmentConnectionsByDest = new Dictionary<byte, List<SegmentConnectionGenotype>>();
+
+        if (isFull){
+            foreach (SegmentGenotype sg in segments)
+            {
+                foreach (SegmentConnectionGenotype scg in sg.connections)
+                {
+                    if (!isRecursive && scg.id == sg.id) continue;
+                    if (segmentConnectionsByDest.ContainsKey(scg.destination))
+                    {
+                        segmentConnectionsByDest[scg.destination].Add(scg);
+                    }
+                    else
+                    {
+                        segmentConnectionsByDest.Add(scg.destination, new List<SegmentConnectionGenotype>() { scg });
+                    }
+
+                }
+            }
+        } else {
+            
+        }
+
+        return segmentConnectionsByDest;
+    }
+
+    /// <summary>
+    /// Returns a dictionary with key: destination, value: (parentId, number of connections to it)
+    /// </summary>
+    /// <param name="isFull"></param>
+    /// <returns></returns>
+    public Dictionary<byte, byte[]> GetSegmentParents(bool isFull, bool onlySelf)
+    {
+        Dictionary<byte, byte[]> segmentParentsByDest = new Dictionary<byte, byte[]>();
+
+        if (isFull)
+        {
+            foreach (SegmentGenotype sg in segments)
+            {
+                foreach (SegmentConnectionGenotype scg in sg.connections)
+                {
+                    if (scg.destination == sg.id && onlySelf){
+                        if (segmentParentsByDest.ContainsKey(scg.destination))
+                        {
+                            segmentParentsByDest[scg.destination][0]++;
+                        }
+                        else
+                        {
+                            segmentParentsByDest.Add(scg.destination, new byte[1] { 1 });
+                        }
+                    } else if (scg.destination != sg.id && !onlySelf) {
+                        if (segmentParentsByDest.ContainsKey(scg.destination))
+                        {
+                            segmentParentsByDest[scg.destination][1]++;
+                        }
+                        else
+                        {
+                            segmentParentsByDest.Add(scg.destination, new byte[2] { sg.id, 1 });
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+
+        }
+
+        return segmentParentsByDest;
     }
 
     public CreatureGenotype Clone()

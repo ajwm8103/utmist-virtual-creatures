@@ -6,8 +6,9 @@ public class FluidDrag : MonoBehaviour
 {
     private float viscosityDrag = 1f;
     private float fluidDensity = 1000f;
-    private float dragScaling = 1f;
+    // private float dragScaling = 1f;
     private Rigidbody myRigidbody;
+    private FluidManager fluidManager;
 
     // Surface Areas for each pair of faces (neg x will be same as pos x):
     private float sa_x;
@@ -25,8 +26,13 @@ public class FluidDrag : MonoBehaviour
         sa_y = transform.localScale.x * transform.localScale.z;
         sa_z = transform.localScale.x * transform.localScale.y;
 
+        float areaConstraint = myRigidbody.mass / (Time.fixedDeltaTime * viscosityDrag);
+        sa_x = Mathf.Min(sa_x, areaConstraint);
+        sa_y = Mathf.Min(sa_y, areaConstraint);
+        sa_z = Mathf.Min(sa_z, areaConstraint);
+
         // Store local parameters
-        FluidManager fluidManager = FluidManager.instance;
+        fluidManager = FluidManager.instance;
         fluidDensity = fluidManager.fluidDensity;
         viscosityDrag = fluidManager.viscosityDrag;
     }
@@ -44,6 +50,7 @@ public class FluidDrag : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (!fluidManager.fluidEnabled) return;
         // F_drag = 0.5 * C_D * A * rho * v^2
         // Cache positive axis vectors:
         Vector3 forward = transform.forward;
@@ -51,12 +58,12 @@ public class FluidDrag : MonoBehaviour
         Vector3 right = transform.right;
 
         // Find centers of each of box's faces
-        Vector3 xpos_face_center = (right * transform.localScale.x / 2) + transform.position;
-        Vector3 ypos_face_center = (up * transform.localScale.y / 2) + transform.position;
-        Vector3 zpos_face_center = (forward * transform.localScale.z / 2) + transform.position;
-        Vector3 xneg_face_center = -(right * transform.localScale.x / 2) + transform.position;
-        Vector3 yneg_face_center = -(up * transform.localScale.y / 2) + transform.position;
-        Vector3 zneg_face_center = -(forward * transform.localScale.z / 2) + transform.position;
+        Vector3 xpos_face_center = (up * transform.localScale.y / 2) + (right * transform.localScale.x / 2) + transform.position;
+        Vector3 ypos_face_center = (up * transform.localScale.y) + transform.position;
+        Vector3 zpos_face_center = (up * transform.localScale.y / 2) + (forward * transform.localScale.z / 2) + transform.position;
+        Vector3 xneg_face_center = (up * transform.localScale.y / 2) - (right * transform.localScale.x / 2) + transform.position;
+        Vector3 yneg_face_center = transform.position;
+        Vector3 zneg_face_center = (up * transform.localScale.y / 2) - (forward * transform.localScale.z / 2) + transform.position;
 
         Vector3 pointVelPosZ = myRigidbody.GetPointVelocity(zpos_face_center);
         Vector3 pointVelPosY = myRigidbody.GetPointVelocity(ypos_face_center);
@@ -104,6 +111,8 @@ public class FluidDrag : MonoBehaviour
 
         myRigidbody.AddForceAtPosition(fluidDragVecPosX * 2, xpos_face_center);
 
+        // Debug.Log(string.Format("Forces {3}, {0}, {1}, {2}", fluidDragVecPosZ, fluidDragVecPosY, fluidDragVecPosX, name));
+
         //=== FOR EACH FACE of rigidbody box: ----------------------------------------
         //=== Get Velocity: ---------------------------------------------
         //=== Apply Opposing Force ----------------------------------------
@@ -126,5 +135,22 @@ public class FluidDrag : MonoBehaviour
         // linear drag: Vector3 fluidDragVecPosX = -right * LinearDragFloat(sa_x, Vector3.Dot(right, pointVelPosX));
 	    Vector3 fluidDragVecPosX = -right * dragScaling * QuadraticDragFloat(sa_x, Vector3.Dot(right, pointVelPosX));
         rigidbody.AddForceAtPosition(fluidDragVecPosX, xpos_face_center);*/
+
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.white;
+        Vector3 forward = transform.forward;
+        Vector3 up = transform.up;
+        Vector3 right = transform.right;
+
+        Vector3 xpos_face_center = (up * transform.localScale.y / 2) + (right * transform.localScale.x / 2) + transform.position;
+        Vector3 ypos_face_center = (up * transform.localScale.y) + transform.position;
+        Vector3 zpos_face_center = (up * transform.localScale.y / 2) + (forward * transform.localScale.z / 2) + transform.position;
+
+        Gizmos.DrawWireSphere(xpos_face_center, 0.1f);
+        Gizmos.DrawWireSphere(ypos_face_center, 0.1f);
+        Gizmos.DrawWireSphere(zpos_face_center, 0.1f);
     }
 }

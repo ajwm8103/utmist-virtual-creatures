@@ -1,8 +1,10 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using System.Runtime.Serialization.Formatters.Binary;
 
 [System.Serializable]
@@ -72,10 +74,24 @@ public class RLSettings : OptimizationSettings {
 [System.Serializable]
 public class KSSSettings : OptimizationSettings {
     public override TrainingStage stage { get { return TrainingStage.KSS; } }
-    public int populationSize = 300;
-    public int totalGenerations = 50;
-    public float survivalRatio = 1f / 5f;
+    public int populationSize;
+    public int totalGenerations;
+    public float survivalRatio;
     public MutateGenotype.MutationPreferenceSetting mp;
+
+    public KSSSettings(int ps, int tg, float sr)
+    {
+        this.populationSize = ps;
+        this.totalGenerations = tg;
+        this.survivalRatio = sr;
+    }
+
+    public KSSSettings()
+    {
+        this.populationSize = 300;
+        this.totalGenerations = 200;
+        this.survivalRatio = 1f / 5f;
+    }
 }
 
 /// <summary>
@@ -89,7 +105,7 @@ public class TrainingManager : MonoBehaviour
 
     public TrainingSave save { get; private set; }
     [SerializeField]
-    private TrainingSettings ts;
+    public TrainingSettings ts { get; private set; }
     [SerializeField]
     private TrainingStage stage;
 
@@ -97,7 +113,7 @@ public class TrainingManager : MonoBehaviour
     public CreatureGenotype creatureGenotype;
 
     // References to components
-    [SerializeField]
+    public Text statsText;
     private TrainingAlgorithm algo;
     private Transform envHolder;
 
@@ -105,7 +121,7 @@ public class TrainingManager : MonoBehaviour
     {
         if (instance != null)
         {
-            Destroy(gameObject); // Can't have two controllers active at once
+            Destroy(gameObject); // Can't have two managers active at once
         }
         else
         {
@@ -146,6 +162,7 @@ public class TrainingManager : MonoBehaviour
                 Environment instantiatedEnv = Instantiate(envPrefab, Vector3.right * i * sizeX, envPrefab.transform.rotation).GetComponent<Environment>();
                 instantiatedEnv.Setup(ts.envSettings);
                 instantiatedEnv.transform.parent = envHolder;
+                instantiatedEnv.gameObject.name += i.ToString();
                 environments.Add(instantiatedEnv);
                 Transform oneOff = instantiatedEnv.transform.Find("OneOffHolder");
                 if (oneOff != null && i != 0) {
@@ -159,6 +176,23 @@ public class TrainingManager : MonoBehaviour
         if (stage == TrainingStage.KSS) {
             algo = (TrainingAlgorithm)gameObject.AddComponent(typeof(KSS.KSSAlgorithm));
             algo.Setup(this);
+        }
+    }
+
+    public void SaveTraining(){
+        algo.SaveTraining();
+    }
+
+    public Creature GetBestLivingCreature()
+    {
+        try
+        {
+            return environments.OrderByDescending(x => x.currentCreature.totalReward).First().currentCreature;
+        }
+        catch (Exception)
+        {
+
+            return null;
         }
     }
 

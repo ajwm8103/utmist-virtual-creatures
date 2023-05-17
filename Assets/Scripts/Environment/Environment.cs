@@ -41,7 +41,9 @@ public abstract class Environment : MonoBehaviour
     private bool updatedFrameReward;
     private float frameReward;
     private bool isDQ = false;
+    private bool hasDoneKillCheck = false;
     private bool isStandalone; // true when just testing one
+    private Vector3 lastCom;
 
     // References to other Components
     public Creature currentCreature;
@@ -63,7 +65,7 @@ public abstract class Environment : MonoBehaviour
     {
         tm = TrainingManager.instance;
         isStandalone = tm == null;
-        if (isStandalone){
+        if (isStandalone) {
             Setup(EnvironmentSettings.GetDefault(envCode));
         }
     }
@@ -72,8 +74,10 @@ public abstract class Environment : MonoBehaviour
     {
         this.es = es;
         fitness = GetComponent<Fitness>();
+        //fitness.firstFrame = true;
         tm = TrainingManager.instance;
         cs = CreatureSpawner.instance;
+        hasDoneKillCheck = false;
         spawnTransform = transform.Find("SpawnTransform");
         creatureHolder = transform.Find("CreatureHolder");
     }
@@ -81,13 +85,45 @@ public abstract class Environment : MonoBehaviour
     public virtual void FixedUpdate()
     {
         if (!busy) return;
+        if (tm == null) tm = TrainingManager.instance;
 
         timePassed += Time.fixedDeltaTime;
-        bool isOutOfTime = timePassed >= es.maxTime && es.maxTime > 0;
-        bool isExtremelyFar = (transform.position - currentCreature.GetCentreOfMass()).sqrMagnitude >= 1000;
-        if (isOutOfTime || isExtremelyFar)
+        bool isOutOfTime;
+        try
         {
-            if (isExtremelyFar){
+            isOutOfTime = timePassed >= es.maxTime && es.maxTime > 0;
+        }
+        catch (Exception)
+        {
+            if (isStandalone) {
+                es = EnvironmentSettings.GetDefault(envCode);
+            } else {
+                es = tm.ts.envSettings;
+            }
+
+            isOutOfTime = timePassed >= es.maxTime && es.maxTime > 0;
+        }
+        Vector3 currentCom = currentCreature.GetCentreOfMass();
+        bool isExtremelyFar = (transform.position - currentCom).sqrMagnitude >= 1000;
+        if (lastCom == null) {
+            lastCom = currentCom;
+        }
+
+
+
+        bool isTooFast = ((currentCom - lastCom).magnitude / Time.fixedDeltaTime) > 10f && timePassed > 0.2f;
+        bool isNan = !float.IsNaN(currentCom.x) || !float.IsNaN(currentCom.y) || !float.IsNaN(currentCom.z);
+        bool isDQActivate = isExtremelyFar || isTooFast;
+        bool isTooSlow = false;
+        if (timePassed > 0.8f && !hasDoneKillCheck){
+            hasDoneKillCheck = true;
+            isTooSlow = Mathf.Abs(currentCreature.totalReward) < 0.00005f;
+        }
+        
+        if (isOutOfTime || isDQActivate || isTooSlow)
+        {
+            if (isDQActivate)
+            {
                 isDQ = true;
             }
             //m_BlueAgentGroup.GroupEpisodeInterrupted();
@@ -97,6 +133,8 @@ public abstract class Environment : MonoBehaviour
             //m_redAgent.agent.EpisodeInterrupted();
             ResetEnv();
         }
+        //Debug.Log(currentCom + " " + lastCom);
+        lastCom = currentCom;
     }
 
     // Spawn creature by passing transform params to Scene CreatureSpawner
@@ -130,6 +168,7 @@ public abstract class Environment : MonoBehaviour
         }
 
         isDQ = false;
+        hasDoneKillCheck = false;
         timePassed = 0;
     }
 
