@@ -101,6 +101,7 @@ public class ViewerController : MonoBehaviour
                     {
                         //Debug.Log(segment.creature);
                         dsp.UpdateCreatureStats(segment.creature);
+                        CreatureViewerController.instance.SetCreature(segment.creature);
                     }
                 }
             }

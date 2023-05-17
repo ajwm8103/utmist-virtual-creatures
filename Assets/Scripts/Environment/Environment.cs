@@ -7,12 +7,16 @@ using Unity.MLAgents.Actuators;
 
 public enum EnvArrangeType { LINEAR, PLANAR };
 public enum GraphicsLevel { LOW, MEDIUM, HIGH };
-public enum EnvCode { OCEAN };
+public enum EnvCode { OCEAN, FLOOR };
 
 [Serializable]
 public abstract class EnvironmentSettings {
     public abstract EnvCode envCode { get; }
-    public readonly static Dictionary<EnvCode, string> envString = new Dictionary<EnvCode, string>() { { EnvCode.OCEAN, "OceanEnv" } };
+    public readonly static Dictionary<EnvCode, string> envString = new Dictionary<EnvCode, string>() { 
+    { EnvCode.OCEAN, "OceanEnv" },
+    { EnvCode.FLOOR, "FloorEnv" },
+    };
+
     public abstract EnvArrangeType envArrangeType { get; }
     public GraphicsLevel graphicsLevel { get; set;  }
 
@@ -22,6 +26,10 @@ public abstract class EnvironmentSettings {
     public static EnvironmentSettings GetDefault(EnvCode code){
         if (code == EnvCode.OCEAN) {
             return new OceanEnvSettings();
+        }
+        else if (code == EnvCode.FLOOR)
+        {
+            return new FloorEnvSettings();
         }
         return null;
     }
@@ -114,10 +122,20 @@ public abstract class Environment : MonoBehaviour
         bool isTooFast = ((currentCom - lastCom).magnitude / Time.fixedDeltaTime) > 10f && timePassed > 0.2f;
         bool isNan = !float.IsNaN(currentCom.x) || !float.IsNaN(currentCom.y) || !float.IsNaN(currentCom.z);
         bool isDQActivate = isExtremelyFar || isTooFast;
+
         bool isTooSlow = false;
-        if (timePassed > 0.8f && !hasDoneKillCheck){
-            hasDoneKillCheck = true;
-            isTooSlow = Mathf.Abs(currentCreature.totalReward) < 0.00005f;
+        if (fitness is JumpingFitness) {
+            if (timePassed > 2f && !hasDoneKillCheck)
+            {
+                hasDoneKillCheck = true;
+                isTooSlow = Mathf.Abs(currentCreature.totalReward) < 0.00005f;
+            }
+        } else if (fitness is SwimmingFitness) {
+            if (timePassed > 0.8f && !hasDoneKillCheck)
+            {
+                hasDoneKillCheck = true;
+                isTooSlow = Mathf.Abs(currentCreature.totalReward) < 0.00005f;
+            }
         }
         
         if (isOutOfTime || isDQActivate || isTooSlow)

@@ -183,7 +183,7 @@ public class CreatureSpawner : MonoBehaviour
         spawnedGraphic.GetComponent<Renderer>().material.color = new Color(currentSegmentGenotype.r / 255f, currentSegmentGenotype.g / 255f, currentSegmentGenotype.b / 255f);
 
         Rigidbody rb = spawnedSegmentGameObject.GetComponent<Rigidbody>();
-        rb.mass *= spawnedSegmentGameObject.transform.localScale.x * spawnedSegmentGameObject.transform.localScale.y * spawnedSegmentGameObject.transform.localScale.z;
+        rb.mass *= dimVector.x * dimVector.y * dimVector.z;
         
         switch (currentSegmentGenotype.jointType)
         {
@@ -342,6 +342,9 @@ public class CreatureSpawner : MonoBehaviour
         Transform spawnedGraphic = spawnedSegmentGameObject.transform.Find("Graphic");
         //spawnedGraphic.localScale = dimVector;
         spawnedGraphic.GetComponent<Renderer>().material.color = new Color(currentSegmentGenotype.r / 255f, currentSegmentGenotype.g / 255f, currentSegmentGenotype.b / 255f);
+
+        Rigidbody rb = spawnedSegmentGameObject.GetComponent<Rigidbody>();
+        rb.mass *= dimVector.x * dimVector.y * dimVector.z;
 
         // Change recursiveLimit stuff
         bool runTerminalOnly = false;
