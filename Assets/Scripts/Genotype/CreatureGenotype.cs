@@ -511,6 +511,13 @@ public class CreatureGenotype
                 {
                     byte destId = currentSegmentGenotype.GetConnection(connectionId).destination;
                     currentSegmentGenotype = GetSegment(destId);
+                    if (currentSegmentGenotype == null){
+                        Debug.Log(string.Format("Null at id {0} seg {1} name {2}", guidingNR.id, requestingSG.id, name));
+                        foreach (byte connectionId2 in guidingNR.connectionPath)
+                        {
+                            Debug.Log(string.Format("Path conId {0}, name {1}", connectionId2, name));
+                        }
+                    }
                 }
                 foundSegmentGenotype = currentSegmentGenotype;
             }
