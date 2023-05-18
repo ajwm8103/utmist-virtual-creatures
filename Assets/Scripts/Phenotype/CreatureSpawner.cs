@@ -118,10 +118,7 @@ public class CreatureSpawner : MonoBehaviour
         counter++;
         //Debug.Log(counter);
         if (counter == 80){
-            Debug.Log("Likely looping, save for debug.");
-            string name = "/debug_" + Random.Range(0, 100) + ".creature";
-            cg.SaveData(name, false);
-            Debug.Log("Saved to " + Application.persistentDataPath + name);
+            cg.SaveDebug();
         }
 
         myConnection.EulerToQuat(); //Debug, remove later (this changes internal rotation storage stuff to make inspector editing easier.)
@@ -208,7 +205,7 @@ public class CreatureSpawner : MonoBehaviour
                     j.useMotor = true;
                     JointMotor motor = j.motor;
                     motor.targetVelocity = 0;
-                    motor.force = 250;
+                    motor.force = 400;
                     j.motor = motor;
 
                     JointLimits limits = j.limits;
@@ -229,7 +226,7 @@ public class CreatureSpawner : MonoBehaviour
                     j.useMotor = true;
                     JointMotor motor = j.motor;
                     motor.targetVelocity = 0;
-                    motor.force = 250;
+                    motor.force = 400;
                     j.motor = motor;
 
                     JointLimits limits = j.limits;
@@ -250,7 +247,7 @@ public class CreatureSpawner : MonoBehaviour
                     j.useMotor = true;
                     JointMotor motor = j.motor;
                     motor.targetVelocity = 0;
-                    motor.force = 250;
+                    motor.force = 400;
                     j.motor = motor;
 
                     JointLimits limits = j.limits;
