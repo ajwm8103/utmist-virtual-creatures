@@ -161,8 +161,8 @@ public class MenuManager : MonoBehaviour
         optimizationSettings.initialGenotype = templateCGSO == null ? null : templateCGSO.cg;
         //optimizationSettings.initialGenotype = CreatureGenotype.LoadData("/Fish.creature", false); // null means start w/ random creatures. TODO: Non-null will mean spawn that with mutations!
         
-        TrainingSettings ts = new TrainingSettings(optimizationSettings, new OceanEnvSettings());
-        //TrainingSettings ts = new TrainingSettings(optimizationSettings, new FloorEnvSettings());
+        //TrainingSettings ts = new TrainingSettings(optimizationSettings, new OceanEnvSettings());
+        TrainingSettings ts = new TrainingSettings(optimizationSettings, new FloorEnvSettings());
 
 
         KSSSave save = new KSSSave();
