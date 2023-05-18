@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class FluidDrag : MonoBehaviour
 {
+    public bool autoCorrectDensity = false;
     private float viscosityDrag = 1f;
     private float fluidDensity = 1000f;
     // private float dragScaling = 1f;
@@ -11,6 +12,13 @@ public class FluidDrag : MonoBehaviour
     private FluidManager fluidManager;
 
     // Surface Areas for each pair of faces (neg x will be same as pos x):
+    public bool posXCovered = false;
+    public bool negXCovered = false;
+    public bool posYCovered = false;
+    public bool negYCovered = false;
+    public bool posZCovered = false;
+    public bool negZCovered = false;
+
     private float sa_x;
     private float sa_y;
     private float sa_z;
@@ -54,72 +62,89 @@ public class FluidDrag : MonoBehaviour
 
         fluidDensity = fluidManager.fluidDensity;
         viscosityDrag = fluidManager.viscosityDrag;
+
+        if (autoCorrectDensity){
+            myRigidbody.mass = fluidDensity * volume;
+        }
+
         // F_drag = 0.5 * C_D * A * rho * v^2
         // Cache positive axis vectors:
         Vector3 forward = transform.forward;
         Vector3 up = transform.up;
         Vector3 right = transform.right;
+        Vector3 com = (up * transform.localScale.y / 2) + transform.position;
+
+        int Xcoef = 0;
+        Xcoef += posXCovered ? 0 : 1;
+        Xcoef += negXCovered ? 0 : 1;
+        if (Xcoef != 0){
+            Vector3 xpos_face_center = (up * transform.localScale.y / 2) + (right * transform.localScale.x / 2) + transform.position;
+            Vector3 pointVelPosX = myRigidbody.GetPointVelocity(xpos_face_center);
+            Vector3 fluidDragVecPosX;
+
+            float dotX;
+            dotX = -right.x * pointVelPosX.x +
+                -right.y * pointVelPosX.y +
+                -right.z * pointVelPosX.z;
+
+            fluidDragVecPosX.x = right.x * dotX * sa_x * viscosityDrag;
+            fluidDragVecPosX.y = right.y * dotX * sa_x * viscosityDrag;
+            fluidDragVecPosX.z = right.z * dotX * sa_x * viscosityDrag;
+
+            myRigidbody.AddForceAtPosition(fluidDragVecPosX * Xcoef, xpos_face_center);
+        }
+
+        int Ycoef = 0;
+        Ycoef += posYCovered ? 0 : 1;
+        Ycoef += negYCovered ? 0 : 1;
+        if (Ycoef != 0)
+        {
+            Vector3 ypos_face_center = (up * transform.localScale.y) + transform.position;
+            Vector3 pointVelPosY = myRigidbody.GetPointVelocity(ypos_face_center);
+
+            Vector3 fluidDragVecPosY;
+
+            float dotY;
+            dotY = -up.x * pointVelPosY.x +
+                -up.y * pointVelPosY.y +
+                -up.z * pointVelPosY.z;
+
+            fluidDragVecPosY.x = up.x * dotY * sa_y * viscosityDrag;
+            fluidDragVecPosY.y = up.y * dotY * sa_y * viscosityDrag;
+            fluidDragVecPosY.z = up.z * dotY * sa_y * viscosityDrag;
+
+            myRigidbody.AddForceAtPosition(fluidDragVecPosY * Ycoef, ypos_face_center);
+        }
+
+        int Zcoef = 0;
+        Zcoef += posZCovered ? 0 : 1;
+        Zcoef += negZCovered ? 0 : 1;
+        if (Zcoef != 0)
+        {
+            Vector3 zpos_face_center = (up * transform.localScale.y / 2) + (forward * transform.localScale.z / 2) + transform.position;
+            Vector3 pointVelPosZ = myRigidbody.GetPointVelocity(zpos_face_center);
+            Vector3 fluidDragVecPosZ;
+
+            // Do the dot product first, but break it up and do it manually like this instead of calling the Dot() method:
+            float dotZ;
+            dotZ = -forward.x * pointVelPosZ.x +
+                -forward.y * pointVelPosZ.y +
+                -forward.z * pointVelPosZ.z;
+
+            fluidDragVecPosZ.x = forward.x * dotZ * sa_z * viscosityDrag;
+            fluidDragVecPosZ.y = forward.y * dotZ * sa_z * viscosityDrag;
+            fluidDragVecPosZ.z = forward.z * dotZ * sa_z * viscosityDrag;
+
+            myRigidbody.AddForceAtPosition(fluidDragVecPosZ * Zcoef, zpos_face_center);
+        }
 
         // Find centers of each of box's faces
-        Vector3 xpos_face_center = (up * transform.localScale.y / 2) + (right * transform.localScale.x / 2) + transform.position;
-        Vector3 ypos_face_center = (up * transform.localScale.y) + transform.position;
-        Vector3 zpos_face_center = (up * transform.localScale.y / 2) + (forward * transform.localScale.z / 2) + transform.position;
         Vector3 xneg_face_center = (up * transform.localScale.y / 2) - (right * transform.localScale.x / 2) + transform.position;
         Vector3 yneg_face_center = transform.position;
         Vector3 zneg_face_center = (up * transform.localScale.y / 2) - (forward * transform.localScale.z / 2) + transform.position;
-        Vector3 com = (up * transform.localScale.y / 2) + transform.position;
 
-        Vector3 pointVelPosZ = myRigidbody.GetPointVelocity(zpos_face_center);
-        Vector3 pointVelPosY = myRigidbody.GetPointVelocity(ypos_face_center);
-        Vector3 pointVelPosX = myRigidbody.GetPointVelocity(xpos_face_center);
-
-        // Quadratic drag seems to break some stuff with symmetry, so using linear drag as in the original paper:
-
-        Vector3 fluidDragVecPosZ;
-
-        // Do the dot product first, but break it up and do it manually like this instead of calling the Dot() method:
-        float dotZ;
-        dotZ = -forward.x * pointVelPosZ.x +
-            -forward.y * pointVelPosZ.y +
-            -forward.z * pointVelPosZ.z;
-
-        fluidDragVecPosZ.x = forward.x * dotZ * sa_z * viscosityDrag;
-        fluidDragVecPosZ.y = forward.y * dotZ * sa_z * viscosityDrag;
-        fluidDragVecPosZ.z = forward.z * dotZ * sa_z * viscosityDrag;
-
-        myRigidbody.AddForceAtPosition(fluidDragVecPosZ * 2, zpos_face_center);
-
-        Vector3 fluidDragVecPosY;
-
-        float dotY;
-        dotY = -up.x * pointVelPosY.x +
-            -up.y * pointVelPosY.y +
-            -up.z * pointVelPosY.z;
-
-        fluidDragVecPosY.x = up.x * dotY * sa_y * viscosityDrag;
-        fluidDragVecPosY.y = up.y * dotY * sa_y * viscosityDrag;
-        fluidDragVecPosY.z = up.z * dotY * sa_y * viscosityDrag;
-
-        myRigidbody.AddForceAtPosition(fluidDragVecPosY * 2, ypos_face_center);
-
-        Vector3 fluidDragVecPosX;
-
-        float dotX;
-        dotX = -right.x * pointVelPosX.x +
-            -right.y * pointVelPosX.y +
-            -right.z * pointVelPosX.z;
-
-        fluidDragVecPosX.x = right.x * dotX * sa_x * viscosityDrag;
-        fluidDragVecPosX.y = right.y * dotX * sa_x * viscosityDrag;
-        fluidDragVecPosX.z = right.z * dotX * sa_x * viscosityDrag;
-
-        myRigidbody.AddForceAtPosition(fluidDragVecPosX * 2, xpos_face_center);
-
-        //myRigidbody.AddForceAtPosition(-myRigidbody.mass * Physics.gravity, myRigidbody.centerOfMass, ForceMode.Force);
         //Debug.Log(string.Format("mass {0}, other {1}, {2}", myRigidbody.mass, -fluidDensity * volume, transform.parent.parent.parent.name));
         myRigidbody.AddForceAtPosition(-fluidDensity * Physics.gravity * volume, com, ForceMode.Force);
-
-        // Debug.Log(string.Format("Forces {3}, {0}, {1}, {2}", fluidDragVecPosZ, fluidDragVecPosY, fluidDragVecPosX, name));
 
         //=== FOR EACH FACE of rigidbody box: ----------------------------------------
         //=== Get Velocity: ---------------------------------------------

@@ -72,28 +72,29 @@ public class MutateGenotype
         float currentScaleFactor = 0.75f;
         public Dictionary<string, MutationPreference> mutationFrequencies = new Dictionary<string, MutationPreference>()
         {
-            {"s_r", new MutationPreference(0.25f, 0.25f)}, // Red (byte)
-            {"s_g", new MutationPreference(0.25f, 0.25f)}, // Green (byte)
-            {"s_b", new MutationPreference(0.25f, 0.25f)}, // Blue (byte)
-            {"s_rl", new MutationPreference(0.25f, 0.25f)}, // Recursive limit (byte, 1:15)
-            {"s_dx", new MutationPreference(0.25f, 0.25f)}, // Dimension X (float, 0.05f:1.2f)
-            {"s_dy", new MutationPreference(0.25f, 0.25f)}, // Dimension Y (float, 0.05f:1.2f)
-            {"s_dz", new MutationPreference(0.25f, 0.25f)}, // Dimension Z (float, 0.05f:1.2f)
-            {"s_jt", new MutationPreference(0.25f, 0.25f)}, // JointType (enum, 0:3)
-            {"s_dest", new MutationPreference(0.25f, 0.25f)}, // Destination (byte, 1:255)
-            {"s_a", new MutationPreference(0.25f, 0.25f)}, // Anchor (sadness)
-            {"s_o", new MutationPreference(0.25f, 0.25f)}, // Orientation (float, 0f:360f)
-            {"s_s", new MutationPreference(0.25f, 0.25f)}, // Scale (float, 0.2f:1.2f)
-            {"s_reflected", new MutationPreference(0.25f, 0.25f)}, // Reflected (bool)
-            {"s_t", new MutationPreference(0.25f, 0.25f)}, // Terminal-only (bool)
-            {"s_addc", new MutationPreference(0.25f, 0.25f)}, // Add connection
-            {"s_removec", new MutationPreference(0.25f, 0.25f)}, // Remove connection
-            {"n_t", new MutationPreference(0.25f, 0.25f)}, // Type (byte, 0:22)
-            {"n_w1", new MutationPreference(0.25f, 0.25f)}, // Weight 1 (float, -15:15)
-            {"n_w2", new MutationPreference(0.25f, 0.25f)}, // Weight 2 (float, -15:15)
-            {"n_w3", new MutationPreference(0.25f, 0.25f)}, // Weight 3 (float, -15:15)
-            {"n_relocateinput", new MutationPreference(0.25f, 0.25f)}, // Relocate Input
-            {"n_e", new MutationPreference(0.7f, 0.25f)}, // Effector generate
+            {"s_r", new MutationPreference(0.4f, 0.25f)}, // Red (byte)
+            {"s_g", new MutationPreference(0.4f, 0.25f)}, // Green (byte)
+            {"s_b", new MutationPreference(0.4f, 0.25f)}, // Blue (byte)
+            {"s_rl", new MutationPreference(0.08f, 0.25f)}, // Recursive limit (byte, 1:3)
+            {"s_dx", new MutationPreference(0.08f, 0.25f)}, // Dimension X (float, 0.05f:1.2f)
+            {"s_dy", new MutationPreference(0.08f, 0.25f)}, // Dimension Y (float, 0.05f:1.2f)
+            {"s_dz", new MutationPreference(0.08f, 0.25f)}, // Dimension Z (float, 0.05f:1.2f)
+            {"s_jt", new MutationPreference(0.08f, 0.25f)}, // JointType (enum, 0:3)
+            {"s_dest", new MutationPreference(0.08f, 0.25f)}, // Destination (byte, 1:255)
+            {"s_a", new MutationPreference(0.08f, 0.25f)}, // Anchor (sadness)
+            {"s_o", new MutationPreference(0.08f, 0.25f)}, // Orientation (float, 0f:360f)
+            {"s_s", new MutationPreference(0.08f, 0.25f)}, // Scale (float, 0.2f:1.2f)
+            {"s_reflected", new MutationPreference(0.08f, 0.25f)}, // Reflected (bool)
+            {"s_t", new MutationPreference(0.08f, 0.25f)}, // Terminal-only (bool)
+            {"s_addc", new MutationPreference(0.08f, 0.25f)}, // Add connection
+            {"s_removec", new MutationPreference(0.08f, 0.25f)}, // Remove connection
+            {"n_t", new MutationPreference(0.1f, 0.25f)}, // Type (byte, 0:22)
+            {"n_w1", new MutationPreference(0.2f, 0.25f)}, // Weight 1 (float, -15:15)
+            {"n_w2", new MutationPreference(0.2f, 0.25f)}, // Weight 2 (float, -15:15)
+            {"n_w3", new MutationPreference(0.2f, 0.25f)}, // Weight 3 (float, -15:15)
+            {"n_relocateinput", new MutationPreference(0.1f, 0.25f)}, // Relocate Input
+            {"n_e", new MutationPreference(0.5f, 0.25f)}, // Effector generate
+            {"n_s", new MutationPreference(0.5f, 0.25f)}, // Sensor generate
         };
 
         public Dictionary<string, float[]> floatClamps = new Dictionary<string, float[]>() {
@@ -284,6 +285,81 @@ public class MutateGenotype
 
                     sg.id = i;
                     break;
+                }
+            }
+        }
+
+        // Trace connectedness of nodes out from the effector neurons
+        List<System.Tuple<NeuronGenotype, SegmentGenotype>> unspottedNeurons = new List<System.Tuple<NeuronGenotype, SegmentGenotype>>();
+        List<NeuronGenotype> effectors = new List<NeuronGenotype>();
+        List<SegmentGenotype> effectorSegmentGenotypes = new List<SegmentGenotype>();
+
+        // Populate lists
+        foreach (SegmentGenotype sg in cg.segments)
+        {
+            foreach (NeuronGenotype ng in sg.neurons)
+            {
+                if (ng.nr.id == 12){
+                    effectors.Add(ng);
+                    effectorSegmentGenotypes.Add(sg);
+                } else {
+                    unspottedNeurons.Add(new System.Tuple<NeuronGenotype, SegmentGenotype>(ng, sg));
+                }
+            }
+        }
+
+        for (int i = 0; i < effectors.Count; i++)
+        {
+            NeuronGenotype effectorNeuronGenotype = effectors[i];
+            SegmentGenotype effectSegmentGenotype = effectorSegmentGenotypes[i];
+
+            Queue<System.Tuple<NeuronGenotype, SegmentGenotype>> tupleQueue = new Queue<System.Tuple<NeuronGenotype, SegmentGenotype>>();
+            tupleQueue.Enqueue(new System.Tuple<NeuronGenotype, SegmentGenotype> (effectorNeuronGenotype, effectSegmentGenotype));
+
+            while (tupleQueue.Count != 0){
+                System.Tuple<NeuronGenotype, SegmentGenotype> currentTuple = tupleQueue.Dequeue();
+                NeuronGenotype currentNG = currentTuple.Item1;
+                SegmentGenotype currentSG = currentTuple.Item2;
+
+                if (!unspottedNeurons.Contains(currentTuple)) break;
+
+                // If here, was not seen before
+                unspottedNeurons.Remove(currentTuple);
+                foreach (NeuronReference nr in currentNG.inputs)
+                {
+                    System.Tuple<NeuronGenotype, SegmentGenotype> outputTuple = cg.GetNeuronInput(nr, currentSG);
+                    tupleQueue.Enqueue(outputTuple);
+                }
+            }
+        }
+
+        foreach (System.Tuple < NeuronGenotype, SegmentGenotype> unspottedTuple in unspottedNeurons)
+        {
+            unspottedTuple.Item2.neurons.Remove(unspottedTuple.Item1);
+        }
+
+        SegmentGenotype rootSegmentGenotype = cg.GetSegment(1);
+        if (rootSegmentGenotype.neurons == null || rootSegmentGenotype.neurons.Count == 0)
+        {
+            for (int i = 0; i <= 5; i++)
+            {
+                NeuronGenotype ng = new NeuronGenotype(new NeuronReference());
+                ng.nr.id = (byte)i;
+                ng.nr.relativeLevelNullable = null;
+                ng.nr.relativityNullable = null;
+                rootSegmentGenotype.neurons.Add(ng);
+            }
+
+            // If root is empty, likely a new creature, so we add a joint sensor too
+            SegmentGenotype childSegmentGenotype = cg.GetSegment(2);
+            if (childSegmentGenotype != null && (childSegmentGenotype.neurons == null || childSegmentGenotype.neurons.Count == 0)){
+                for (int i = 6; i <= 8; i++)
+                {
+                    NeuronGenotype ng = new NeuronGenotype(new NeuronReference());
+                    ng.nr.id = (byte)i;
+                    ng.nr.relativeLevelNullable = null;
+                    ng.nr.relativityNullable = null;
+                    childSegmentGenotype.neurons.Add(ng);
                 }
             }
         }
@@ -482,6 +558,27 @@ public class MutateGenotype
             }
         }
 
+    }
+
+    public static CreatureGenotype BrainifyCreatureGenotype(CreatureGenotype cg, MutationPreferenceSetting mp)
+    {
+        SegmentGenotype rootSegmentGenotype = GenerateRandomSegmentGenotype(ref cg, mp);
+        rootSegmentGenotype.id = 1;
+        if (cg.GetSegment(0) == null)
+        {
+            cg.segments.Insert(0, SegmentGenotype.ghost);
+        }
+
+        for (int i = 0; i <= 5; i++)
+        {
+            NeuronGenotype ng1 = new NeuronGenotype(new NeuronReference());
+            ng1.nr.id = (byte)i;
+            ng1.nr.relativeLevelNullable = null;
+            ng1.nr.relativityNullable = null;
+            rootSegmentGenotype.neurons.Add(ng1);
+        }
+
+        return cg;
     }
 
     public static CreatureGenotype GenerateRandomCreatureGenotype(MutationPreferenceSetting mp)
@@ -732,12 +829,34 @@ public class MutateGenotype
         spawnedNeuronReference.relativeLevelNullable = null;
 
         // Pick unused id and set a neuron type
-        byte type;  byte typeInputs;
-        if (segmentId != 0 && segmentId != 1 && mp.CoinFlip("n_e") && segmentGenotype.GetNeuron(12) == null) {
-            spawnedNeuronReference.id = 12;
-            type = 0;
-            typeInputs = 1;
-        } else {
+        byte type = 0;  byte typeInputs = 0;
+        bool hasChosenType = false;
+        // TODO: Make it so some sensors can spawn on root node (e.g. photosensor)
+        if (segmentId != 0 && segmentId != 1){
+            if (mp.CoinFlip("n_e") && segmentGenotype.GetNeuron(12) == null){
+                hasChosenType = true;
+                spawnedNeuronReference.id = 12;
+                type = 0;
+                typeInputs = 1;
+            } else if (mp.CoinFlip("n_s"))
+            {
+                List<byte> possibleIds = new List<byte>();
+                for (byte i = 0; i < 12; i++)
+                {
+                    if (segmentGenotype.GetNeuron(i) == null){
+                        possibleIds.Add(i);
+                    }
+                }
+                if (possibleIds.Count != 0){
+                    hasChosenType = true;
+                    spawnedNeuronReference.id = (byte)Random.Range(0, possibleIds.Count);
+                    type = 0;
+                    typeInputs = 0;
+                }
+            }
+        }
+        if (!hasChosenType)
+        {
             for (byte i = 13; i < 255; i++)
             {
                 if (segmentGenotype.GetNeuron(i) == null)
@@ -755,8 +874,18 @@ public class MutateGenotype
         // Find all valid inputs for the node and connect them
         // Valid inputs will be within the node, the parent of the node, a child of the node, or the ghost
         // Make list of all those then select randomly
-        List<NeuronReference> possibleNeurons = GetPossibleReferences(cg, segmentGenotype, rootNeuronReferences, segmentIds);
+        NeuronGenotype ngOut;
+        if (typeInputs == 0)
+        {
+            // Create and install NeuronGenotype
+            ngOut = new NeuronGenotype(spawnedNeuronReference);
+            //Debug.Log(string.Format("Added sensor neuron with id {0} on segment id {1}", spawnedNeuronReference.id.ToString(), segmentId.ToString()));
+            segmentGenotype.neurons.Add(ngOut);
+            return;
+        }
 
+        List<NeuronReference> possibleNeurons = GetPossibleReferences(cg, segmentGenotype, rootNeuronReferences, segmentIds);
+        
         /*
         // Always add ghost neurons
         foreach (NeuronGenotype ng in cg.GetSegment(0).neurons)
@@ -907,8 +1036,9 @@ public class MutateGenotype
             neuronWeights[i] = Random.Range(-15f, 15f);
         }
 
+
         // Create and install NeuronGenotype
-        NeuronGenotype ngOut = new NeuronGenotype(type, neuronInputs, spawnedNeuronReference);
+        ngOut = new NeuronGenotype(type, neuronInputs, spawnedNeuronReference);
         ngOut.weights = neuronWeights;
         //Debug.Log(string.Format("Added neuron with type {0}, {1} inputs, on segment id {2}", type.ToString(), neuronInputs.Length.ToString(), segmentId.ToString()));
         segmentGenotype.neurons.Add(ngOut);
@@ -1562,6 +1692,7 @@ public class MutateGenotype
             {
                 foreach (NeuronGenotype ng in sg.neurons)
                 {
+                    if (ng.nr.id < 12) continue;
                     for (int i = 0; i < ng.inputs.Length; i++)
                     {
 

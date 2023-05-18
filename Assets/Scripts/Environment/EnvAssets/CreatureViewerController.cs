@@ -27,6 +27,7 @@ public class CreatureViewerController : MonoBehaviour
     {
         if (currentCreature == null) return;
 
+        // TODO: Spawn replica creature, still, at some other location and track that
         Vector3 position = Vector3.zero;
         position.x = 2f * Mathf.Cos(Time.time * 2 * Mathf.PI / rotatePeriod);
         position.y = 1f;

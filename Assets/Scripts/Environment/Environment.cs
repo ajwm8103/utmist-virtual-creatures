@@ -134,7 +134,7 @@ public abstract class Environment : MonoBehaviour
             if (timePassed > 0.8f && !hasDoneKillCheck)
             {
                 hasDoneKillCheck = true;
-                isTooSlow = Mathf.Abs(currentCreature.totalReward) < 0.00005f;
+                isTooSlow = Mathf.Abs(currentCreature.totalReward) < 0.000005f;
             }
         }
         

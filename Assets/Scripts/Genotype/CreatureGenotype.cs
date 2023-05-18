@@ -29,7 +29,6 @@ public class NeuronGenotype
         type = 0;
         weights = new float[0];
         inputs = new NeuronReference[0];
-
     }
 
     public NeuronGenotype Clone()
@@ -457,6 +456,74 @@ public class CreatureGenotype
         return segmentConnectionsByDest;
     }
 
+    public SegmentGenotype GetParentSegmentGenotype(byte id){
+        if (id == 0 || id == 1) return null;
+
+        foreach (SegmentGenotype sg in segments)
+        {
+            if (sg.id == 0 || sg.id == id) continue;
+            foreach (SegmentConnectionGenotype scg in sg.connections)
+            {
+                if (scg.destination == id){
+                    return sg;
+                }
+            }
+        }
+        return null;
+    }
+
+    public System.Tuple<NeuronGenotype, SegmentGenotype> GetNeuronInput(NeuronReference guidingNR, SegmentGenotype requestingSG)
+    {
+        SegmentGenotype foundSegmentGenotype = null;
+        if (guidingNR.relativity == NeuronReferenceRelativity.GHOST)
+        {
+            foundSegmentGenotype = GetSegment(0);
+        }
+        else if (guidingNR.relativity == NeuronReferenceRelativity.PARENT)
+        {
+            // This will be in a parent of the requesting neuron, so go through path to find correct relativeLevel
+            int relativityLeft = guidingNR.relativeLevel;
+            SegmentGenotype currentSegmentGenotype = requestingSG;
+            while (relativityLeft != 0)
+            {
+                SegmentGenotype nextSegmentGenotype = GetParentSegmentGenotype(currentSegmentGenotype.id);
+                if (nextSegmentGenotype != null)
+                {
+                    relativityLeft--;
+                    currentSegmentGenotype = nextSegmentGenotype;
+                } else {
+                    break;
+                }
+            }
+            foundSegmentGenotype = currentSegmentGenotype;
+        }
+        else if (guidingNR.relativity == NeuronReferenceRelativity.SELF)
+        {
+            foundSegmentGenotype = requestingSG;
+        }
+        else if (guidingNR.relativity == NeuronReferenceRelativity.CHILD)
+        {
+            SegmentGenotype currentSegmentGenotype = requestingSG;
+            foreach (byte connectionId in guidingNR.connectionPath)
+            {
+                byte destId = currentSegmentGenotype.GetConnection(connectionId).destination;
+                currentSegmentGenotype = GetSegment(destId);
+            }
+            foundSegmentGenotype = currentSegmentGenotype;
+        }
+
+        if (foundSegmentGenotype == null) return null;
+
+        foreach (NeuronGenotype ng in foundSegmentGenotype.neurons)
+        {
+            if (ng.nr.id == guidingNR.id)
+            {
+                return new System.Tuple<NeuronGenotype, SegmentGenotype>(ng, foundSegmentGenotype);
+            }
+        }
+        return null;
+    }
+
     /// <summary>
     /// Returns a dictionary with key: destination, value: (parentId, number of connections to it)
     /// </summary>
@@ -507,6 +574,14 @@ public class CreatureGenotype
         CreatureGenotype cg = new CreatureGenotype();
         cg.name = name;
         cg.segments = segments.Select(item => item.Clone()).ToList();
+        cg.eulerX = eulerX;
+        cg.eulerY = eulerY;
+        cg.eulerZ = eulerZ;
+        cg.orientationW = orientationW;
+        cg.orientationX = orientationX;
+        cg.orientationY = orientationY;
+        cg.orientationZ = orientationZ;
+        cg.stage = stage;
         return cg;
     }
 

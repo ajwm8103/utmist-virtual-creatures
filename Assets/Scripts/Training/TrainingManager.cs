@@ -139,7 +139,7 @@ public class TrainingManager : MonoBehaviour
         }
 
         save = esp.save;
-        Debug.Log(save);
+        Debug.Log(save.saveName);
         ts = save.ts;
         stage = ts.optimizationSettings.stage;
         creatureGenotype = ts.optimizationSettings.initialGenotype;

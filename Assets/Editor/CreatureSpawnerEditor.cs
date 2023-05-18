@@ -8,7 +8,6 @@ public class CreatureSpawnerEditor : Editor
 {
     public override void OnInspectorGUI()
     {
-        DrawDefaultInspector();
         CreatureSpawner spawner = target as CreatureSpawner;
 
         if (GUILayout.Button("Save Current Creature"))
@@ -33,5 +32,6 @@ public class CreatureSpawnerEditor : Editor
             Debug.Log("Spawning Creature");
             spawner.SpawnCreature(spawner.creatureGenotype, Vector3.up + Vector3.right, null);
         }
+        DrawDefaultInspector();
     }
 }

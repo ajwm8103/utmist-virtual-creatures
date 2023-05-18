@@ -86,7 +86,7 @@ namespace KSS
             //float denom = topEvals.Select(x => Mathf.Exp((float)x.fitness.Value - maxFitness)).Sum();
             topEvals = topEvals.OrderByDescending(x => x.fitness.Value).ToList();
 
-
+            //Debug.Log(string.Format("[{0}, {1}], scaling factor {2}, denom {3}", maxFitness, minFitness, scalingFactor, denom));
             foreach (CreatureGenotypeEval topEval in topEvals)
             {
                 g.cgEvals.Add(new CreatureGenotypeEval(topEval.cg));
@@ -327,7 +327,8 @@ namespace KSS
             for (int i = 0; i < topCount; i++)
             {
                 CreatureGenotypeEval eval = sortedEvals[i];
-                if (eval.evalStatus == EvalStatus.EVALUATED && eval.fitness != null && eval.fitness.Value >= 0) {
+                // TEMPORARY FIX: Setting lower boudn to -8 instead of 0. TODO lol
+                if (eval.evalStatus == EvalStatus.EVALUATED && eval.fitness != null && eval.fitness.Value >= -8) {
                     topEvals.Add(eval);
                     positiveCount++;
                 } else {
