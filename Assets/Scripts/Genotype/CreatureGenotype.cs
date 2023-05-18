@@ -509,8 +509,23 @@ public class CreatureGenotype
             } else {
                 foreach (byte connectionId in guidingNR.connectionPath)
                 {
-                    byte destId = currentSegmentGenotype.GetConnection(connectionId).destination;
-                    currentSegmentGenotype = GetSegment(destId);
+                    try
+                    {
+                        SegmentConnectionGenotype connection = currentSegmentGenotype.GetConnection(connectionId);
+                        byte destId = connection.destination;
+                        currentSegmentGenotype = GetSegment(destId);
+                    }
+                    catch (System.Exception)
+                    {
+                        /*SaveDebug();
+                        Debug.Log(string.Format("Null at id {0} seg {1} name {2}", guidingNR.id, requestingSG.id, name));
+                        foreach (byte connectionId2 in guidingNR.connectionPath)
+                        {
+                            Debug.Log(string.Format("Path conId {0}, name {1}", connectionId2, name));
+                        }
+                        throw;*/
+                        return null;
+                    }
                 }
                 foundSegmentGenotype = currentSegmentGenotype;
             }
@@ -587,6 +602,12 @@ public class CreatureGenotype
         cg.orientationZ = orientationZ;
         cg.stage = stage;
         return cg;
+    }
+
+    public void SaveDebug(){
+        string name = "/debug_" + Random.Range(0, 100) + ".creature";
+        SaveData(name, false);
+        Debug.Log("Debug saved to " + Application.persistentDataPath + name);
     }
 
     public void SaveData(string path, bool isFullPath)

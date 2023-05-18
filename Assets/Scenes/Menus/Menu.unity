@@ -8100,7 +8100,7 @@ MonoBehaviour:
   mainMenu: {fileID: 228548149}
   chooseEvolution: {fileID: 5817651606346384933}
   evolutionSettingsMenu: {fileID: 5817651607908723222}
-  templateCGSO: {fileID: 11400000, guid: 36e79d9e29c0ef149a76c6bdde4a67b1, type: 2}
+  templateCGSO: {fileID: 0}
   saveTitle: {fileID: 2019010406}
   saveTitleInput: {fileID: 1895475969}
   populationInput: {fileID: 1497372134}
@@ -9070,7 +9070,7 @@ MonoBehaviour:
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
-  m_Text: 
+  m_Text: New Evolution
   m_CaretBlinkRate: 0.85
   m_CaretWidth: 1
   m_ReadOnly: 0
@@ -9522,7 +9522,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Unnamed Save
+  m_Text: New Evolution
 --- !u!222 &2019010409
 CanvasRenderer:
   m_ObjectHideFlags: 0
