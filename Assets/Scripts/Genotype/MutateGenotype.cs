@@ -83,6 +83,7 @@ public class MutateGenotype
             {"s_dest", new MutationPreference(0.08f, 0.25f)}, // Destination (byte, 1:255)
             {"s_a", new MutationPreference(0.08f, 0.25f)}, // Anchor (sadness)
             {"s_o", new MutationPreference(0.08f, 0.25f)}, // Orientation (float, 0f:360f)
+            {"s_so", new MutationPreference(0.08f, 0.25f)}, // Spawn Orientation (float, 0f:360f)
             {"s_s", new MutationPreference(0.08f, 0.25f)}, // Scale (float, 0.2f:1.2f)
             {"s_reflected", new MutationPreference(0.08f, 0.25f)}, // Reflected (bool)
             {"s_t", new MutationPreference(0.08f, 0.25f)}, // Terminal-only (bool)
@@ -102,6 +103,7 @@ public class MutateGenotype
             {"s_dy", new float[2]{0.3f,1.5f}},
             {"s_dz", new float[2]{0.3f,1.5f}},
             {"s_o", new float[2]{0f,360f}},
+            {"s_so", new float[2]{0f,360f}},
             {"s_s", new float[2]{0.5f,1.5f}},
             {"n_w1", new float[2]{-15f,15f}},
             {"n_w2", new float[2]{-15f,15f}},
@@ -1048,6 +1050,20 @@ public class MutateGenotype
         // Limited legal values new value from set.
         if (mp.mutateMorphology)
         {
+            if (mp.CoinFlip("s_so"))
+            {
+                Vector3 rotA = new Quaternion(cg.orientationX, cg.orientationY, cg.orientationZ, cg.orientationW).eulerAngles;
+                rotA = new Vector3(mp.ModifyFloatNoFactor(rotA.x, "s_so"), mp.ModifyFloatNoFactor(rotA.y, "s_so"), mp.ModifyFloatNoFactor(rotA.z, "s_so"));
+                Quaternion rot = Quaternion.Euler(rotA);
+                cg.eulerX = rot.x;
+                cg.eulerY = rot.y;
+                cg.eulerZ = rot.z;
+                cg.orientationX = rot.x;
+                cg.orientationY = rot.y;
+                cg.orientationZ = rot.z;
+                cg.orientationW = rot.w;
+            }
+
             foreach (SegmentGenotype sg in cg.segments)
             {
                 if (mp.CoinFlip("s_r"))
@@ -1225,6 +1241,9 @@ public class MutateGenotype
                         Vector3 rotA = new Quaternion(scg.orientationX, scg.orientationY, scg.orientationZ, scg.orientationW).eulerAngles;
                         rotA = new Vector3(mp.ModifyFloatNoFactor(rotA.x, "s_o"), mp.ModifyFloatNoFactor(rotA.y, "s_o"), mp.ModifyFloatNoFactor(rotA.z, "s_o"));
                         Quaternion rot = Quaternion.Euler(rotA);
+                        scg.eulerX = rot.x;
+                        scg.eulerY = rot.y;
+                        scg.eulerZ = rot.z;
                         scg.orientationX = rot.x;
                         scg.orientationY = rot.y;
                         scg.orientationZ = rot.z;

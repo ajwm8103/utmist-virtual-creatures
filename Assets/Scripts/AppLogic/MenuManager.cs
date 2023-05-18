@@ -13,16 +13,21 @@ public class MenuManager : MonoBehaviour
     //[SerializeField]
     //private CurrentMenu currentMenu = CurrentMenu.MAIN;
 
-    [Header("References")]
+    [Header("Menus")]
     public GameObject mainMenu;
+    public GameObject optionsMenu;
+    public GameObject creditsMenu;
     public GameObject chooseEvolution;
+    public GameObject editEvolution;
     public GameObject evolutionSettingsMenu;
     // TEMP
+    [Header("Temporary References")]
     public CreatureGenotypeScriptableObject templateCGSO;
 
     private List<GameObject> menus;
 
     // settings ui
+    [Header("UI Components")]
     public GameObject saveTitle;
     public GameObject saveTitleInput;
     public InputField populationInput;
@@ -32,7 +37,7 @@ public class MenuManager : MonoBehaviour
     public Toggle lockNeuralMutationsToggle;
     public Toggle lockPhysicalMutationsToggle;
 
-    public string saveName;
+    private string saveName = "New Evolution";
 
     // evolution settings values
     private CreatureGenotype initialGenotype;
@@ -46,7 +51,7 @@ public class MenuManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        menus = new List<GameObject>() { mainMenu, chooseEvolution, evolutionSettingsMenu};
+        menus = new List<GameObject>() { mainMenu, optionsMenu, creditsMenu, chooseEvolution, editEvolution, evolutionSettingsMenu };
         ShowMainMenu();
     }
 
@@ -58,7 +63,20 @@ public class MenuManager : MonoBehaviour
 
     public void ShowEdit()
     {
-        Debug.Log("Show edit scene");
+        menus.ForEach(o => o.SetActive(false));
+        editEvolution.SetActive(true);
+    }
+
+    public void ShowOptions()
+    {
+        menus.ForEach(o => o.SetActive(false));
+        optionsMenu.SetActive(true);
+    }
+
+    public void ShowCredits()
+    {
+        menus.ForEach(o => o.SetActive(false));
+        creditsMenu.SetActive(true);
     }
 
     public void ShowView()
@@ -111,6 +129,11 @@ public class MenuManager : MonoBehaviour
         saveTitleInput.SetActive(true);
     }
 
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
+
     public void SetSaveName(string input)
     {
         saveName = input;
@@ -154,7 +177,7 @@ public class MenuManager : MonoBehaviour
     {
         // Compile data from settings window into TrainingSave
         KSSSettings optimizationSettings = new KSSSettings(populationSize, totalGenerations, ratioNumerator / ratioDenominator);
-        optimizationSettings.num_envs = 75;
+        optimizationSettings.num_envs = 1;
         optimizationSettings.mp = new MutateGenotype.MutationPreferenceSetting();
         optimizationSettings.mp.mutateNeural = !lockNeuralMutations;
         optimizationSettings.mp.mutateMorphology = !lockPhysicalMutations;
