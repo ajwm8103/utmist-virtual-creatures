@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class ViewerController : MonoBehaviour
 {
     [Header("Controls")]
@@ -16,11 +17,14 @@ public class ViewerController : MonoBehaviour
     private bool trackingCursor = false;
     bool IsMouseOverGameWindow { get { return !(0 > Input.mousePosition.x || 0 > Input.mousePosition.y || Screen.width < Input.mousePosition.x || Screen.height < Input.mousePosition.y); } }
 
+    public CreatureSpawner creatureSpawner;
+
     // Start is called before the first frame update
     void Start()
     {
         tm = TrainingManager.instance;
         mainCamera = GetComponentInChildren<Camera>();
+        creatureSpawner = CreatureSpawner.instance;
     }
 
     // Update is called once per frame
@@ -102,6 +106,17 @@ public class ViewerController : MonoBehaviour
                         //Debug.Log(segment.creature);
                         dsp.UpdateCreatureStats(segment.creature);
                         CreatureViewerController.instance.SetCreature(segment.creature);
+
+                        Creature creatureClone = creatureSpawner.SpawnCreature(segment.creature.cg, segment.creature.GetCentreOfMass() + Vector3.down, segment.creature.fitness);
+                        foreach (Segment s in creatureClone.segments)
+                        {
+                            s.gameObject.GetComponent<Rigidbody>().detectCollisions = false;
+                            s.gameObject.layer = 7;
+                            s.transform.Find("Graphic").gameObject.layer = 7;
+
+                        }
+                        creatureClone.SetAlive(false);
+                        
                     }
                 }
             }

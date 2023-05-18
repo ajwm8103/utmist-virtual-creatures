@@ -182,7 +182,7 @@ public class Creature : MonoBehaviour
     private bool isAgent = false; // false => KSS, true => RL
     private CreatureAgent agent;
     public CreatureGenotype cg;
-    private bool isAlive = true; // false => display mode
+    public bool isAlive = true; // false => display mode
     public Fitness fitness { get; private set; }
     public float totalReward = 0;
     public List<Neuron> sensors = new List<Neuron>();
@@ -191,6 +191,8 @@ public class Creature : MonoBehaviour
 
     public List<HingeJoint> actionMotors = new List<HingeJoint>();
     public List<Segment> segments = new List<Segment>();
+
+   
 
     // Update is called once per frame
     void FixedUpdate()
