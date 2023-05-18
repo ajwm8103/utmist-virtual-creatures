@@ -23,7 +23,7 @@ public class FloorEnv : Environment
 
         // likely change this later to a general fitness selecting option from the save
         // this change should be in the Environment class TODO
-        fitness = gameObject.AddComponent<JumpingFitness>();
+        fitness = gameObject.AddComponent<WalkingFitness>();
         fitness.myEnvironment = this;
 
         ResetEnv();
