@@ -503,13 +503,17 @@ public class CreatureGenotype
         }
         else if (guidingNR.relativity == NeuronReferenceRelativity.CHILD)
         {
-            SegmentGenotype currentSegmentGenotype = requestingSG;
-            foreach (byte connectionId in guidingNR.connectionPath)
-            {
-                byte destId = currentSegmentGenotype.GetConnection(connectionId).destination;
-                currentSegmentGenotype = GetSegment(destId);
+            SegmentGenotype currentSegmentGenotype = requestingSG.id == 0 ? GetSegment(1) : requestingSG;
+            if (guidingNR.connectionPath == null || guidingNR.connectionPath.Count == 0){
+                foundSegmentGenotype = currentSegmentGenotype;
+            } else {
+                foreach (byte connectionId in guidingNR.connectionPath)
+                {
+                    byte destId = currentSegmentGenotype.GetConnection(connectionId).destination;
+                    currentSegmentGenotype = GetSegment(destId);
+                }
+                foundSegmentGenotype = currentSegmentGenotype;
             }
-            foundSegmentGenotype = currentSegmentGenotype;
         }
 
         if (foundSegmentGenotype == null) return null;

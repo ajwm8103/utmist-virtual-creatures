@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Evolved WSnake
   m_EditorClassIdentifier: 
   cg:
-    name: WSn-ambipratum
+    name: mag-arvooliv
     stage: 0
     segments:
     - r: 1
@@ -145,7 +145,28 @@ MonoBehaviour:
         scale: 1
         reflected: 0
         terminalOnly: 0
-      neurons: []
+      neurons:
+      - type: 0
+        inputs:
+        - relativityNullable:
+            v: 1
+            hasValue: 1
+          relativeLevelNullable:
+            v: 1
+            hasValue: 1
+          connectionPath: 
+          id: 5
+        weights:
+        - 4.1616383
+        nr:
+          relativityNullable:
+            v: 4
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 00
+          id: 12
       recursiveLimit: 1
       dimensionX: 0.2
       dimensionY: 2
@@ -171,7 +192,28 @@ MonoBehaviour:
         scale: 1
         reflected: 0
         terminalOnly: 0
-      neurons: []
+      neurons:
+      - type: 0
+        inputs:
+        - relativityNullable:
+            v: 1
+            hasValue: 1
+          relativeLevelNullable:
+            v: 2
+            hasValue: 1
+          connectionPath: 
+          id: 4
+        weights:
+        - 10.172922
+        nr:
+          relativityNullable:
+            v: 4
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 0000
+          id: 12
       recursiveLimit: 1
       dimensionX: 0.2
       dimensionY: 2
@@ -197,7 +239,28 @@ MonoBehaviour:
         scale: 1
         reflected: 0
         terminalOnly: 0
-      neurons: []
+      neurons:
+      - type: 0
+        inputs:
+        - relativityNullable:
+            v: 1
+            hasValue: 1
+          relativeLevelNullable:
+            v: 3
+            hasValue: 1
+          connectionPath: 
+          id: 2
+        weights:
+        - 6.2375293
+        nr:
+          relativityNullable:
+            v: 4
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 000000
+          id: 12
       recursiveLimit: 1
       dimensionX: 0.2
       dimensionY: 2
@@ -223,7 +286,28 @@ MonoBehaviour:
         scale: 1
         reflected: 0
         terminalOnly: 0
-      neurons: []
+      neurons:
+      - type: 0
+        inputs:
+        - relativityNullable:
+            v: 1
+            hasValue: 1
+          relativeLevelNullable:
+            v: 4
+            hasValue: 1
+          connectionPath: 
+          id: 3
+        weights:
+        - -0.3500146
+        nr:
+          relativityNullable:
+            v: 4
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 00000000
+          id: 12
       recursiveLimit: 1
       dimensionX: 0.2
       dimensionY: 2
@@ -234,7 +318,28 @@ MonoBehaviour:
       b: 225
       id: 6
       connections: []
-      neurons: []
+      neurons:
+      - type: 0
+        inputs:
+        - relativityNullable:
+            v: 1
+            hasValue: 1
+          relativeLevelNullable:
+            v: 5
+            hasValue: 1
+          connectionPath: 
+          id: 4
+        weights:
+        - -0.9120259
+        nr:
+          relativityNullable:
+            v: 4
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 0000000000
+          id: 12
       recursiveLimit: 1
       dimensionX: 0.2
       dimensionY: 1.25

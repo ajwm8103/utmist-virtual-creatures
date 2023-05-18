@@ -87,9 +87,9 @@ public class FluidDrag : MonoBehaviour
                 -right.y * pointVelPosX.y +
                 -right.z * pointVelPosX.z;
 
-            fluidDragVecPosX.x = right.x * dotX * sa_x * viscosityDrag;
-            fluidDragVecPosX.y = right.y * dotX * sa_x * viscosityDrag;
-            fluidDragVecPosX.z = right.z * dotX * sa_x * viscosityDrag;
+            fluidDragVecPosX.x = right.x * dotX * sa_x * viscosityDrag * fluidDensity;
+            fluidDragVecPosX.y = right.y * dotX * sa_x * viscosityDrag * fluidDensity;
+            fluidDragVecPosX.z = right.z * dotX * sa_x * viscosityDrag * fluidDensity;
 
             myRigidbody.AddForceAtPosition(fluidDragVecPosX * Xcoef, xpos_face_center);
         }
@@ -109,9 +109,9 @@ public class FluidDrag : MonoBehaviour
                 -up.y * pointVelPosY.y +
                 -up.z * pointVelPosY.z;
 
-            fluidDragVecPosY.x = up.x * dotY * sa_y * viscosityDrag;
-            fluidDragVecPosY.y = up.y * dotY * sa_y * viscosityDrag;
-            fluidDragVecPosY.z = up.z * dotY * sa_y * viscosityDrag;
+            fluidDragVecPosY.x = up.x * dotY * sa_y * viscosityDrag * fluidDensity;
+            fluidDragVecPosY.y = up.y * dotY * sa_y * viscosityDrag * fluidDensity;
+            fluidDragVecPosY.z = up.z * dotY * sa_y * viscosityDrag * fluidDensity;
 
             myRigidbody.AddForceAtPosition(fluidDragVecPosY * Ycoef, ypos_face_center);
         }
@@ -131,9 +131,9 @@ public class FluidDrag : MonoBehaviour
                 -forward.y * pointVelPosZ.y +
                 -forward.z * pointVelPosZ.z;
 
-            fluidDragVecPosZ.x = forward.x * dotZ * sa_z * viscosityDrag;
-            fluidDragVecPosZ.y = forward.y * dotZ * sa_z * viscosityDrag;
-            fluidDragVecPosZ.z = forward.z * dotZ * sa_z * viscosityDrag;
+            fluidDragVecPosZ.x = forward.x * dotZ * sa_z * viscosityDrag * fluidDensity;
+            fluidDragVecPosZ.y = forward.y * dotZ * sa_z * viscosityDrag * fluidDensity;
+            fluidDragVecPosZ.z = forward.z * dotZ * sa_z * viscosityDrag * fluidDensity;
 
             myRigidbody.AddForceAtPosition(fluidDragVecPosZ * Zcoef, zpos_face_center);
         }

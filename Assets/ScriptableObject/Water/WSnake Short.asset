@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e79b0229d1423d04b85dc9d7ed455a15, type: 3}
-  m_Name: WSnake
+  m_Name: WSnake Short
   m_EditorClassIdentifier: 
   cg:
     name: WSnake
@@ -105,90 +105,12 @@ MonoBehaviour:
       g: 75
       b: 175
       id: 3
-      connections:
-      - id: 0
-        destination: 4
-        anchorX: 0
-        anchorY: 0.5
-        anchorZ: 0
-        orientationX: 0
-        orientationY: 0
-        orientationZ: 0
-        orientationW: 1
-        eulerX: 0
-        eulerY: 0
-        eulerZ: 0
-        scale: 1
-        reflected: 0
-        terminalOnly: 0
+      connections: []
       neurons: []
       recursiveLimit: 1
       dimensionX: 0.2
       dimensionY: 2
       dimensionZ: 1
-      jointType: 3
-    - r: 0
-      g: 125
-      b: 225
-      id: 4
-      connections:
-      - id: 0
-        destination: 5
-        anchorX: 0
-        anchorY: 0.5
-        anchorZ: 0
-        orientationX: 0
-        orientationY: 0
-        orientationZ: 0
-        orientationW: 1
-        eulerX: 0
-        eulerY: 0
-        eulerZ: 0
-        scale: 1
-        reflected: 0
-        terminalOnly: 0
-      neurons: []
-      recursiveLimit: 1
-      dimensionX: 0.2
-      dimensionY: 2
-      dimensionZ: 0.7
-      jointType: 3
-    - r: 0
-      g: 255
-      b: 255
-      id: 5
-      connections:
-      - id: 0
-        destination: 6
-        anchorX: 0
-        anchorY: 0.5
-        anchorZ: 0
-        orientationX: 0
-        orientationY: 0
-        orientationZ: 0
-        orientationW: 1
-        eulerX: 0
-        eulerY: 0
-        eulerZ: 0
-        scale: 1
-        reflected: 0
-        terminalOnly: 0
-      neurons: []
-      recursiveLimit: 1
-      dimensionX: 0.2
-      dimensionY: 2
-      dimensionZ: 0.5
-      jointType: 3
-    - r: 0
-      g: 255
-      b: 225
-      id: 6
-      connections: []
-      neurons: []
-      recursiveLimit: 1
-      dimensionX: 0.2
-      dimensionY: 1.25
-      dimensionZ: 1.2
       jointType: 3
     orientationX: 0
     orientationY: 0
