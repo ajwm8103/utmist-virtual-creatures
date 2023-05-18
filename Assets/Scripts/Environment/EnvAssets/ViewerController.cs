@@ -38,7 +38,7 @@ public class ViewerController : MonoBehaviour
             verticalDirection = -1;
         }
 
-        float speedMultiplier = Input.GetKey(KeyCode.LeftControl) ? 1.5f : 1f;
+        float speedMultiplier = Input.GetKey(KeyCode.LeftControl) ? 2.5f : 1f;
         transform.position += Vector3.up * verticalDirection * verticalSpeed * speedMultiplier * Time.deltaTime;
 
         float forwardKey = Input.GetAxis("Vertical");
