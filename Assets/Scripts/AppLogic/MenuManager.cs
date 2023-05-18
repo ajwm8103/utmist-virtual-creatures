@@ -177,7 +177,7 @@ public class MenuManager : MonoBehaviour
     {
         // Compile data from settings window into TrainingSave
         KSSSettings optimizationSettings = new KSSSettings(populationSize, totalGenerations, ratioNumerator / ratioDenominator);
-        optimizationSettings.num_envs = 1;
+        optimizationSettings.num_envs = 75;
         optimizationSettings.mp = new MutateGenotype.MutationPreferenceSetting();
         optimizationSettings.mp.mutateNeural = !lockNeuralMutations;
         optimizationSettings.mp.mutateMorphology = !lockPhysicalMutations;
