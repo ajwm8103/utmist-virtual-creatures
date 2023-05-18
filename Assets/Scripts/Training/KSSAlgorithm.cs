@@ -309,7 +309,7 @@ namespace KSS
 
                 // Delete last generation (TODO: turn this into a top 60 preserving + median + worst
                 if (saveK.generations.Count != 2){
-                    CreatureGenotypeEval bestEval = saveK.generations[saveK.generations.Count - 2].cgEvals.OrderByDescending(cgEval => cgEval.fitness.Value).FirstOrDefault();
+                    CreatureGenotypeEval bestEval = SelectBestEval(saveK.generations[saveK.generations.Count - 2]);
                     saveK.generations[saveK.generations.Count - 2].cgEvals = new List<CreatureGenotypeEval>() { bestEval } ;
                 }
             }
@@ -379,11 +379,14 @@ namespace KSS
             return bestEval;
         }
 
-        private CreatureGenotype SelectBestGenotype(Generation g)
+        private CreatureGenotypeEval SelectBestEval(Generation g)
         {
-            CreatureGenotypeEval bestEval = g.cgEvals.OrderByDescending(cgEval => cgEval.fitness.Value).FirstOrDefault();
+            List<CreatureGenotypeEval> cleanedEvals = new List<CreatureGenotypeEval>(g.cgEvals);
+            cleanedEvals.RemoveAll(x => x.evalStatus == EvalStatus.DISQUALIFIED);
+            cleanedEvals.RemoveAll(x => x.fitness.HasValue == false);
+            CreatureGenotypeEval bestEval = cleanedEvals.OrderByDescending(cgEval => cgEval.fitness.Value).FirstOrDefault();
             Debug.Log("Best: " + bestEval.fitness.Value);
-            return bestEval.cg;
+            return bestEval;
         }
     }
 
