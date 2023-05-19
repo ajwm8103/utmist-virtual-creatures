@@ -18,6 +18,7 @@ public class ViewerController : MonoBehaviour
     bool IsMouseOverGameWindow { get { return !(0 > Input.mousePosition.x || 0 > Input.mousePosition.y || Screen.width < Input.mousePosition.x || Screen.height < Input.mousePosition.y); } }
 
     public CreatureSpawner creatureSpawner;
+    private Creature previousCreatureClone;
 
     // Start is called before the first frame update
     void Start()
@@ -103,20 +104,23 @@ public class ViewerController : MonoBehaviour
                     Segment segment = hit.collider.gameObject.GetComponent<Segment>();
                     if (segment != null)
                     {
-                        //Debug.Log(segment.creature);
                         dsp.UpdateCreatureStats(segment.creature);
-                        CreatureViewerController.instance.SetCreature(segment.creature);
 
-                        Creature creatureClone = creatureSpawner.SpawnCreature(segment.creature.cg, segment.creature.GetCentreOfMass() + Vector3.down, segment.creature.fitness);
+                        if (previousCreatureClone != null)
+                        {
+                            Destroy(previousCreatureClone.gameObject);
+                        }
+                        Creature creatureClone = creatureSpawner.SpawnCreature(segment.creature.cg,
+                            segment.creature.GetCentreOfMass(), segment.creature.fitness);
                         foreach (Segment s in creatureClone.segments)
                         {
                             s.gameObject.GetComponent<Rigidbody>().detectCollisions = false;
                             s.gameObject.layer = 7;
                             s.transform.Find("Graphic").gameObject.layer = 7;
-
                         }
                         creatureClone.SetAlive(false);
-                        
+                        previousCreatureClone = creatureClone;
+                        CreatureViewerController.instance.SetCreature(previousCreatureClone);
                     }
                 }
             }
