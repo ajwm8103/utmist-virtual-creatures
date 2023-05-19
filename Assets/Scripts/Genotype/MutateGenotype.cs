@@ -1016,6 +1016,7 @@ public class MutateGenotype
     public static CreatureGenotype MutateCreatureGenotype(CreatureGenotype cg, MutationPreferenceSetting mp)
     {
         //Debug.Log("----MUTATING CREATURE----");
+        CreatureGenotype originalGenotype = cg;
         cg = cg.Clone();
         cg.counter = 0;
         SimplifyCreatureGenotype(ref cg);
@@ -1531,6 +1532,20 @@ public class MutateGenotype
 
         // 5. Unconnected elements are garbage collected / simplified
         SimplifyCreatureGenotype(ref cg);
+
+        Dictionary<byte, byte> recursiveLimitInitial = new Dictionary<byte, byte>();
+        foreach (SegmentGenotype segment in cg.segments) recursiveLimitInitial[segment.id] = segment.recursiveLimit;
+
+        int segmentCount = 0;
+
+        // Iterate
+        cg.IterateSegment(recursiveLimitInitial, null, new List<byte>(), ref segmentCount);
+
+        if (segmentCount > 10)
+        {
+            cg = null;
+            cg = MutateCreatureGenotype(originalGenotype, mp);
+        }
 
         return cg;
     }

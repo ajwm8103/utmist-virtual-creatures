@@ -646,11 +646,10 @@ public class CreatureGenotype
     /// <summary>
     /// Runs through entire creature genotype and counts the number of segments
     /// </summary>
-    /// <param name="cg"></param>
     /// <param name="recursiveLimitValues"></param>
     /// <param name="myConnection"></param>
     /// <param name="connectionPath"></param>
-    public void IterateSegment(CreatureGenotype cg, Dictionary<byte, byte> recursiveLimitValues,
+    public void IterateSegment(Dictionary<byte, byte> recursiveLimitValues,
             SegmentConnectionGenotype myConnection, List<byte> connectionPath, ref int segmentCount)
     {
         segmentCount++;
@@ -658,7 +657,7 @@ public class CreatureGenotype
         // Find SegmentGenotype
         byte id = myConnection == null ? (byte)1 : myConnection.destination;
 
-        SegmentGenotype currentSegmentGenotype = cg.GetSegment(id);
+        SegmentGenotype currentSegmentGenotype = GetSegment(id);
 
         if (currentSegmentGenotype == null) return;
 
@@ -680,10 +679,10 @@ public class CreatureGenotype
                     continue;
                 }
                 Dictionary<byte, byte> recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
-                List<byte> connectionPathClone = connectionPath.Select(item => (byte)item).ToList();
+                List<byte> connectionPathClone = connectionPath.Select(item => item).ToList();
                 //List<byte> connectionPathClone = new List<byte>(connectionPath);
                 connectionPathClone.Add(connection.id);
-                IterateSegment(cg, recursiveLimitClone, connection, connectionPathClone, ref segmentCount);
+                IterateSegment(recursiveLimitClone, connection, connectionPathClone, ref segmentCount);
             }
         }
     }
@@ -700,7 +699,7 @@ public class CreatureGenotype
         int segmentCount = 0;
 
         // Iterate
-        IterateSegment(this, recursiveLimitInitial, null, new List<byte>(), ref segmentCount);
+        IterateSegment(recursiveLimitInitial, null, new List<byte>(), ref segmentCount);
 
         // Set resultant dims
         actDim = segmentCount - 1;
