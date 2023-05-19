@@ -32,6 +32,7 @@ public class MenuManager : MonoBehaviour
     public GameObject saveTitleInput;
     public InputField populationInput;
     public InputField generationInput;
+    public InputField envCountInput;
     public InputField ratioNumeratorInput;
     public InputField ratioDenominatorInput;
     public Toggle lockNeuralMutationsToggle;
@@ -43,6 +44,7 @@ public class MenuManager : MonoBehaviour
     private CreatureGenotype initialGenotype;
     private int populationSize;
     private int totalGenerations;
+    private int envCount;
     private float ratioNumerator;
     private float ratioDenominator;
     private bool lockNeuralMutations;
@@ -110,6 +112,7 @@ public class MenuManager : MonoBehaviour
 
         populationSize = int.Parse(populationInput.text);
         totalGenerations = int.Parse(generationInput.text);
+        envCount = int.Parse(envCountInput.text);
 
         ratioNumerator = float.Parse(ratioNumeratorInput.text);
 
@@ -152,6 +155,11 @@ public class MenuManager : MonoBehaviour
         totalGenerations = int.Parse(input);
     }
 
+    public void SetEnvCount(string input)
+    {
+        envCount = int.Parse(input);
+    }
+
     public void SetSurvivalRatioNumerator(string input)
     {
         ratioNumerator = float.Parse(input);
@@ -177,7 +185,7 @@ public class MenuManager : MonoBehaviour
     {
         // Compile data from settings window into TrainingSave
         KSSSettings optimizationSettings = new KSSSettings(populationSize, totalGenerations, ratioNumerator / ratioDenominator);
-        optimizationSettings.num_envs = 75;
+        optimizationSettings.num_envs = envCount;
         optimizationSettings.mp = new MutateGenotype.MutationPreferenceSetting();
         optimizationSettings.mp.mutateNeural = !lockNeuralMutations;
         optimizationSettings.mp.mutateMorphology = !lockPhysicalMutations;
