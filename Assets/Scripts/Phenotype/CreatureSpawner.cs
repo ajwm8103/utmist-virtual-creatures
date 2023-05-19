@@ -72,6 +72,10 @@ public class CreatureSpawner : MonoBehaviour
         return true;
     }
 
+    public Creature SpawnCreature(CreatureGenotype cg, Vector3 position){
+        return SpawnCreature(cg, position, null);
+    }
+
     // Creature & GHOST (ID 0)
     public Creature SpawnCreature(CreatureGenotype cg, Vector3 position, Fitness fitness)
     {

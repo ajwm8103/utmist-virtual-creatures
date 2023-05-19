@@ -182,7 +182,7 @@ public class Creature : MonoBehaviour
     private bool isAgent = false; // false => KSS, true => RL
     private CreatureAgent agent;
     public CreatureGenotype cg;
-    public bool isAlive = true; // false => display mode
+    public bool isAlive { get; private set; } // false => display mode
     public Fitness fitness { get; private set; }
     public float totalReward = 0;
     public List<Neuron> sensors = new List<Neuron>();
@@ -211,6 +211,7 @@ public class Creature : MonoBehaviour
     public void InitializeCreature(Fitness fitness)
     {
         // Debug.Log("----INITIALIZING CREATURE----");
+        this.isAlive = true;
         this.fitness = fitness;
         ConnectNeurons(neurons);
         ConnectNeurons(effectors);

@@ -17,8 +17,9 @@ public class ViewerController : MonoBehaviour
     private bool trackingCursor = false;
     bool IsMouseOverGameWindow { get { return !(0 > Input.mousePosition.x || 0 > Input.mousePosition.y || Screen.width < Input.mousePosition.x || Screen.height < Input.mousePosition.y); } }
 
-    public CreatureSpawner creatureSpawner;
-    private Creature previousCreatureClone;
+    private CreatureSpawner creatureSpawner;
+    private Creature currentCreatureClone;
+    private int cloneLayer;
 
     // Start is called before the first frame update
     void Start()
@@ -26,6 +27,7 @@ public class ViewerController : MonoBehaviour
         tm = TrainingManager.instance;
         mainCamera = GetComponentInChildren<Camera>();
         creatureSpawner = CreatureSpawner.instance;
+        cloneLayer = LayerMask.NameToLayer("CreatureClone");
     }
 
     // Update is called once per frame
@@ -111,25 +113,16 @@ public class ViewerController : MonoBehaviour
                     if (segment != null)
                     {
                         dsp.UpdateCreatureStats(segment.creature);
+                        SelectedCreaturePanel scp = SelectedCreaturePanel.instance;
 
-                        if (previousCreatureClone != null)
-                        {
-                            Destroy(previousCreatureClone.gameObject);
+                        // Send creature to panel
+                        if (scp != null){
+                            scp.UpdateClonedCreature(segment.creature.cg);
                         }
-                        Creature creatureClone = creatureSpawner.SpawnCreature(segment.creature.cg,
-                            segment.creature.GetCentreOfMass(), segment.creature.fitness);
-                        foreach (Segment s in creatureClone.segments)
-                        {
-                            s.gameObject.GetComponent<Rigidbody>().detectCollisions = false;
-                            s.gameObject.layer = 7;
-                            s.transform.Find("Graphic").gameObject.layer = 7;
-                        }
-                        creatureClone.SetAlive(false);
-                        previousCreatureClone = creatureClone;
-                        CreatureViewerController.instance.SetCreature(previousCreatureClone);
                     }
                 }
             }
         }
     }
+
 }

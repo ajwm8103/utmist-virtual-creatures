@@ -1,0 +1,135 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e79b0229d1423d04b85dc9d7ed455a15, type: 3}
+  m_Name: G3 Folded
+  m_EditorClassIdentifier: 
+  cg:
+    name: fel-ignisfaunus
+    stage: 0
+    segments:
+    - r: 1
+      g: 1
+      b: 1
+      id: 0
+      connections: []
+      neurons: []
+      recursiveLimit: 1
+      dimensionX: 0.9283758
+      dimensionY: 1.2959541
+      dimensionZ: 1
+      jointType: 0
+    - r: 128
+      g: 191
+      b: 203
+      id: 1
+      connections:
+      - id: 0
+        destination: 2
+        anchorX: 0.5
+        anchorY: 0
+        anchorZ: 0
+        orientationX: 0
+        orientationY: 0
+        orientationZ: -0.70710677
+        orientationW: 0.70710677
+        eulerX: 0
+        eulerY: 0
+        eulerZ: -90
+        scale: 1.4653021
+        reflected: 0
+        terminalOnly: 0
+      neurons:
+      - type: 0
+        inputs: []
+        weights: []
+        nr:
+          relativityNullable:
+            v: 4
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 
+          id: 5
+      recursiveLimit: 1
+      dimensionX: 1.047234
+      dimensionY: 0.695159
+      dimensionZ: 0.45138055
+      jointType: 0
+    - r: 99
+      g: 84
+      b: 75
+      id: 2
+      connections:
+      - id: 0
+        destination: 3
+        anchorX: 0.030420959
+        anchorY: 0.5
+        anchorZ: -0.25365508
+        orientationX: 0
+        orientationY: 0
+        orientationZ: 0
+        orientationW: 1
+        eulerX: 0
+        eulerY: 0
+        eulerZ: 0
+        scale: 0.590897
+        reflected: 0
+        terminalOnly: 0
+      neurons:
+      - type: 0
+        inputs:
+        - relativityNullable:
+            v: 1
+            hasValue: 1
+          relativeLevelNullable:
+            v: 1
+            hasValue: 1
+          connectionPath: 
+          id: 5
+        weights:
+        - 10.337133
+        nr:
+          relativityNullable:
+            v: 4
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 00
+          id: 12
+      recursiveLimit: 1
+      dimensionX: 0.48444358
+      dimensionY: 1.0106903
+      dimensionZ: 0.53073823
+      jointType: 1
+    - r: 140
+      g: 217
+      b: 89
+      id: 3
+      connections: []
+      neurons: []
+      recursiveLimit: 1
+      dimensionX: 0.7048894
+      dimensionY: 0.77176803
+      dimensionZ: 0.73958707
+      jointType: 3
+    orientationX: 0.0000028055726
+    orientationY: 0.000020992837
+    orientationZ: 0.00002925311
+    orientationW: 1
+    eulerX: 0.00032142457
+    eulerY: 0.0024056113
+    eulerZ: 0.0033521662
+    counter: 0
+    obsDim: 0
+    actDim: 0

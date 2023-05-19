@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RigidbodyState : ScriptableObject
+public class RigidbodyState
 {
 
     public Vector3 velocity;
