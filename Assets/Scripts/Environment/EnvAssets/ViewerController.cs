@@ -117,7 +117,7 @@ public class ViewerController : MonoBehaviour
 
                         // Send creature to panel
                         if (scp != null){
-                            scp.UpdateClonedCreature(segment.creature.cg);
+                            scp.UpdateSelectedCreature(segment.creature);
                         }
                     }
                 }

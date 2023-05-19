@@ -4,6 +4,21 @@ using System;
 using System.IO;
 using UnityEngine;
 
+
+public static class SaveContainer {
+    public static string GetNextFilename(this string filename)
+    {
+        int i = 1;
+        string dir = Path.GetDirectoryName(filename);
+        string file = Path.GetFileNameWithoutExtension(filename) + "({0})";
+        string extension = Path.GetExtension(filename);
+
+        while (File.Exists(filename))
+            filename = Path.Combine(dir, string.Format(file, i++) + extension);
+
+        return filename;
+    }
+}
 public class OptionsPersist : MonoBehaviour
 {
     public static OptionsPersist instance;
@@ -30,6 +45,13 @@ public class OptionsPersist : MonoBehaviour
             return Path.Combine(VCPath, "Creatures");
         }
     }
+    public string VCData
+    {
+        get
+        {
+            return Path.Combine(VCPath, "Data");
+        }
+    }
 
     private void Awake()
     {
@@ -43,7 +65,7 @@ public class OptionsPersist : MonoBehaviour
             appSavePath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
 
             string[] paths = new string[]{
-                VCPath, VCSaves, VCCreatures
+                VCPath, VCSaves, VCCreatures, VCData
             };
 
             foreach (string path in paths)

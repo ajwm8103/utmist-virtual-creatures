@@ -815,7 +815,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 193372686}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 35d32eb0fa92fe24680be1af763db174, type: 3}
   m_Name: 
@@ -2004,7 +2004,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f498cb6119262b4c8f80203ff63a5b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  text: {fileID: 193372688}
   selectedCreatureContainer: {fileID: 1452490571}
+  saveButton: {fileID: 9156850750575030501}
 --- !u!1 &853163301
 GameObject:
   m_ObjectHideFlags: 0

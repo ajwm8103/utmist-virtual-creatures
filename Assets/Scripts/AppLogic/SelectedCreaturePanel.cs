@@ -6,10 +6,16 @@ using UnityEngine.UI;
 
 public class SelectedCreaturePanel : MonoBehaviour
 {
+    public Text text;
     public static SelectedCreaturePanel instance;
     private CreatureSpawner creatureSpawner;
+    private Creature currentCreature;
     private Creature currentCreatureClone;
+    private string currentRewardString;
+    private string currentCreatureName;
+    private bool savedCurrent = false;
     public Transform selectedCreatureContainer;
+    public Button saveButton;
     private int cloneLayer;
 
     private void Awake()
@@ -30,18 +36,43 @@ public class SelectedCreaturePanel : MonoBehaviour
         cloneLayer = LayerMask.NameToLayer("CreatureClone");
     }
 
+    private void Update()
+    {
+        if (currentCreatureClone == null)
+        {
+            text.text = "No Selected Creature.";
+            return;
+        }
+
+        if (currentCreature != null){
+            currentRewardString = currentCreature.totalReward.ToString("F3");
+            currentCreatureName = currentCreature.cg.name;
+        }
+
+        text.text = string.Format("{0}, Total Reward: {1}", currentCreatureName, currentRewardString);
+    }
+
     public void SaveCreature()
     {
         if (currentCreatureClone == null) return;
+        savedCurrent = true;
+        saveButton.interactable = false;
+        saveButton.GetComponentInChildren<Text>().text = "Saved!";
 
         string path = Path.Combine(OptionsPersist.instance.VCCreatures, currentCreatureClone.cg.name + ".creature");
         currentCreatureClone.cg.SaveData(path, true);
         Debug.Log(string.Format("Saved {0} to {1}", currentCreatureClone.cg.name, path));
     }
 
-    public void UpdateClonedCreature(CreatureGenotype creatureGenotypeToClone){
+    public void UpdateSelectedCreature(Creature creatureToClone){
+        currentCreature = creatureToClone;
+        CreatureGenotype creatureGenotypeToClone = creatureToClone.cg;
         if (currentCreatureClone == null || currentCreatureClone.cg != creatureGenotypeToClone) {
             // Destroy previously cloned creature
+            savedCurrent = false;
+            saveButton.interactable = true;
+            saveButton.GetComponentInChildren<Text>().text = "Save";
+
             if (currentCreatureClone != null)
             {
                 Destroy(currentCreatureClone.gameObject);

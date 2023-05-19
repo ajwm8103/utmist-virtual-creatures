@@ -615,6 +615,9 @@ public class CreatureGenotype
         BinaryFormatter formatter = new BinaryFormatter();
         string fullPath = isFullPath ? path : Application.persistentDataPath + path;
 
+        // Check if name already exists
+        fullPath = fullPath.GetNextFilename();
+
         FileStream stream = new FileStream(fullPath, FileMode.Create);
 
         formatter.Serialize(stream, this);
