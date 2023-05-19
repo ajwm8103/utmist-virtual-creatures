@@ -86,7 +86,7 @@ namespace KSS
             //float denom = topEvals.Select(x => Mathf.Exp((float)x.fitness.Value - maxFitness)).Sum();
             topEvals = topEvals.OrderByDescending(x => x.fitness.Value).ToList();
 
-
+            //Debug.Log(string.Format("[{0}, {1}], scaling factor {2}, denom {3}", maxFitness, minFitness, scalingFactor, denom));
             foreach (CreatureGenotypeEval topEval in topEvals)
             {
                 g.cgEvals.Add(new CreatureGenotypeEval(topEval.cg));
@@ -309,7 +309,8 @@ namespace KSS
 
                 // Delete last generation (TODO: turn this into a top 60 preserving + median + worst
                 if (saveK.generations.Count != 2){
-                    //saveK.generations[saveK.generations.Count - 2].cgEvals = null;
+                    CreatureGenotypeEval bestEval = SelectBestEval(saveK.generations[saveK.generations.Count - 2]);
+                    saveK.generations[saveK.generations.Count - 2].cgEvals = new List<CreatureGenotypeEval>() { bestEval } ;
                 }
             }
         }
@@ -327,7 +328,8 @@ namespace KSS
             for (int i = 0; i < topCount; i++)
             {
                 CreatureGenotypeEval eval = sortedEvals[i];
-                if (eval.evalStatus == EvalStatus.EVALUATED && eval.fitness != null && eval.fitness.Value >= 0) {
+                // TEMPORARY FIX: Setting lower boudn to -8 instead of 0. TODO lol
+                if (eval.evalStatus == EvalStatus.EVALUATED && eval.fitness != null && eval.fitness.Value >= -8) {
                     topEvals.Add(eval);
                     positiveCount++;
                 } else {
@@ -344,6 +346,8 @@ namespace KSS
 
             // bestEval.cg.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\" + currentGenerationIndex + "," + bestEval.cg.name + ".creature", true);
 
+            string path = Path.Combine(OptionsPersist.instance.VCSaves, save.saveName + ".save");
+            save.SaveData(path, true);
             //saveK.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\MAINSAVE.save", true);
             return topEvals;
         }
@@ -362,6 +366,7 @@ namespace KSS
             CreatureGenotypeEval bestEval = new CreatureGenotypeEval(null, -999f);
             foreach (Generation generation in saveK.generations)
             {
+                if (generation.cgEvals == null) continue;
                 foreach (CreatureGenotypeEval cgEval in generation.cgEvals)
                 {
                     if (cgEval.evalStatus == EvalStatus.EVALUATED && cgEval.fitness > bestEval.fitness)
@@ -374,11 +379,14 @@ namespace KSS
             return bestEval;
         }
 
-        private CreatureGenotype SelectBestGenotype(Generation g)
+        private CreatureGenotypeEval SelectBestEval(Generation g)
         {
-            CreatureGenotypeEval bestEval = g.cgEvals.OrderByDescending(cgEval => cgEval.fitness.Value).FirstOrDefault();
+            List<CreatureGenotypeEval> cleanedEvals = new List<CreatureGenotypeEval>(g.cgEvals);
+            cleanedEvals.RemoveAll(x => x.evalStatus == EvalStatus.DISQUALIFIED);
+            cleanedEvals.RemoveAll(x => x.fitness.HasValue == false);
+            CreatureGenotypeEval bestEval = cleanedEvals.OrderByDescending(cgEval => cgEval.fitness.Value).FirstOrDefault();
             Debug.Log("Best: " + bestEval.fitness.Value);
-            return bestEval.cg;
+            return bestEval;
         }
     }
 

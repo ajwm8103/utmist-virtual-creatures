@@ -11,7 +11,7 @@ public class OceanEnvSettings : EnvironmentSettings {
     public override EnvArrangeType envArrangeType { get {return EnvArrangeType.LINEAR; } }
     public override float sizeX { get { return 5; } }
     public override float sizeZ { get { return 5; } }
-    public override float maxTime { get { return 8; } }
+    public override float maxTime { get { return 16; } }
 }
 
 public class OceanEnv : Environment

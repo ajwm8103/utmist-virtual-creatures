@@ -42,7 +42,9 @@ public class ViewerController : MonoBehaviour
         {
             verticalDirection = -1;
         }
-        transform.position += Vector3.up * verticalDirection * verticalSpeed * Time.deltaTime;
+
+        float speedMultiplier = Input.GetKey(KeyCode.LeftControl) ? 2.5f : 1f;
+        transform.position += Vector3.up * verticalDirection * verticalSpeed * speedMultiplier * Time.deltaTime;
 
         float forwardKey = Input.GetAxis("Vertical");
         float sideKey = Input.GetAxis("Horizontal");
@@ -52,8 +54,8 @@ public class ViewerController : MonoBehaviour
         v3.Normalize();
         if (v3 != Vector3.zero)
         {
-            transform.position += v3 * Input.GetAxis("Vertical") * horizontalSpeed * Time.deltaTime;
-            transform.position += -Vector3.Cross(v3, Vector3.up).normalized * Input.GetAxis("Horizontal") * horizontalSpeed * Time.deltaTime;
+            transform.position += v3 * Input.GetAxis("Vertical") * horizontalSpeed * speedMultiplier * Time.deltaTime;
+            transform.position += -Vector3.Cross(v3, Vector3.up).normalized * Input.GetAxis("Horizontal") * horizontalSpeed * speedMultiplier * Time.deltaTime;
         }
 
 
@@ -67,7 +69,7 @@ public class ViewerController : MonoBehaviour
 
         if (Input.GetKey(KeyCode.F)) {
             Creature bestCreature = tm.GetBestLivingCreature();
-            if (bestCreature != null){
+            if (bestCreature != null) {
                 Vector3 com = bestCreature.GetCentreOfMass();
                 if (com != null && !float.IsNaN(com.x) && !float.IsNaN(com.y) && !float.IsNaN(com.z))
                 {
@@ -76,13 +78,17 @@ public class ViewerController : MonoBehaviour
             }
         }
 
+
+
         if (Input.GetKeyDown(KeyCode.Escape)) {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
             trackingCursor = false;
         }
 
-        if (Input.GetMouseButtonDown(0) && !UIMouseHoverManager.instance.overUIElement && IsMouseOverGameWindow) {
+        bool noHoverManager = UIMouseHoverManager.instance == null;
+        bool hoveringOverEmptySpace = !UIMouseHoverManager.instance.overUIElement && IsMouseOverGameWindow;
+        if (Input.GetMouseButtonDown(0) && (noHoverManager || hoveringOverEmptySpace)) {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             trackingCursor = true;

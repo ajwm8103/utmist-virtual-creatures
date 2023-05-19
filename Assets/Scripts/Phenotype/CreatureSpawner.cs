@@ -118,10 +118,7 @@ public class CreatureSpawner : MonoBehaviour
         counter++;
         //Debug.Log(counter);
         if (counter == 80){
-            Debug.Log("Likely looping, save for debug.");
-            string name = "/debug_" + Random.Range(0, 100) + ".creature";
-            cg.SaveData(name, false);
-            Debug.Log("Saved to " + Application.persistentDataPath + name);
+            cg.SaveDebug();
         }
 
         myConnection.EulerToQuat(); //Debug, remove later (this changes internal rotation storage stuff to make inspector editing easier.)
@@ -150,7 +147,10 @@ public class CreatureSpawner : MonoBehaviour
             parentTransform.up * parentTransform.localScale.y * (myConnection.anchorY + 0.5f) +
             parentTransform.forward * parentTransform.localScale.z * myConnection.anchorZ;
 
-        Quaternion spawnAngle = new Quaternion(myConnection.orientationX, myConnection.orientationY, myConnection.orientationZ, myConnection.orientationW);
+
+        Quaternion spawnAngle = Quaternion.identity;
+        spawnAngle *= parentTransform.rotation;
+        spawnAngle *= new Quaternion(myConnection.orientationX, myConnection.orientationY, myConnection.orientationZ, myConnection.orientationW);
 
         if (otherReflectBool)
         {
@@ -163,7 +163,7 @@ public class CreatureSpawner : MonoBehaviour
             //spawnAngle = mirrorNormalQuat * spawnAngle;
             //spawnAngle *= Quaternion.Euler(parentTransform.up * 180);
         }
-        spawnAngle *= parentTransform.rotation;
+        //spawnAngle *= parentTransform.rotation;
         GameObject spawnedSegmentGameObject = Instantiate(segmentPrefab, spawnPos, spawnAngle);
 
         spawnedSegmentGameObject.transform.parent = c.transform;
@@ -172,6 +172,9 @@ public class CreatureSpawner : MonoBehaviour
         Segment spawnedSegment = spawnedSegmentGameObject.GetComponent<Segment>();
         spawnedSegment.SetPath(connectionPath);
         spawnedSegment.SetId(id);
+
+        FluidDrag fluidDrag = spawnedSegmentGameObject.GetComponent<FluidDrag>();
+        fluidDrag.negYCovered = true;
 
 
         Vector3 dimVector = new Vector3(currentSegmentGenotype.dimensionX /* * otherReflectInt*/, currentSegmentGenotype.dimensionY, currentSegmentGenotype.dimensionZ);
@@ -202,8 +205,16 @@ public class CreatureSpawner : MonoBehaviour
                     j.useMotor = true;
                     JointMotor motor = j.motor;
                     motor.targetVelocity = 0;
-                    motor.force = 250;
+                    motor.force = 400;
                     j.motor = motor;
+
+                    JointLimits limits = j.limits;
+                    limits.min = -60f;
+                    limits.bounciness = 0;
+                    limits.bounceMinVelocity = 0;
+                    limits.max = 60f;
+                    j.limits = limits;
+                    j.useLimits = true;
                 }
                 break;
 
@@ -215,8 +226,16 @@ public class CreatureSpawner : MonoBehaviour
                     j.useMotor = true;
                     JointMotor motor = j.motor;
                     motor.targetVelocity = 0;
-                    motor.force = 250;
+                    motor.force = 400;
                     j.motor = motor;
+
+                    JointLimits limits = j.limits;
+                    limits.min = -60f;
+                    limits.bounciness = 0;
+                    limits.bounceMinVelocity = 0;
+                    limits.max = 60f;
+                    j.limits = limits;
+                    j.useLimits = true;
                 }
                 break;
 
@@ -228,8 +247,16 @@ public class CreatureSpawner : MonoBehaviour
                     j.useMotor = true;
                     JointMotor motor = j.motor;
                     motor.targetVelocity = 0;
-                    motor.force = 250;
+                    motor.force = 400;
                     j.motor = motor;
+
+                    JointLimits limits = j.limits;
+                    limits.min = -60f;
+                    limits.bounciness = 0;
+                    limits.bounceMinVelocity = 0;
+                    limits.max = 60f;
+                    j.limits = limits;
+                    j.useLimits = true;
                 }
                 break;
 
@@ -326,8 +353,11 @@ public class CreatureSpawner : MonoBehaviour
         if (currentSegmentGenotype == null)
             return;
 
+        //Debug.Log(cg.name);
+        //Debug.Log(cg.eulerY);
         cg.EulerToQuat(); //Debug, remove later (this changes internal rotation storage stuff to make inspector editing easier.)
         Quaternion spawnAngle = new Quaternion(cg.orientationX, cg.orientationY, cg.orientationZ, cg.orientationW);
+        //Debug.Log(spawnAngle);
         GameObject spawnedSegmentGameObject = Instantiate(segmentPrefab, position, spawnAngle);
         spawnedSegmentGameObject.transform.parent = c.transform;
         spawnedSegmentGameObject.name = $"Segment {currentSegmentGenotype.id}";

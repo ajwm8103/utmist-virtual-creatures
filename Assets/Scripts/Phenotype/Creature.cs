@@ -56,7 +56,7 @@ public class Neuron
             if (effectorJoint is HingeJoint){
                 HingeJoint hj = (HingeJoint)effectorJoint;
                 JointMotor motor = hj.motor;
-                motor.targetVelocity = 10f * Mathf.Clamp(a, -15f, 15f);
+                motor.targetVelocity = 10f * Mathf.Clamp(a, -40f, 40f);
                 hj.motor = motor;
             }
         }

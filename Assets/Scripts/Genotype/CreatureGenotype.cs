@@ -29,7 +29,6 @@ public class NeuronGenotype
         type = 0;
         weights = new float[0];
         inputs = new NeuronReference[0];
-
     }
 
     public NeuronGenotype Clone()
@@ -457,6 +456,93 @@ public class CreatureGenotype
         return segmentConnectionsByDest;
     }
 
+    public SegmentGenotype GetParentSegmentGenotype(byte id){
+        if (id == 0 || id == 1) return null;
+
+        foreach (SegmentGenotype sg in segments)
+        {
+            if (sg.id == 0 || sg.id == id) continue;
+            foreach (SegmentConnectionGenotype scg in sg.connections)
+            {
+                if (scg.destination == id){
+                    return sg;
+                }
+            }
+        }
+        return null;
+    }
+
+    public System.Tuple<NeuronGenotype, SegmentGenotype> GetNeuronInput(NeuronReference guidingNR, SegmentGenotype requestingSG)
+    {
+        SegmentGenotype foundSegmentGenotype = null;
+        if (guidingNR.relativity == NeuronReferenceRelativity.GHOST)
+        {
+            foundSegmentGenotype = GetSegment(0);
+        }
+        else if (guidingNR.relativity == NeuronReferenceRelativity.PARENT)
+        {
+            // This will be in a parent of the requesting neuron, so go through path to find correct relativeLevel
+            int relativityLeft = guidingNR.relativeLevel;
+            SegmentGenotype currentSegmentGenotype = requestingSG;
+            while (relativityLeft != 0)
+            {
+                SegmentGenotype nextSegmentGenotype = GetParentSegmentGenotype(currentSegmentGenotype.id);
+                if (nextSegmentGenotype != null)
+                {
+                    relativityLeft--;
+                    currentSegmentGenotype = nextSegmentGenotype;
+                } else {
+                    break;
+                }
+            }
+            foundSegmentGenotype = currentSegmentGenotype;
+        }
+        else if (guidingNR.relativity == NeuronReferenceRelativity.SELF)
+        {
+            foundSegmentGenotype = requestingSG;
+        }
+        else if (guidingNR.relativity == NeuronReferenceRelativity.CHILD)
+        {
+            SegmentGenotype currentSegmentGenotype = requestingSG.id == 0 ? GetSegment(1) : requestingSG;
+            if (guidingNR.connectionPath == null || guidingNR.connectionPath.Count == 0){
+                foundSegmentGenotype = currentSegmentGenotype;
+            } else {
+                foreach (byte connectionId in guidingNR.connectionPath)
+                {
+                    try
+                    {
+                        SegmentConnectionGenotype connection = currentSegmentGenotype.GetConnection(connectionId);
+                        byte destId = connection.destination;
+                        currentSegmentGenotype = GetSegment(destId);
+                    }
+                    catch (System.Exception)
+                    {
+                        /*SaveDebug();
+                        Debug.Log(string.Format("Null at id {0} seg {1} name {2}", guidingNR.id, requestingSG.id, name));
+                        foreach (byte connectionId2 in guidingNR.connectionPath)
+                        {
+                            Debug.Log(string.Format("Path conId {0}, name {1}", connectionId2, name));
+                        }
+                        throw;*/
+                        return null;
+                    }
+                }
+                foundSegmentGenotype = currentSegmentGenotype;
+            }
+        }
+
+        if (foundSegmentGenotype == null) return null;
+
+        foreach (NeuronGenotype ng in foundSegmentGenotype.neurons)
+        {
+            if (ng.nr.id == guidingNR.id)
+            {
+                return new System.Tuple<NeuronGenotype, SegmentGenotype>(ng, foundSegmentGenotype);
+            }
+        }
+        return null;
+    }
+
     /// <summary>
     /// Returns a dictionary with key: destination, value: (parentId, number of connections to it)
     /// </summary>
@@ -507,7 +593,21 @@ public class CreatureGenotype
         CreatureGenotype cg = new CreatureGenotype();
         cg.name = name;
         cg.segments = segments.Select(item => item.Clone()).ToList();
+        cg.eulerX = eulerX;
+        cg.eulerY = eulerY;
+        cg.eulerZ = eulerZ;
+        cg.orientationW = orientationW;
+        cg.orientationX = orientationX;
+        cg.orientationY = orientationY;
+        cg.orientationZ = orientationZ;
+        cg.stage = stage;
         return cg;
+    }
+
+    public void SaveDebug(){
+        string name = "/debug_" + Random.Range(0, 100) + ".creature";
+        SaveData(name, false);
+        Debug.Log("Debug saved to " + Application.persistentDataPath + name);
     }
 
     public void SaveData(string path, bool isFullPath)
@@ -546,11 +646,10 @@ public class CreatureGenotype
     /// <summary>
     /// Runs through entire creature genotype and counts the number of segments
     /// </summary>
-    /// <param name="cg"></param>
     /// <param name="recursiveLimitValues"></param>
     /// <param name="myConnection"></param>
     /// <param name="connectionPath"></param>
-    public void IterateSegment(CreatureGenotype cg, Dictionary<byte, byte> recursiveLimitValues,
+    public void IterateSegment(Dictionary<byte, byte> recursiveLimitValues,
             SegmentConnectionGenotype myConnection, List<byte> connectionPath, ref int segmentCount)
     {
         segmentCount++;
@@ -558,7 +657,7 @@ public class CreatureGenotype
         // Find SegmentGenotype
         byte id = myConnection == null ? (byte)1 : myConnection.destination;
 
-        SegmentGenotype currentSegmentGenotype = cg.GetSegment(id);
+        SegmentGenotype currentSegmentGenotype = GetSegment(id);
 
         if (currentSegmentGenotype == null) return;
 
@@ -580,10 +679,10 @@ public class CreatureGenotype
                     continue;
                 }
                 Dictionary<byte, byte> recursiveLimitClone = recursiveLimitValues.ToDictionary(entry => entry.Key, entry => entry.Value);
-                List<byte> connectionPathClone = connectionPath.Select(item => (byte)item).ToList();
+                List<byte> connectionPathClone = connectionPath.Select(item => item).ToList();
                 //List<byte> connectionPathClone = new List<byte>(connectionPath);
                 connectionPathClone.Add(connection.id);
-                IterateSegment(cg, recursiveLimitClone, connection, connectionPathClone, ref segmentCount);
+                IterateSegment(recursiveLimitClone, connection, connectionPathClone, ref segmentCount);
             }
         }
     }
@@ -600,7 +699,7 @@ public class CreatureGenotype
         int segmentCount = 0;
 
         // Iterate
-        IterateSegment(this, recursiveLimitInitial, null, new List<byte>(), ref segmentCount);
+        IterateSegment(recursiveLimitInitial, null, new List<byte>(), ref segmentCount);
 
         // Set resultant dims
         actDim = segmentCount - 1;
