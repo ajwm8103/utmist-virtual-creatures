@@ -7613,7 +7613,7 @@ MonoBehaviour:
       - m_Target: {fileID: 1782599931}
         m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
         m_MethodName: SetEnvCount
-        m_Mode: 5
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -7628,7 +7628,7 @@ MonoBehaviour:
       - m_Target: {fileID: 1782599931}
         m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
         m_MethodName: SetEnvCount
-        m_Mode: 5
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
