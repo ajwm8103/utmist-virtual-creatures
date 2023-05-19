@@ -254,7 +254,7 @@ MonoBehaviour:
   waterLevel: 8
   waterLevelTransform: {fileID: 0}
   waterLevelPadding: 0
-  waterMaterial: {fileID: 2100000, guid: af1a77d4d4ac18743ba6f50fac4b7600, type: 2}
+  waterMaterial: {fileID: 2100000, guid: f4e355e08d6845f489e30d5d114cec84, type: 2}
   dynamicMaterial: 0
   settings: {fileID: 0}
   useVolumeBlending: 0
@@ -335,7 +335,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: af1a77d4d4ac18743ba6f50fac4b7600, type: 2}
+  - {fileID: 2100000, guid: f4e355e08d6845f489e30d5d114cec84, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -369,7 +369,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52480f6baf9b7b0428c75481cb3d5a6d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  material: {fileID: 2100000, guid: af1a77d4d4ac18743ba6f50fac4b7600, type: 2}
+  material: {fileID: 2100000, guid: f4e355e08d6845f489e30d5d114cec84, type: 2}
   meshFilter: {fileID: 5977242794750260582}
   meshRenderer: {fileID: 5977242794750260585}
 --- !u!1 &6472731533600308894
