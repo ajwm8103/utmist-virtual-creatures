@@ -9992,7 +9992,7 @@ MonoBehaviour:
   chooseEvolution: {fileID: 5817651606346384933}
   editEvolution: {fileID: 2068195944}
   evolutionSettingsMenu: {fileID: 5817651607908723222}
-  templateCGSO: {fileID: 0}
+  templateCGSO: {fileID: 11400000, guid: 392b1d22bee261c49ab38eef88b6e502, type: 2}
   saveTitle: {fileID: 2019010406}
   saveTitleInput: {fileID: 1895475969}
   populationInput: {fileID: 1497372134}
