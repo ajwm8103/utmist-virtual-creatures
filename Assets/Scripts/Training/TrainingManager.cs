@@ -82,16 +82,16 @@ public class KSSSettings : OptimizationSettings {
 
     public KSSSettings(int ps, int tg, float sr)
     {
-        this.populationSize = ps;
-        this.totalGenerations = tg;
-        this.survivalRatio = sr;
+        populationSize = ps;
+        totalGenerations = tg;
+        survivalRatio = sr;
     }
 
     public KSSSettings()
     {
-        this.populationSize = 300;
-        this.totalGenerations = 200;
-        this.survivalRatio = 1f / 5f;
+        populationSize = 300;
+        totalGenerations = 200;
+        survivalRatio = 1f / 5f;
     }
 }
 

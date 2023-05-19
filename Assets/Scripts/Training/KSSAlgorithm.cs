@@ -20,6 +20,18 @@ namespace KSS
         public CreatureGenotypeEval best;
 
         // Data on creatures goes here TODO
+
+        public bool IsValid(){
+            KSSSettings optimizationSettings = (KSSSettings)ts.optimizationSettings;
+            CreatureGenotype initialGenotype = optimizationSettings.initialGenotype;
+
+            Dictionary<byte, byte> recursiveLimitInitial = new Dictionary<byte, byte>();
+            foreach (SegmentGenotype segment in initialGenotype.segments) recursiveLimitInitial[segment.id] = segment.recursiveLimit;
+
+            int segmentCount = 0;
+            initialGenotype.IterateSegment(recursiveLimitInitial, null, new List<byte>(), ref segmentCount);
+            return segmentCount <= optimizationSettings.mp.maxSegments;
+        }
     }
 
     [System.Serializable]

@@ -55,6 +55,7 @@ public class MutateGenotype
         public bool mutateMorphology = true;
         public bool mutateNeural = true;
         public float stdevSizeAdjustmentFactor = 0.02f;
+        public int maxSegments = 10;
 
         [System.Serializable]
         public struct MutationPreference
@@ -1541,7 +1542,7 @@ public class MutateGenotype
         // Iterate
         cg.IterateSegment(recursiveLimitInitial, null, new List<byte>(), ref segmentCount);
 
-        if (segmentCount > 10)
+        if (segmentCount > mp.maxSegments)
         {
             cg = null;
             cg = MutateCreatureGenotype(originalGenotype, mp);

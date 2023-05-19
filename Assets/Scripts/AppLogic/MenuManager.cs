@@ -33,6 +33,7 @@ public class MenuManager : MonoBehaviour
     public InputField populationInput;
     public InputField generationInput;
     public InputField envCountInput;
+    public InputField maxSegmentsInput;
     public InputField ratioNumeratorInput;
     public InputField ratioDenominatorInput;
     public Toggle lockNeuralMutationsToggle;
@@ -45,6 +46,7 @@ public class MenuManager : MonoBehaviour
     private int populationSize;
     private int totalGenerations;
     private int envCount;
+    private int maxSegments;
     private float ratioNumerator;
     private float ratioDenominator;
     private bool lockNeuralMutations;
@@ -113,6 +115,7 @@ public class MenuManager : MonoBehaviour
         populationSize = int.Parse(populationInput.text);
         totalGenerations = int.Parse(generationInput.text);
         envCount = int.Parse(envCountInput.text);
+        maxSegments = int.Parse(maxSegmentsInput.text);
 
         ratioNumerator = float.Parse(ratioNumeratorInput.text);
 
@@ -160,6 +163,11 @@ public class MenuManager : MonoBehaviour
         envCount = int.Parse(input);
     }
 
+    public void SetMaxSegments(string input)
+    {
+        maxSegments = int.Parse(input);
+    }
+
     public void SetSurvivalRatioNumerator(string input)
     {
         ratioNumerator = float.Parse(input);
@@ -189,6 +197,7 @@ public class MenuManager : MonoBehaviour
         optimizationSettings.mp = new MutateGenotype.MutationPreferenceSetting();
         optimizationSettings.mp.mutateNeural = !lockNeuralMutations;
         optimizationSettings.mp.mutateMorphology = !lockPhysicalMutations;
+        optimizationSettings.mp.maxSegments = maxSegments;
         optimizationSettings.initialGenotype = templateCGSO == null ? null : templateCGSO.cg;
         //optimizationSettings.initialGenotype = CreatureGenotype.LoadData("/Fish.creature", false); // null means start w/ random creatures. TODO: Non-null will mean spawn that with mutations!
         
@@ -209,7 +218,15 @@ public class MenuManager : MonoBehaviour
         }
         esp.save = save;
 
-        // Load env runner
-        SceneManager.LoadScene("LocalEnvRunner");
+        bool valid = save.IsValid();
+
+        if (valid)
+        {
+            // Load env runner
+            SceneManager.LoadScene("LocalEnvRunner");
+        } else {
+            Debug.Log("Invalid!");
+            // TODO: Show on UI that it's invalid
+        }
     }
 }
