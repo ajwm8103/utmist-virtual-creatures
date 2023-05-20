@@ -24,7 +24,7 @@ namespace KSS
         public bool IsValid(){
             KSSSettings optimizationSettings = (KSSSettings)ts.optimizationSettings;
             CreatureGenotype initialGenotype = optimizationSettings.initialGenotype;
-
+            if (initialGenotype == null) return true;
             Dictionary<byte, byte> recursiveLimitInitial = new Dictionary<byte, byte>();
             foreach (SegmentGenotype segment in initialGenotype.segments) recursiveLimitInitial[segment.id] = segment.recursiveLimit;
 
@@ -37,6 +37,63 @@ namespace KSS
     [System.Serializable]
     public class Generation {
         public List<CreatureGenotypeEval> cgEvals;
+        public bool complete { get; private set; }
+        public bool culled { get; private set; }
+        public float worstReward;
+        public float medianReward;
+        public float bestReward;
+
+        public void Cull(int populationSize, float survivalRatio)
+        {
+            if (cgEvals != null && complete && !culled){
+                List<CreatureGenotypeEval> cleanedEvals = new List<CreatureGenotypeEval>(cgEvals);
+                cleanedEvals.RemoveAll(x => x.evalStatus == EvalStatus.DISQUALIFIED);
+                cleanedEvals.RemoveAll(x => x.fitness.HasValue == false);
+                cleanedEvals = cleanedEvals.OrderByDescending(cgEval => cgEval.fitness.Value).ToList();
+                bestReward = SelectBestEval().fitness.Value;
+                medianReward = cleanedEvals[cleanedEvals.Count / 2].fitness.Value;
+                worstReward = cleanedEvals.Last().fitness.Value;
+
+                cgEvals = new List<CreatureGenotypeEval>(SelectTopEvals(populationSize, survivalRatio));
+                culled = true;
+            }
+        }
+
+        public CreatureGenotypeEval SelectBestEval()
+        {
+            List<CreatureGenotypeEval> cleanedEvals = new List<CreatureGenotypeEval>(cgEvals);
+            cleanedEvals.RemoveAll(x => x.evalStatus == EvalStatus.DISQUALIFIED);
+            cleanedEvals.RemoveAll(x => x.fitness.HasValue == false);
+            CreatureGenotypeEval bestEval = cleanedEvals.OrderByDescending(cgEval => cgEval.fitness.Value).FirstOrDefault();
+            Debug.Log("Best: " + bestEval.fitness.Value);
+            return bestEval;
+        }
+
+        public List<CreatureGenotypeEval> SelectTopEvals(int populationSize, float survivalRatio)
+        {
+            List<CreatureGenotypeEval> cleanedEvals = new List<CreatureGenotypeEval>(cgEvals);
+            List<CreatureGenotypeEval> topEvals = new List<CreatureGenotypeEval>();
+            cleanedEvals.RemoveAll(x => x.evalStatus == EvalStatus.DISQUALIFIED);
+            cleanedEvals.RemoveAll(x => x.fitness.HasValue == false);
+            List<CreatureGenotypeEval> sortedEvals = cleanedEvals.OrderByDescending(x => x.fitness.Value).ToList();
+
+            int topCount = Mathf.RoundToInt(populationSize * survivalRatio);
+            int positiveCount = 0;
+            for (int i = 0; i < topCount; i++)
+            {
+                CreatureGenotypeEval eval = sortedEvals[i];
+                // TEMPORARY FIX: Setting lower boudn to -8 instead of 0. TODO lol
+                if (eval.evalStatus == EvalStatus.EVALUATED && eval.fitness != null && eval.fitness.Value >= -8)
+                {
+                    topEvals.Add(eval);
+                    positiveCount++;
+                }
+            }
+
+            //Debug.Log(string.Format("{0}/{1} Creatures with >=0 fitness.", positiveCount, topCount));
+
+            return topEvals;
+        }
 
         /// <summary>
         /// Creates a new generation w/ size and mutation
@@ -46,6 +103,12 @@ namespace KSS
         /// <param name="mps"></param>
         public Generation(){
             cgEvals = new List<CreatureGenotypeEval>();
+            culled = false;
+            complete = false;
+        }
+
+        public void Complete(){
+            complete = true;
         }
 
         public static Generation FromInitial(int size, CreatureGenotype initialGenotype, MutateGenotype.MutationPreferenceSetting mp){
@@ -312,6 +375,8 @@ namespace KSS
                 saveK.generations = new List<Generation>();
                 saveK.generations.Add(currentGeneration);
             } else {
+                currentGeneration.Complete();
+
                 currentGenerationIndex++;
                 List<CreatureGenotypeEval> topEvals = SelectTopEvals(currentGeneration, optimizationSettings.mp);
                 currentGeneration = Generation.FromMutation(optimizationSettings.populationSize, topEvals, optimizationSettings.mp);
@@ -321,8 +386,9 @@ namespace KSS
 
                 // Delete last generation (TODO: turn this into a top 60 preserving + median + worst
                 if (saveK.generations.Count != 2){
-                    CreatureGenotypeEval bestEval = SelectBestEval(saveK.generations[saveK.generations.Count - 2]);
-                    saveK.generations[saveK.generations.Count - 2].cgEvals = new List<CreatureGenotypeEval>() { bestEval } ;
+                    //CreatureGenotypeEval bestEval = saveK.generations[saveK.generations.Count - 2].SelectBestEval();
+                    //saveK.generations[saveK.generations.Count - 2].cgEvals = new List<CreatureGenotypeEval>() { bestEval } ;
+                    saveK.generations[saveK.generations.Count - 2].Cull(optimizationSettings.populationSize, optimizationSettings.survivalRatio);
                 }
             }
         }
@@ -388,16 +454,6 @@ namespace KSS
                 }
             }
 
-            return bestEval;
-        }
-
-        private CreatureGenotypeEval SelectBestEval(Generation g)
-        {
-            List<CreatureGenotypeEval> cleanedEvals = new List<CreatureGenotypeEval>(g.cgEvals);
-            cleanedEvals.RemoveAll(x => x.evalStatus == EvalStatus.DISQUALIFIED);
-            cleanedEvals.RemoveAll(x => x.fitness.HasValue == false);
-            CreatureGenotypeEval bestEval = cleanedEvals.OrderByDescending(cgEval => cgEval.fitness.Value).FirstOrDefault();
-            Debug.Log("Best: " + bestEval.fitness.Value);
             return bestEval;
         }
     }
