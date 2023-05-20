@@ -15,7 +15,7 @@ public class CreatureSpawnerEditor : Editor
             Debug.Log("Saving Current Creature");
             string path = EditorUtility.SaveFilePanel("Save Creature As", "C:", "Creature.creature", "creature");
             CreatureGenotype cg = spawner.creatureGenotype;
-            cg.SaveData(path, true);
+            cg.SaveData(path, true, true);
             Debug.Log(Application.persistentDataPath);
         }
 

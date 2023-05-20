@@ -23,7 +23,7 @@ public abstract class TrainingAlgorithm : MonoBehaviour
         Debug.Log("Saving Current TrainingSave");
         // string path = EditorUtility.SaveFilePanel("Save Training Save As", "C:", save.saveName + ".save", "save");
         string path = Path.Combine(OptionsPersist.instance.VCSaves, save.saveName + ".save");
-        save.SaveData(path, true);
+        save.SaveData(path, true, true);
         Debug.Log(Application.persistentDataPath);
     }
 }

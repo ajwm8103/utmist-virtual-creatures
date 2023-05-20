@@ -18,7 +18,7 @@ public class CreatureEditor : Editor
             string path = EditorUtility.SaveFilePanel("Save Your Creature", "C:", "Creature.creature", "creature");
             if (!string.IsNullOrEmpty(path))
             {
-                cg.SaveData(path, true);
+                cg.SaveData(path, true, true);
                 Debug.Log("Saved to " + Application.persistentDataPath);
             }
         }

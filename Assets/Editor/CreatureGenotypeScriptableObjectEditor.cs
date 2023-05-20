@@ -14,7 +14,7 @@ public class CreatureGenotypeScriptableObjectEditor : Editor
             Debug.Log("Saving Current Creature");
             string path = EditorUtility.SaveFilePanel("Save Creature As", "C:", "Creature.creature", "creature");
             CreatureGenotype cg = so.cg;
-            cg.SaveData(path, true);
+            cg.SaveData(path, true, true);
             Debug.Log(Application.persistentDataPath);
         }
 

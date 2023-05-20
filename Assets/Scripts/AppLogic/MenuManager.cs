@@ -20,16 +20,22 @@ public class MenuManager : MonoBehaviour
     public GameObject chooseEvolution;
     public GameObject editEvolution;
     public GameObject evolutionSettingsMenu;
+    public EvolutionViewMenu viewEvolution;
     // TEMP
     [Header("Temporary References")]
     public CreatureGenotypeScriptableObject templateCGSO;
 
     private List<GameObject> menus;
+    private List<EvolutionChooseItem> chooseItems;
+
+    [Header("Prefab References")]
+    public EvolutionChooseItem evolutionChooseItemPrefab;
 
     // settings ui
     [Header("UI Components")]
     public GameObject saveTitle;
     public GameObject saveTitleInput;
+    public GameObject evolutionSelectionContent;
     public InputField populationInput;
     public InputField generationInput;
     public InputField envCountInput;
@@ -52,6 +58,20 @@ public class MenuManager : MonoBehaviour
     private bool lockNeuralMutations;
     private bool lockPhysicalMutations;
 
+    public static MenuManager instance;
+
+    private void Awake()
+    {
+        if (instance != null)
+        {
+            Destroy(gameObject); // Can't have two managers active at once
+        }
+        else
+        {
+            instance = this;
+        }
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -65,7 +85,7 @@ public class MenuManager : MonoBehaviour
         
     }
 
-    public void ShowEdit()
+    public void ShowZoo()
     {
         menus.ForEach(o => o.SetActive(false));
         editEvolution.SetActive(true);
@@ -83,9 +103,10 @@ public class MenuManager : MonoBehaviour
         creditsMenu.SetActive(true);
     }
 
-    public void ShowView()
+    public void ShowSandbox()
     {
-        Debug.Log("Show view scene");
+        Debug.Log("Show sandbox scene");
+        SceneManager.LoadScene("OceanEnv");
     }
 
     public void ShowMainMenu()
@@ -99,13 +120,30 @@ public class MenuManager : MonoBehaviour
         menus.ForEach(o => o.SetActive(false));
 
         string[] fileArray = Directory.GetFiles(OptionsPersist.instance.VCSaves, "*.save");
+        chooseItems = new List<EvolutionChooseItem>();
 
+        float height = -10f;
+        RectTransform rt = evolutionSelectionContent.transform.GetComponent<RectTransform>();
+        rt.sizeDelta = new Vector2(rt.sizeDelta.x, fileArray.Length * 110f);
+        //evolutionSelectionContent.transform.localScale = scale;
         foreach (string filePath in fileArray)
         {
+            EvolutionChooseItem evi = Instantiate(evolutionChooseItemPrefab, new Vector3(evolutionSelectionContent.transform.position.x, height, 0f), Quaternion.identity);
+            evi.transform.parent = evolutionSelectionContent.transform;
+            evi.Setup(filePath);
+            chooseItems.Add(evi);
+            height -= 100f;
             Debug.Log(filePath);
         }
 
         chooseEvolution.SetActive(true);
+    }
+
+    public void ShowViewEvolutionMenu(string filePath){
+        menus.ForEach(o => o.SetActive(false));
+        viewEvolution.gameObject.SetActive(true);
+        KSSSave currentSave = (KSSSave)KSSSave.LoadData(filePath, true);
+        viewEvolution.SetEvolution(currentSave);
     }
 
     public void ShowEvolutionSettingsMenu()

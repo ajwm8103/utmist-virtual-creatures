@@ -487,7 +487,7 @@ public class MutateGenotype
             Debug.Log("Likely looping trace, save for debug.");
             Debug.Log(cg.segments.Count);
             string name = "/debug_" + Random.Range(0, 100) + ".creature";
-            cg.SaveData(name, false);
+            cg.SaveData(name, false, true);
             Debug.Log("Saved to " + Application.persistentDataPath + name);
         }
 

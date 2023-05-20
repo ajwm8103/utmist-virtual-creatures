@@ -4,6 +4,7 @@ using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
+using System.Text;
 using System.Linq;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -20,6 +21,32 @@ namespace KSS
         public CreatureGenotypeEval best;
 
         // Data on creatures goes here TODO
+
+        public void ExportCSV(){
+            StringBuilder sb = new StringBuilder("Generation,Best,Median,Worst");
+            for (int i = 0; i < generations.Count; i++)
+            {
+                Generation g = generations[i];
+                sb.Append('\n').Append(i.ToString()).Append(',').Append(g.GetDataString());
+            }
+
+            // Use the CSV generation from before
+            var content = sb.ToString();
+
+            // The target file path e.g.
+
+            var filePath = Path.Combine(OptionsPersist.instance.VCData, saveName + ".csv");
+
+            using (var writer = new StreamWriter(filePath, false))
+            {
+                writer.Write(content);
+            }
+
+            // Or just
+            //File.WriteAllText(content);
+
+            Debug.Log($"CSV file written to \"{filePath}\"");
+        }
 
         public bool IsValid(){
             KSSSettings optimizationSettings = (KSSSettings)ts.optimizationSettings;
@@ -45,7 +72,7 @@ namespace KSS
 
         public void Cull(int populationSize, float survivalRatio)
         {
-            if (cgEvals != null && complete && !culled){
+            if (cgEvals != null && complete && !culled) {
                 List<CreatureGenotypeEval> cleanedEvals = new List<CreatureGenotypeEval>(cgEvals);
                 cleanedEvals.RemoveAll(x => x.evalStatus == EvalStatus.DISQUALIFIED);
                 cleanedEvals.RemoveAll(x => x.fitness.HasValue == false);
@@ -57,6 +84,10 @@ namespace KSS
                 cgEvals = new List<CreatureGenotypeEval>(SelectTopEvals(populationSize, survivalRatio));
                 culled = true;
             }
+        }
+
+        public string GetDataString(){
+            return string.Format("{0},{1},{2}", bestReward, medianReward, worstReward);
         }
 
         public CreatureGenotypeEval SelectBestEval()
@@ -425,7 +456,7 @@ namespace KSS
             // bestEval.cg.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\" + currentGenerationIndex + "," + bestEval.cg.name + ".creature", true);
 
             string path = Path.Combine(OptionsPersist.instance.VCSaves, save.saveName + ".save");
-            save.SaveData(path, true);
+            save.SaveData(path, true, true);
             //saveK.SaveData("C:\\Users\\ajwm8\\Documents\\Programming\\Unity\\UTMIST Virtual Creatures\\Creatures\\longtest\\MAINSAVE.save", true);
             return topEvals;
         }
@@ -471,7 +502,7 @@ namespace KSS
             {
                 Debug.Log("Saving Current KSSSave");
                 KSSSave save = alg.saveK;
-                save.SaveData("/" + save.saveName + ".saveK", false);
+                save.SaveData("/" + save.saveName + ".saveK", false, true);
                 Debug.Log(Application.persistentDataPath);
             }
 
@@ -480,7 +511,7 @@ namespace KSS
                 Debug.Log("Saving Best Creature");
                 CreatureGenotype cg = alg.GetBestCreatureGenotype();
                 string path = EditorUtility.SaveFilePanel("Save Creature As", "C:", cg.name + ".creature", "creature");
-                cg.SaveData(path, true);
+                cg.SaveData(path, true, true);
                 Debug.Log(Application.persistentDataPath);
             }
         }

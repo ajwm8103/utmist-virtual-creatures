@@ -14,11 +14,11 @@ public class TrainingSave {
     public bool isNew;
     public TrainingSettings ts;
 
-    public void SaveData(string path, bool isFullPath)
+    public void SaveData(string path, bool isFullPath, bool overwrite)
     {
         BinaryFormatter formatter = new BinaryFormatter();
         string fullPath = isFullPath ? path : Application.persistentDataPath + path;
-        fullPath = fullPath.GetNextFilename();
+        if (!overwrite) fullPath = fullPath.GetNextFilename();
 
         FileStream stream = new FileStream(fullPath, FileMode.Create);
 

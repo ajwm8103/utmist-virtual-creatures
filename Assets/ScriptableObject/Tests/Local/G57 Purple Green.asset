@@ -1,0 +1,214 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e79b0229d1423d04b85dc9d7ed455a15, type: 3}
+  m_Name: G57 Purple Green
+  m_EditorClassIdentifier: 
+  cg:
+    name: aqu-silvarex
+    stage: 0
+    segments:
+    - r: 1
+      g: 1
+      b: 0
+      id: 0
+      connections: []
+      neurons:
+      - type: 21
+        inputs:
+        - relativityNullable:
+            v: 0
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 
+          id: 14
+        - relativityNullable:
+            v: 3
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 
+          id: 5
+        - relativityNullable:
+            v: 3
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 
+          id: 5
+        weights:
+        - -8.780177
+        - -13.274582
+        - 5.051807
+        nr:
+          relativityNullable:
+            v: 0
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 
+          id: 13
+      - type: 12
+        inputs:
+        - relativityNullable:
+            v: 3
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 
+          id: 5
+        weights:
+        - 11.6582
+        nr:
+          relativityNullable:
+            v: 0
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 
+          id: 14
+      recursiveLimit: 2
+      dimensionX: 1.1271641
+      dimensionY: 0.58725655
+      dimensionZ: 0.8797492
+      jointType: 0
+    - r: 122
+      g: 76
+      b: 190
+      id: 1
+      connections:
+      - id: 1
+        destination: 2
+        anchorX: 0.20813571
+        anchorY: -0.5
+        anchorZ: 0.09512538
+        orientationX: 0.000007564688
+        orientationY: 0.000031201642
+        orientationZ: 0.0000008819336
+        orientationW: 1
+        eulerX: 0.00086684624
+        eulerY: 0.0035754456
+        eulerZ: 0.000101089194
+        scale: 0.60276663
+        reflected: 0
+        terminalOnly: 0
+      - id: 0
+        destination: 2
+        anchorX: 0.14712738
+        anchorY: 0.11919874
+        anchorZ: 0.5
+        orientationX: 0.000021057489
+        orientationY: 0.000021255246
+        orientationZ: 0.00002281128
+        orientationW: 1
+        eulerX: 0.0024129548
+        eulerY: 0.0024357268
+        eulerZ: 0.0026140315
+        scale: 0.68535596
+        reflected: 0
+        terminalOnly: 0
+      - id: 3
+        destination: 2
+        anchorX: -0.016505182
+        anchorY: -0.5
+        anchorZ: -0.0024749637
+        orientationX: 0.000033929646
+        orientationY: 0.000030646035
+        orientationZ: 0.0000011927564
+        orientationW: 1
+        eulerX: 0.003888047
+        eulerY: 0.0035117816
+        eulerZ: 0.00013679896
+        scale: 0.5036364
+        reflected: 1
+        terminalOnly: 0
+      neurons:
+      - type: 0
+        inputs: []
+        weights: []
+        nr:
+          relativityNullable:
+            v: 4
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 
+          id: 5
+      recursiveLimit: 1
+      dimensionX: 0.301338
+      dimensionY: 0.3061638
+      dimensionZ: 1.4764072
+      jointType: 2
+    - r: 19
+      g: 122
+      b: 51
+      id: 2
+      connections:
+      - id: 0
+        destination: 1
+        anchorX: -0.5
+        anchorY: -0.2063927
+        anchorZ: -0.0028230548
+        orientationX: -0.120505765
+        orientationY: 0.3982786
+        orientationZ: 0.5755041
+        orientationW: -0.7040224
+        eulerX: -0.120505765
+        eulerY: 0.3982786
+        eulerZ: 0.5755041
+        scale: 0.7967334
+        reflected: 1
+        terminalOnly: 0
+      neurons:
+      - type: 0
+        inputs:
+        - relativityNullable:
+            v: 0
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 
+          id: 13
+        weights:
+        - 7.919083
+        nr:
+          relativityNullable:
+            v: 4
+            hasValue: 1
+          relativeLevelNullable:
+            v: 0
+            hasValue: 0
+          connectionPath: 03
+          id: 12
+      recursiveLimit: 1
+      dimensionX: 0.925131
+      dimensionY: 1.4761809
+      dimensionZ: 0.3065848
+      jointType: 1
+    orientationX: 0.0000060152834
+    orientationY: 0.000043910048
+    orientationZ: 0.000017410326
+    orientationW: 1
+    eulerX: 0.0006892131
+    eulerY: 0.005031733
+    eulerZ: 0.0019951067
+    counter: 0
+    obsDim: 0
+    actDim: 0

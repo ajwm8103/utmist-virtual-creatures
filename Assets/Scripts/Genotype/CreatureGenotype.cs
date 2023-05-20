@@ -606,17 +606,17 @@ public class CreatureGenotype
 
     public void SaveDebug(){
         string name = "/debug_" + Random.Range(0, 100) + ".creature";
-        SaveData(name, false);
+        SaveData(name, false, true);
         Debug.Log("Debug saved to " + Application.persistentDataPath + name);
     }
 
-    public void SaveData(string path, bool isFullPath)
+    public void SaveData(string path, bool isFullPath, bool overwrite)
     {
         BinaryFormatter formatter = new BinaryFormatter();
         string fullPath = isFullPath ? path : Application.persistentDataPath + path;
 
         // Check if name already exists
-        fullPath = fullPath.GetNextFilename();
+        if (!overwrite) fullPath = fullPath.GetNextFilename();
 
         FileStream stream = new FileStream(fullPath, FileMode.Create);
 
