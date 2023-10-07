@@ -129,7 +129,7 @@ public class MenuManager : MonoBehaviour
         foreach (string filePath in fileArray)
         {
             EvolutionChooseItem evi = Instantiate(evolutionChooseItemPrefab, new Vector3(evolutionSelectionContent.transform.position.x, height, 0f), Quaternion.identity);
-            evi.transform.parent = evolutionSelectionContent.transform;
+            evi.transform.SetParent(evolutionSelectionContent.transform);
             evi.Setup(filePath);
             chooseItems.Add(evi);
             height -= 100f;

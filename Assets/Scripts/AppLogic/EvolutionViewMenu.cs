@@ -6,6 +6,7 @@ using KSS;
 public class EvolutionViewMenu : MonoBehaviour
 {
     KSSSave save;
+    public CreatureGenotype best;
     // Start is called before the first frame update
     void Start()
     {
@@ -25,5 +26,6 @@ public class EvolutionViewMenu : MonoBehaviour
 
     public void SetEvolution(KSSSave save){
         this.save = save;
+        best = save.best.cg;
     }
 }
