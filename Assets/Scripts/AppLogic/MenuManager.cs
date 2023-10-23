@@ -130,6 +130,7 @@ public class MenuManager : MonoBehaviour
         {
             EvolutionChooseItem evi = Instantiate(evolutionChooseItemPrefab, new Vector3(evolutionSelectionContent.transform.position.x, height, 0f), Quaternion.identity);
             evi.transform.SetParent(evolutionSelectionContent.transform);
+            evi.transform.localScale = Vector3.one;
             evi.Setup(filePath);
             chooseItems.Add(evi);
             height -= 100f;
