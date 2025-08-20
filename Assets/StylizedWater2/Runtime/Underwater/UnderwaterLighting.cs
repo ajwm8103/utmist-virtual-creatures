@@ -4,10 +4,11 @@
 
 using UnityEngine;
 using UnityEngine.Rendering;
+#if URP
 using UnityEngine.Rendering.Universal;
-using UnityEngine.Rendering.Universal.Internal;
+#endif
 
-namespace StylizedWater2
+namespace StylizedWater2.UnderwaterRendering
 {
     public static class UnderwaterLighting
     {
@@ -56,7 +57,8 @@ namespace StylizedWater2
     
                 if (mainLight.lightType == LightType.Directional)
                 {
-                    cmd.SetGlobalMatrix(unity_WorldToLight, mainLight.light.transform.worldToLocalMatrix);
+                    //Force a unit scale, otherwise affects the projection tiling of the caustics
+                    cmd.SetGlobalMatrix(unity_WorldToLight, Matrix4x4.TRS(mainLight.light.transform.position, mainLight.light.transform.rotation, Vector3.one).inverse);
                 }
             }
         }

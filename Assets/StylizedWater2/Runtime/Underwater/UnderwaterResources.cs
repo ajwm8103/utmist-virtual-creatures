@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace StylizedWater2
+namespace StylizedWater2.UnderwaterRendering
 {
     //[CreateAssetMenu(fileName = "UnderwaterResources", menuName = "UnderwaterResources", order = 0)]
     /// <summary>

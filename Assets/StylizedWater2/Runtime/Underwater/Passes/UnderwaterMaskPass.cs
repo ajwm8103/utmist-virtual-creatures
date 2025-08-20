@@ -8,7 +8,7 @@ using UnityEngine.Rendering;
 #if URP
 using UnityEngine.Rendering.Universal;
 
-namespace StylizedWater2
+namespace StylizedWater2.UnderwaterRendering
 {
     public class UnderwaterMaskPass : ScriptableRenderPass
     {
@@ -20,7 +20,7 @@ namespace StylizedWater2
 
         private Material Material;
 
-        private RenderTargetIdentifier waterMaskRT;
+        private RTHandle waterMaskRT;
         private readonly int waterMaskID = Shader.PropertyToID("_UnderwaterMask");
 
         private UnderwaterRenderFeature renderFeature;
@@ -29,7 +29,6 @@ namespace StylizedWater2
         {
             this.renderFeature = renderFeature;
             Material = UnderwaterRenderFeature.CreateMaterial(ProfilerTag, renderFeature.resources.watermaskShader);
-            waterMaskRT = new RenderTargetIdentifier(waterMaskID, 0, CubemapFace.Unknown, -1);
         }
 
         public void Setup(UnderwaterRenderFeature.Settings settings, ScriptableRenderer renderer)
@@ -39,23 +38,28 @@ namespace StylizedWater2
             renderer.EnqueuePass(this);
         }
         
-#if UNITY_2020_1_OR_NEWER //URP 9+
-        public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
-#else
+        #if UNITY_6000_0_OR_NEWER //Silence warning spam
+        public override void RecordRenderGraph(UnityEngine.Rendering.RenderGraphModule.RenderGraph renderGraph, ContextContainer frameData) { }
+        #endif
+
+
+        #pragma warning disable CS0672
+        #pragma warning disable CS0618
         public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
-#endif
         {
-            #if UNITY_2020_1_OR_NEWER //URP 9+
-            var cameraTextureDescriptor = renderingData.cameraData.cameraTargetDescriptor;
-            #endif
-            
             cameraTextureDescriptor.width /= DOWNSAMPLES;
             cameraTextureDescriptor.height /= DOWNSAMPLES;
             cameraTextureDescriptor.msaaSamples = 1;
             cameraTextureDescriptor.graphicsFormat = GraphicsFormat.R8_UNorm;
-            cmd.GetTemporaryRT(waterMaskID, cameraTextureDescriptor, FilterMode.Bilinear);
+            cameraTextureDescriptor.dimension = TextureDimension.Tex2D;
             
-            cmd.SetGlobalTexture(waterMaskID, waterMaskID);
+            if (RenderPass.RTHandleNeedsReAlloc(waterMaskRT, cameraTextureDescriptor, "_UnderwaterMask"))
+            {
+                if(waterMaskRT != null) RTHandles.Release(waterMaskRT);
+                waterMaskRT = RTHandles.Alloc(cameraTextureDescriptor.width, cameraTextureDescriptor.height, cameraTextureDescriptor.volumeDepth, DepthBits.None, cameraTextureDescriptor.graphicsFormat, FilterMode.Bilinear, TextureWrapMode.Clamp, TextureDimension.Tex2D, name: "_UnderwaterMask");
+            }
+            
+            cmd.SetGlobalTexture(waterMaskID, waterMaskRT);
             
             ConfigureTarget(waterMaskRT);
             ConfigureClear(ClearFlag.All, Color.clear);
@@ -73,14 +77,10 @@ namespace StylizedWater2
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);
         }
-
-#if URP_9_0_OR_NEWER
-        public override void OnCameraCleanup(CommandBuffer cmd)
-#else
-        public override void FrameCleanup(CommandBuffer cmd)
-#endif
+        
+        public void Dispose()
         {
-            cmd.ReleaseTemporaryRT(waterMaskID);
+            RTHandles.Release(waterMaskRT);
         }
     }
 }

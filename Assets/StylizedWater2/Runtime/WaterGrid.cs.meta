@@ -11,3 +11,10 @@ MonoImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 170386
+  packageName: Stylized Water 2
+  packageVersion: 1.7.0
+  assetPath: Assets/StylizedWater2/Runtime/WaterGrid.cs
+  uploadId: 712978

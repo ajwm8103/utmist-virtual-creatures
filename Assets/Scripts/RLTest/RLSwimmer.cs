@@ -78,7 +78,7 @@ public class RLSwimmer : Agent
         HingeJoint leftJoint = leftSegment.GetComponent<HingeJoint>();
         HingeJoint rightJoint = rightSegment.GetComponent<HingeJoint>();
         Rigidbody rb = transform.GetComponent<Rigidbody>();
-        float mag_velocity = rb.velocity.magnitude;
+        float mag_velocity = rb.linearVelocity.magnitude;
         Vector3 input = new Vector3(leftJoint.angle,rightJoint.angle,mag_velocity);
         // UnityEngine.Debug.Log(input);
         sensor.AddObservation(input);
@@ -112,7 +112,7 @@ public class RLSwimmer : Agent
         // UnityEngine.Debug.Log(SW.ElapsedMilliseconds);
         SW.Stop();
         Rigidbody rb = transform.GetComponent<Rigidbody>();
-        float mag_velocity = rb.velocity.magnitude;
+        float mag_velocity = rb.linearVelocity.magnitude;
         float temp_reward = 1f / (Vector3.Distance(target.transform.position, transform.position) + 1f);
         AddReward(temp_reward);
         if (SW.ElapsedMilliseconds >= timeout * 1000f)

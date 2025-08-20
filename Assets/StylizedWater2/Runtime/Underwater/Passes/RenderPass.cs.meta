@@ -1,3 +1,10 @@
 ﻿fileFormatVersion: 2
 guid: 6af04348b8b6457e99c40e22cde53272
 timeCreated: 1648737667
+AssetOrigin:
+  serializedVersion: 1
+  productId: 185030
+  packageName: Underwater Rendering for Stylized Water 2 (Extension)
+  packageVersion: 1.2.8
+  assetPath: Assets/StylizedWater2/Runtime/Underwater/Passes/RenderPass.cs
+  uploadId: 712977

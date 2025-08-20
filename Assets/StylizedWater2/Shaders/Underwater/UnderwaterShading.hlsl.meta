@@ -1,3 +1,10 @@
 ﻿fileFormatVersion: 2
 guid: 6c1796a4e48d45c5881be10506a62222
 timeCreated: 1621159712
+AssetOrigin:
+  serializedVersion: 1
+  productId: 185030
+  packageName: Underwater Rendering for Stylized Water 2 (Extension)
+  packageVersion: 1.2.8
+  assetPath: Assets/StylizedWater2/Shaders/Underwater/UnderwaterShading.hlsl
+  uploadId: 712977

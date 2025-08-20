@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 3dc8bc759650f2b42b1c6fb0220d6028
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 112000000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 170386
+  packageName: Stylized Water 2
+  packageVersion: 1.7.0
+  assetPath: Assets/StylizedWater2/_Demo/StylizedWaterDemo/LightingData.asset
+  uploadId: 712978

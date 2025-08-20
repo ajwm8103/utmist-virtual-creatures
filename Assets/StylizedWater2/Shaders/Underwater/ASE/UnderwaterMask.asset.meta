@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 0235d51736c6e194b836edf3abdfc244
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 185030
+  packageName: Underwater Rendering for Stylized Water 2 (Extension)
+  packageVersion: 1.2.8
+  assetPath: Assets/StylizedWater2/Shaders/Underwater/ASE/UnderwaterMask.asset
+  uploadId: 712977

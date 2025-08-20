@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 8cfdb0ebe64c620e99b422d826dc9136
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {fileID: 148978298399363526, guid: 0000000000000000d000000000000000, type: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 170386
+  packageName: Stylized Water 2
+  packageVersion: 1.7.0
+  assetPath: Assets/StylizedWater2/Runtime/AlignToWaves.cs
+  uploadId: 712978

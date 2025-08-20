@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.XR;
 
 namespace StylizedWater2
@@ -12,10 +13,12 @@ namespace StylizedWater2
         private PlanarReflectionRenderer renderer;
         
         //Rendering
+        private SerializedProperty rotatable;
         private SerializedProperty cullingMask;
         private SerializedProperty rendererIndex;
         private SerializedProperty offset;
         private SerializedProperty includeSkybox;
+        private SerializedProperty enableFog;
         
         //Quality
         private SerializedProperty renderShadows;
@@ -29,17 +32,26 @@ namespace StylizedWater2
         private Bounds curBounds;
         private bool waterLayerError;
 
+        private bool previewReflection
+        {
+            get => EditorPrefs.GetBool("SWS2_PREVIEW_REFLECTION_ENABLED", true);
+            set => EditorPrefs.SetBool("SWS2_PREVIEW_REFLECTION_ENABLED", value);
+        }
+        private RenderTexture previewTexture;
+
+#if URP
         private void OnEnable()
         {
-#if URP
             PipelineUtilities.RefreshRendererList();
             
             renderer = (PlanarReflectionRenderer)target;
 
+            rotatable = serializedObject.FindProperty("rotatable");
             cullingMask = serializedObject.FindProperty("cullingMask");
             rendererIndex = serializedObject.FindProperty("rendererIndex");
             offset = serializedObject.FindProperty("offset");
             includeSkybox = serializedObject.FindProperty("includeSkybox");
+            enableFog = serializedObject.FindProperty("enableFog");
             renderShadows = serializedObject.FindProperty("renderShadows");
             renderRange = serializedObject.FindProperty("renderRange");
             renderScale = serializedObject.FindProperty("renderScale");
@@ -60,37 +72,94 @@ namespace StylizedWater2
             ValidateWaterObjectLayer();
 
             curBounds = renderer.CalculateBounds();
-#endif
+
+            RenderPipelineManager.endCameraRendering += OnEndCameraRendering;
         }
+
+        private Camera currentCamera;
+        private string currentCameraName;
+        private bool waterObjectsVisible;
+        
+        private void OnEndCameraRendering(ScriptableRenderContext context, Camera camera)
+        {
+            if (!previewReflection) return;
+
+            if (PlanarReflectionRenderer.InvalidContext(camera)) return;
+
+            currentCamera = camera;
+            
+            waterObjectsVisible = renderer.WaterObjectsVisible(currentCamera);
+            
+            previewTexture = renderer.TryGetReflectionTexture(currentCamera);
+            currentCameraName = currentCamera.name;
+        }
+        
+        private void OnDisable()
+        {
+            RenderPipelineManager.endCameraRendering -= OnEndCameraRendering;
+        }
+#endif
 
         public override void OnInspectorGUI()
         {
 #if !URP
             UI.DrawNotification("The Universal Render Pipeline package v" + AssetInfo.MIN_URP_VERSION + " or newer is not installed", MessageType.Error);
 #else
-            UI.DrawNotification(UnityEngine.Rendering.XRGraphics.enabled, "Not supported with VR rendering", MessageType.Error);
+            UI.DrawHeader();
+            
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                GUILayout.Space(EditorGUIUtility.labelWidth);
+                previewReflection =
+                    GUILayout.Toggle(previewReflection, new GUIContent("  Preview reflection", EditorGUIUtility.IconContent(
+                        (previewReflection ? "animationvisibilitytoggleon" : "animationvisibilitytoggleoff")).image), "Button");
+            }
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                GUILayout.Space(EditorGUIUtility.labelWidth);
+                EditorGUILayout.LabelField("Status: " + (waterObjectsVisible && currentCamera ? $"Rendering (camera: {currentCamera.name})" : "Not rendering (water not in view for any camera)"), EditorStyles.miniLabel);
+            }
+            
+            UI.DrawNotification(PipelineUtilities.VREnabled(), "Not supported with VR rendering", MessageType.Error);
             
             UI.DrawNotification(PlanarReflectionRenderer.AllowReflections == false, "Reflections have been globally disabled by an external script", MessageType.Warning);
             
-            EditorGUI.BeginChangeCheck();
             serializedObject.Update();
+            EditorGUI.BeginChangeCheck();
             
             EditorGUILayout.LabelField("Rendering", EditorStyles.boldLabel);
-            EditorGUILayout.LabelField("Status: " + (renderer.isRendering ? "Rendering (water in view)" : "Not rendering (no water in view)"), EditorStyles.miniLabel);
-            EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(cullingMask);
-            if (EditorGUI.EndChangeCheck())
-            {
-                serializedObject.ApplyModifiedProperties();
-            }
+
             EditorGUI.BeginChangeCheck();
             UI.DrawRendererProperty(rendererIndex);
             if (EditorGUI.EndChangeCheck())
             {
                 renderer.SetRendererIndex(rendererIndex.intValue);
             }
-            EditorGUILayout.PropertyField(offset);
+            
+            //Default renderer
+            if (rendererIndex.intValue == 0)
+            {
+                UI.DrawNotification("\n" +
+                                        "Using the default renderer for reflections is strongly discouraged." +
+                                        "\n\nMost (if not all) render features, such as third-party post processing effects, will also render for the reflection." +
+                                        "\n\nThis can lead to rendering artefacts and negatively impacts overall performance." +
+                                        "\n", MessageType.Warning);
+                
+                //If there are no other renderers to assign, suggest to auto-create one
+                UI.DrawNotification(PipelineUtilities.rendererIndexList.Length <= 2, "It is highly recommend to create a separate empty renderer", "Create and assign", CreateRenderer, MessageType.None);
+                
+                EditorGUILayout.Space();
+            }
+            
+            EditorGUILayout.PropertyField(cullingMask);
+            
             EditorGUILayout.PropertyField(includeSkybox);
+            EditorGUILayout.PropertyField(enableFog);
+            
+            EditorGUILayout.Space();
+
+            EditorGUILayout.PropertyField(rotatable);
+            EditorGUILayout.PropertyField(offset);
             
             EditorGUILayout.Space();
             
@@ -165,6 +234,74 @@ namespace StylizedWater2
         }
         
 #if URP
+
+        private void CreateRenderer()
+        {
+            int index = -1;
+            string path = "";
+
+            PipelineUtilities.CreateAndAssignNewRenderer(out index, out path);
+
+            if (index >= 0)
+            {
+                rendererIndex.intValue = index;
+
+                serializedObject.ApplyModifiedProperties();
+                serializedObject.Update();
+                
+                renderer.SetRendererIndex(rendererIndex.intValue);
+
+                if (path != string.Empty)
+                {
+                    Debug.Log("New renderer created at path <i>" + path + "</i>");
+                }
+            }
+        }
+        
+        public override bool HasPreviewGUI()
+        {
+            return previewReflection && previewTexture;
+        }
+        
+        public override bool RequiresConstantRepaint()
+        {
+            return HasPreviewGUI();
+        }
+
+        public override GUIContent GetPreviewTitle()
+        {
+            return currentCamera ? new GUIContent(currentCameraName + " reflection") : new GUIContent("Reflection");
+        }
+
+        public override void OnPreviewSettings()
+        {
+            if (HasPreviewGUI() == false) return;
+
+            GUILayout.Label($"Resolution ({previewTexture.width}x{previewTexture.height})");
+        }
+
+        private bool drawAlpha;
+
+        public override void OnPreviewGUI(Rect r, GUIStyle background)
+        {
+            if (drawAlpha)
+            {
+                EditorGUI.DrawTextureAlpha(r, previewTexture, ScaleMode.ScaleToFit);
+            }
+            else
+            {
+                GUI.DrawTexture(r, previewTexture, ScaleMode.ScaleToFit, false);
+            }
+            
+            Rect btnRect = r;
+            btnRect.x += 10f;
+            btnRect.y += 10f;
+            btnRect.width = 150f;
+            btnRect.height = 20f;
+
+            drawAlpha = GUI.Toggle(btnRect, drawAlpha, new GUIContent(" Alpha channel"));
+        }
+
         private void ValidateWaterObjectLayer()
         {
             if (renderer.waterObjects == null) return;

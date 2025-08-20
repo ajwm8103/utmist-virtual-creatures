@@ -1,0 +1,34 @@
+fileFormatVersion: 2
+guid: d119a4f62ba145f5ae02b0c932bd686b
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 531a3ff0802e4acbaef16e2b9d97fd66, type: 3}
+  template: {instanceID: 0}
+  settings:
+    shaderName: UnderwaterPost
+    hidden: 1
+    type: 1
+    autoIntegration: 1
+    fogIntegration: 2
+    quadNormalMapSamples: 0
+    customIncludeDirectives: []
+  dependencies:
+  - Assets/StylizedWater2/Shaders/Libraries/URP.hlsl
+  - Assets/StylizedWater2/Shaders/Underwater/UnderwaterEffects.hlsl
+  - Assets/StylizedWater2/Shaders/Underwater/UnderwaterShading.hlsl
+  - Assets/StylizedWater2/Shaders/Underwater/UnderwaterFog.hlsl
+  - Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl
+  - Packages/com.unity.render-pipelines.universal/Shaders/PostProcessing/Common.hlsl
+  - Packages/com.unity.render-pipelines.universal/Shaders/Utils/Fullscreen.hlsl
+AssetOrigin:
+  serializedVersion: 1
+  productId: 185030
+  packageName: Underwater Rendering for Stylized Water 2 (Extension)
+  packageVersion: 1.2.8
+  assetPath: Assets/StylizedWater2/Shaders/Underwater/UnderwaterPost.watershader
+  uploadId: 712977

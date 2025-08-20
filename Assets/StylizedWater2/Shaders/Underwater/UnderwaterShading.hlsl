@@ -7,9 +7,10 @@
 
 float _ClipOffset; //Lens offset
 bool _FullySubmerged;
+bool _UnderwaterRenderingEnabled;
 
 #if !defined(SHADERGRAPH_PREVIEW)
-TEXTURE2D_X(_UnderwaterMask);
+TEXTURE2D(_UnderwaterMask);
 SAMPLER(sampler_UnderwaterMask);
 
 #include "UnderwaterFog.hlsl"
@@ -17,10 +18,6 @@ SAMPLER(sampler_UnderwaterMask);
 #endif
 
 #define REFLECTION_ROUGHNESS 0.0
-half _UnderwaterSurfaceSmoothness;
-#define NORMAL_SMOOTHNESS _UnderwaterSurfaceSmoothness
-half _UnderwaterRefractionOffset;
-#define REFRACTION_OFFSET _UnderwaterRefractionOffset
 
 #define WATER_RI 1.333
 #define AIR_RI 1.000293 
@@ -46,10 +43,10 @@ float ReflectionViewFresnel(float3 worldNormal, float3 viewDir, float exponent)
 	return pow(max(0.0, 1.0 - cosTheta), exponent);
 }
 
-float3 UnderwaterReflectionVector(float3 normalWS, float3 worldTangentNormal, float3 viewDir)
+float3 UnderwaterReflectionVector(float3 normalWS, float3 worldTangentNormal, float3 viewDir, half smoothness)
 {
 	//Blend between the vertex/wave normal and tangent normal map
-	float3 normal = lerp(worldTangentNormal, normalWS, NORMAL_SMOOTHNESS);
+	float3 normal = lerp(worldTangentNormal, normalWS, smoothness);
 
 	float3 reflectionVector = reflect(-viewDir, normal);
 
@@ -59,14 +56,14 @@ float3 UnderwaterReflectionVector(float3 normalWS, float3 worldTangentNormal, fl
 	return reflectionVector;
 }
 
-float UnderwaterReflectionFactor(float3 normalWS, float3 worldTangentNormal, float3 viewDir)
+float UnderwaterReflectionFactor(float3 normalWS, float3 worldTangentNormal, float3 viewDir, half smoothness, half offset)
 {
-	float3 normal = lerp(worldTangentNormal, normalWS, NORMAL_SMOOTHNESS);
+	float3 normal = lerp(worldTangentNormal, normalWS, smoothness);
 
 	const float viewAngle = max(0.0, dot(normal, -viewDir));
 
 	//If given a spherical normal, behaves as a lensing effect.
-	const float refractionAngle = WATER_RI * sin(acos(viewAngle + REFRACTION_OFFSET)) / AIR_RI;
+	const float refractionAngle = WATER_RI * sin(acos(viewAngle + offset)) / AIR_RI;
 	const float reflectionAngle = acos(clamp(refractionAngle, -1.0, 1.0)) ;
 	
 	const float reflectionFresnel = 1.0 - FresnelReflection(reflectionAngle) * REFLECTION_ALPHA;
@@ -75,13 +72,16 @@ float UnderwaterReflectionFactor(float3 normalWS, float3 worldTangentNormal, flo
 	return (reflectionFresnel * viewFresnel);
 }
 
-float3 SampleUnderwaterReflectionProbe(float3 reflectionVector, float smoothness, float3 positionWS, float3 normalWS, float3 worldTangentNormal, float3 viewDir)
+float3 SampleUnderwaterReflectionProbe(float3 reflectionVector, float smoothness, float3 positionWS, float2 screenPos)
 {
 	#if !defined(SHADERGRAPH_PREVIEW)
-	#if VERSION_GREATER_EQUAL(12,0)
-	float3 reflections = GlossyEnvironmentReflection(reflectionVector, positionWS, smoothness, 1.0).rgb;
+
+	#if UNITY_VERSION >= 202220
+	float3 reflections = saturate(GlossyEnvironmentReflection(reflectionVector, positionWS, smoothness, 1.0, screenPos.xy)).rgb;
+	#elif UNITY_VERSION >= 202120
+	float3 reflections = saturate(GlossyEnvironmentReflection(reflectionVector, positionWS, smoothness, 1.0)).rgb;
 	#else
-	float3 reflections = GlossyEnvironmentReflection(reflectionVector, smoothness, 1.0).rgb;
+	float3 reflections = saturate(GlossyEnvironmentReflection(reflectionVector, smoothness, 1.0)).rgb;
 	#endif
 
 	return reflections;
@@ -95,7 +95,7 @@ void ApplyLitUnderwaterFog(inout float3 color, float3 positionWS, float3 normalW
 {
 	#ifndef SHADERGRAPH_PREVIEW
 	float distanceDensity = ComputeDistanceXYZ(positionWS);	
-	float heightDensity = ComputeHeight(positionWS);
+	float heightDensity = ComputeUnderwaterFogHeight(positionWS);
 	float density = ComputeDensity(distanceDensity, heightDensity);
 
 	float3 volumeColor = GetUnderwaterFogColor(distanceDensity, heightDensity);
@@ -106,19 +106,20 @@ void ApplyLitUnderwaterFog(inout float3 color, float3 positionWS, float3 normalW
 	#endif
 }
 
-void MixUnderwaterReflections(inout float3 color, in float3 sceneColor, float skyMask, float3 positionWS, float3 normalWS, float3 worldTangentNormal, float3 viewDir, int vFace, float density)
+void MixUnderwaterReflections(inout float3 color, in float3 sceneColor, float skyMask, float3 positionWS, float3 normalWS, float3 worldTangentNormal, float3 viewDir, float2 screenPos, int vFace, float density, half distortion, half refractionOffset)
 {
-	const float3 reflectionVector = UnderwaterReflectionVector(normalWS, worldTangentNormal, viewDir);
-	float reflectionCoefficient = UnderwaterReflectionFactor(normalWS, worldTangentNormal, viewDir);
+	const float3 reflectionVector = UnderwaterReflectionVector(normalWS, worldTangentNormal, viewDir, distortion);
+	float reflectionCoefficient = UnderwaterReflectionFactor(normalWS, worldTangentNormal, viewDir, distortion, refractionOffset);
 
 	//Fade out by fog density. Ensuring the reflections fade out as the water surface gets further away
 	reflectionCoefficient *= density;
 
+	//Just use the opaque texture, more reliable
 	#ifndef _ENVIRONMENTREFLECTIONS_OFF
-		float3 incomingReflections = SampleUnderwaterReflectionProbe(reflectionVector, REFLECTION_ROUGHNESS, positionWS, normalWS, worldTangentNormal, viewDir);
+		//float3 incomingReflections = SampleUnderwaterReflectionProbe(reflectionVector, REFLECTION_ROUGHNESS, positionWS, screenPos);
 
 		//Fallback to opaque texture for pixels in front of opaque geometry
-		sceneColor = lerp(sceneColor, incomingReflections, skyMask);
+		//sceneColor = lerp(sceneColor, incomingReflections, skyMask);
 	#endif
 	
 	//Faux-reflection of underwater volume
@@ -126,13 +127,13 @@ void MixUnderwaterReflections(inout float3 color, in float3 sceneColor, float sk
 }
 
 //Main function called at the end of ForwardPass.hlsl
-float3 ShadeUnderwaterSurface(in float3 albedo, float3 emission, float3 specular, float3 sceneColor, float skyMask, float shadowMask, float3 positionWS, float3 normalWS, float3 worldTangentNormal, float3 viewDir, float3 shallowColor, float3 deepColor, int vFace)
+float3 ShadeUnderwaterSurface(in float3 albedo, float3 emission, float3 specular, float3 sceneColor, float skyMask, float shadowMask, float3 positionWS, float3 normalWS, float3 worldTangentNormal, float3 viewDir, float2 screenPos, float3 shallowColor, float3 deepColor, int vFace, half reflectionSmoothness, half refractionOffset)
 {
 	float3 color = albedo.rgb;
 
 	#ifndef SHADERGRAPH_PREVIEW
 	const float distanceDensity = ComputeDistanceXYZ(positionWS);
-	const float heightDensity = ComputeHeight(positionWS);
+	const float heightDensity = ComputeUnderwaterFogHeight(positionWS);
 	const float density = ComputeDensity(distanceDensity, heightDensity);
 
 	//Not using distanceDensity here, so only the deep color is returned, which better represents the volume's color
@@ -141,16 +142,17 @@ float3 ShadeUnderwaterSurface(in float3 albedo, float3 emission, float3 specular
 	//Fade out into fog
 	shadowMask = lerp(shadowMask, 1.0, density);
 	
-	//Apply lighting to the albedo fog color
-	ApplyUnderwaterLighting(volumeColor, shadowMask, normalWS, viewDir);
-
 	color = lerp(color, volumeColor, density);
+	
+	//Apply direct- and indirect lighting to the albedo water+fog color
+	ApplyUnderwaterLighting(color, shadowMask, normalWS, viewDir);
+
 	//Re-apply translucency
 	color.rgb += emission.rgb * (1-heightDensity);
 	//Specular reflection (unknown why point lights don't carry over)
 	color.rgb += specular.rgb * (1-density);
 
-	MixUnderwaterReflections(color.rgb, sceneColor.rgb, skyMask, positionWS, normalWS, worldTangentNormal, viewDir, vFace, 1-density);
+	MixUnderwaterReflections(color.rgb, sceneColor.rgb, skyMask, positionWS, normalWS, worldTangentNormal, viewDir, screenPos, vFace, 1-density, reflectionSmoothness, refractionOffset);
 	#endif
 	
 	return color;
@@ -159,13 +161,21 @@ float3 ShadeUnderwaterSurface(in float3 albedo, float3 emission, float3 specular
 float SampleUnderwaterMask(float2 screenPos)
 {
 	#ifndef SHADERGRAPH_PREVIEW //SAMPLE_TEXTURE2D_X is yet available
-	if(_FullySubmerged)
+
+	if(_UnderwaterRenderingEnabled)
 	{
-		return 1;
+		if(_FullySubmerged)
+		{
+			return 1;
+		}
+		else
+		{
+			return SAMPLE_TEXTURE2D(_UnderwaterMask, sampler_UnderwaterMask, screenPos.xy).r;
+		}
 	}
 	else
 	{
-		return SAMPLE_TEXTURE2D_X(_UnderwaterMask, sampler_UnderwaterMask, screenPos.xy).r;
+		return 0;
 	}
 	#else
 	return 0;
@@ -202,18 +212,21 @@ float ClipSurface(float4 screenPos, float3 positionWS, float3 positionCS, float 
 //Shading for external transparent materials
 void ApplyUnderwaterShading(inout float3 color, float3 positionWS, float3 normal, float3 viewDir, float bottomFace)
 {
-	#if UNDERWATER_ENABLED && !defined(SHADERGRAPH_PREVIEW)
-	const float distanceDensity = ComputeDistanceXYZ(positionWS);
-	const float heightDensity = ComputeHeight(positionWS);
-	const float density = ComputeDensity(distanceDensity, heightDensity);
+	#if !defined(SHADERGRAPH_PREVIEW)
+	if(_UnderwaterRenderingEnabled)
+	{
+		const float distanceDensity = ComputeDistanceXYZ(positionWS);
+		const float heightDensity = ComputeUnderwaterFogHeight(positionWS);
+		const float density = ComputeDensity(distanceDensity, heightDensity);
 	
-	float3 fogColor = GetUnderwaterFogColor(distanceDensity, heightDensity);
+		float3 fogColor = GetUnderwaterFogColor(distanceDensity, heightDensity);
 
-	//Apply lighting to the albedo fog color
-	ApplyUnderwaterLighting(fogColor, 1.0, normal, viewDir);
+		//Apply lighting to the albedo fog color
+		ApplyUnderwaterLighting(fogColor, 1.0, normal, viewDir);
 	
-	const float mask = (bottomFace * density);
-	color = lerp(color, fogColor, mask);
+		const float mask = (bottomFace * density);
+		color = lerp(color, fogColor, mask);
+	}
 	#endif
 }
 
@@ -238,14 +251,17 @@ void ApplyUnderwaterShading_float(in float3 inEmission, float3 positionWS, out f
 {
 	outEmission = inEmission;
 	density = 1;
-	
-	#if UNDERWATER_ENABLED
-	float3 viewDir = SafeNormalize(_WorldSpaceCameraPos - positionWS);
-	ApplyUnderwaterShading(outEmission, positionWS, float3(0,1,0), viewDir, 1.0);
 
-	density = GetUnderwaterFogDensity(positionWS);
+	#if !defined(SHADERGRAPH_PREVIEW)
+	if(_UnderwaterRenderingEnabled)
+	{
+		float3 viewDir = SafeNormalize(_WorldSpaceCameraPos - positionWS);
+		ApplyUnderwaterShading(outEmission, positionWS, float3(0,1,0), viewDir, 1.0);
+
+		density = GetUnderwaterFogDensity(positionWS);
 	
-	outEmission = lerp(inEmission, outEmission, density);
+		outEmission = lerp(inEmission, outEmission, density);
+	}
 	#endif
 }
 #endif

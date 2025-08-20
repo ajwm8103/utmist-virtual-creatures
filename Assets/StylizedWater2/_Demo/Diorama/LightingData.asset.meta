@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 45e92860884cc7a4998c815e4df78497
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 112000000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 170386
+  packageName: Stylized Water 2
+  packageVersion: 1.7.0
+  assetPath: Assets/StylizedWater2/_Demo/Diorama/LightingData.asset
+  uploadId: 712978

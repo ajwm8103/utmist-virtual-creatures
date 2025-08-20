@@ -8,9 +8,17 @@ ScriptedImporter:
   assetBundleName: 
   assetBundleVariant: 
   script: {fileID: 11500000, guid: 5b8903faabaa4d64bbf306b8787d2d67, type: 3}
-  plane:
+  waterMesh:
     shape: 0
-    size: 100
-    UVTiling: 100
-    subdivisions: 32
-    noise: 0.445
+    scale: 100
+    vertexDistance: 1
+    UVTiling: 1
+    noise: 0.513
+  mesh: {fileID: -8670151273213183110, guid: b54af1ae652e1924b8d1be61ad384093, type: 3}
+AssetOrigin:
+  serializedVersion: 1
+  productId: 170386
+  packageName: Stylized Water 2
+  packageVersion: 1.7.0
+  assetPath: Assets/StylizedWater2/Models/HighPoly_Plane_wNoise.watermesh
+  uploadId: 712978

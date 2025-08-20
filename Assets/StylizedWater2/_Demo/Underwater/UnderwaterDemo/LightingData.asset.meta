@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ccad8dfa4db7c6c4d8cf2e81975687d4
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 112000000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 185030
+  packageName: Underwater Rendering for Stylized Water 2 (Extension)
+  packageVersion: 1.2.8
+  assetPath: Assets/StylizedWater2/_Demo/Underwater/UnderwaterDemo/LightingData.asset
+  uploadId: 712977

@@ -1,3 +1,10 @@
 ﻿fileFormatVersion: 2
 guid: 339e8da12bad4c59a1cd32be0614961d
 timeCreated: 1621158560
+AssetOrigin:
+  serializedVersion: 1
+  productId: 185030
+  packageName: Underwater Rendering for Stylized Water 2 (Extension)
+  packageVersion: 1.2.8
+  assetPath: Assets/StylizedWater2/Shaders/Underwater/UnderwaterFog.hlsl
+  uploadId: 712977

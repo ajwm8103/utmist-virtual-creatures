@@ -11,19 +11,19 @@ namespace StylizedWater2
     {
         private const string WavesKeyword = "_WAVES";
         
+        private static int _Direction = Shader.PropertyToID("_Direction");
+        private static int _Speed = Shader.PropertyToID("_Speed"
+            );
         private static int _WaveDistance = Shader.PropertyToID("_WaveDistance");
         private static int _WaveSpeed = Shader.PropertyToID("_WaveSpeed");
         private static int _WaveHeight = Shader.PropertyToID("_WaveHeight");
         private static int _WaveSteepness = Shader.PropertyToID("_WaveSteepness");
         private static int _WaveCount = Shader.PropertyToID("_WaveCount");
         private static int _WaveDirection = Shader.PropertyToID("_WaveDirection");
-        private static int _AnimationParams = Shader.PropertyToID("_AnimationParams");
         
-        /// <summary>
-        /// XY: Direction
-        /// Z: Speed multiplier
-        /// </summary>
-        public Vector4 animationParams;
+        public Vector2 animationDirection;
+        public float animationSpeed;
+        
         public int count;
         public float distance;
         public float speed;
@@ -45,7 +45,9 @@ namespace StylizedWater2
 
         public void Update(Material waterMat)
         {
-            animationParams = waterMat.GetVector(_AnimationParams);
+            animationDirection = waterMat.GetVector(_Direction);
+            animationSpeed = waterMat.GetFloat(_Speed);
+            
             speed = waterMat.GetFloat(_WaveSpeed);
             distance = waterMat.GetFloat(_WaveDistance);
             steepness = waterMat.GetFloat(_WaveSteepness);
@@ -56,7 +58,9 @@ namespace StylizedWater2
         
         public void SetAsGlobal()
         {
-            Shader.SetGlobalVector(_AnimationParams, animationParams);
+            Shader.SetGlobalVector(_Direction, animationDirection);
+            Shader.SetGlobalFloat(_Speed, animationSpeed);
+            
             Shader.SetGlobalFloat(_WaveSpeed, speed);
             Shader.SetGlobalFloat(_WaveDistance, distance);
             Shader.SetGlobalFloat(_WaveSteepness, steepness);
@@ -67,7 +71,9 @@ namespace StylizedWater2
         
         public void Apply(Material mat)
         {
-            mat.SetVector(_AnimationParams, animationParams);
+            mat.SetVector(_Direction, animationDirection);
+            mat.SetFloat(_Speed, animationSpeed);
+            
             mat.SetFloat(_WaveSpeed, speed);
             mat.SetFloat(_WaveDistance, distance);
             mat.SetFloat(_WaveSteepness, steepness);

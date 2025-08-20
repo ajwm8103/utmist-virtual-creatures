@@ -23,10 +23,10 @@ public class RigidbodyState
 
     public RigidbodyState(Rigidbody rb)
     {
-        velocity = rb.velocity;
+        velocity = rb.linearVelocity;
         angularVelocity = rb.angularVelocity;
-        drag = rb.drag;
-        angularDrag = rb.angularDrag;
+        drag = rb.linearDamping;
+        angularDrag = rb.angularDamping;
         mass = rb.mass;
         useGravity = rb.useGravity;
         freezeRotation = rb.freezeRotation;
@@ -44,10 +44,10 @@ public class RigidbodyState
     // oddity in Unity. WHO KNOWS. Using ref gives an error.
     public void SetRigidbody(Rigidbody rb)
     {
-        rb.velocity = velocity;
+        rb.linearVelocity = velocity;
         rb.angularVelocity = angularVelocity;
-        rb.drag = drag;
-        rb.angularDrag = angularDrag;
+        rb.linearDamping = drag;
+        rb.angularDamping = angularDrag;
         rb.mass = mass;
         rb.useGravity = useGravity;
         rb.freezeRotation = freezeRotation;

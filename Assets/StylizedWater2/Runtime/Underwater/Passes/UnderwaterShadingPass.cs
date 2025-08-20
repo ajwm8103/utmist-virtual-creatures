@@ -7,7 +7,7 @@ using UnityEngine.Rendering;
 #if URP
 using UnityEngine.Rendering.Universal;
 
-namespace StylizedWater2
+namespace StylizedWater2.UnderwaterRendering
 {
     class UnderwaterShadingPass : RenderPass
     {
@@ -29,17 +29,21 @@ namespace StylizedWater2
             renderer.EnqueuePass(this);
         }
         
-        public override void ConfigurePass(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
+        #if UNITY_6000_0_OR_NEWER
+        #pragma warning disable CS0672
+        #pragma warning disable CS0618
+        #endif
+        public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
         {
-            base.ConfigurePass(cmd, cameraTextureDescriptor);
-            
-            #if URP_10_0_OR_NEWER
+            base.Configure(cmd, cameraTextureDescriptor);
+
+            #if UNITY_2020_2_OR_NEWER
             ConfigureInput(ScriptableRenderPassInput.Depth | ScriptableRenderPassInput.Color);
             #endif
             
             if (settings.directionalCaustics)
             {
-                #if URP_10_0_OR_NEWER
+                #if UNITY_2020_2_OR_NEWER
                 if(settings.accurateDirectionalCaustics) 
                 {
                     ConfigureInput(ScriptableRenderPassInput.Depth | ScriptableRenderPassInput.Normal | ScriptableRenderPassInput.Color);
@@ -70,7 +74,7 @@ namespace StylizedWater2
                 UnderwaterLighting.PassAmbientLighting(this, cmd);
                 UnderwaterLighting.PassMainLight(cmd, renderingData);
 
-                BlitToCamera(cmd, ref renderingData);
+                BlitToCamera(cmd, ref renderingData, false);
             }
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);

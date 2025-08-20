@@ -8,9 +8,8 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: UnderwaterLightshaftParticle
-  m_Shader: {fileID: -6465566751694194690, guid: e03227e46aac8bf4b88f2825417d00d2, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
+  m_Shader: {fileID: -6465566751694194690, guid: e03227e46aac8bf4b88f2825417d00d2,
+    type: 3}
   m_ValidKeywords:
   - _FADING_ON
   m_InvalidKeywords: []
@@ -19,8 +18,8 @@ Material:
   m_DoubleSidedGI: 1
   m_CustomRenderQueue: 2999
   stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
+  disabledShaderPasses:
+  - MOTIONVECTORS
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -98,7 +97,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - Vector1_1FFEA4D9: 14
+    - Vector1_1FFEA4D9: 10
     - Vector1_3CCCBC2A: 0.028
     - Vector1_3F7A129E: 10
     - _AlphaClip: 0
@@ -131,7 +130,7 @@ Material:
     - _Mode: 0
     - _Noisesize: 0.006
     - _OcclusionStrength: 1
-    - _Opacity: 0.115
+    - _Opacity: 0.5
     - _Parallax: 0.02
     - _QueueControl: 0
     - _QueueOffset: -1
@@ -172,4 +171,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  version: 7
+  version: 9

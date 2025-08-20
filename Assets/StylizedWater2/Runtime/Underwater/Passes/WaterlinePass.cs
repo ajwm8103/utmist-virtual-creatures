@@ -7,7 +7,7 @@ using UnityEngine.Rendering;
 #if URP
 using UnityEngine.Rendering.Universal;
 
-namespace StylizedWater2
+namespace StylizedWater2.UnderwaterRendering
 {
     public class UnderwaterLinePass : ScriptableRenderPass
     {
@@ -27,7 +27,15 @@ namespace StylizedWater2
             this.settings = renderFeature.settings;
             Material = UnderwaterRenderFeature.CreateMaterial(ProfilerTag, renderFeature.resources.waterlineShader);
         }
-        
+
+        #if UNITY_6000_0_OR_NEWER //Silence warning spam
+        public override void RecordRenderGraph(UnityEngine.Rendering.RenderGraphModule.RenderGraph renderGraph, ContextContainer frameData) { }
+        #endif
+
+        #if UNITY_6000_0_OR_NEWER
+        #pragma warning disable CS0672
+        #pragma warning disable CS0618
+        #endif
 #if UNITY_2020_1_OR_NEWER //URP 9+
         public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
 #else

@@ -8,24 +8,19 @@ using UnityEngine.Rendering;
 #if URP
 using UnityEngine.Rendering.Universal;
 
-namespace StylizedWater2
+namespace StylizedWater2.UnderwaterRendering
 {
-    #if URP_11_0_OR_NEWER
+    #if UNITY_2021_1_OR_NEWER
     [DisallowMultipleRendererFeature]
     #endif
     public class UnderwaterRenderFeature : ScriptableRendererFeature
     {
         //Shared resources, ensures they're included in a build when the render feature is in use
-        [SerializeField]
-        #if !SWS_DEV
-        [HideInInspector]
-        #endif
         public UnderwaterResources resources;
 
         [Serializable]
         public class Settings
         {
-            [Header("Quality/Performance")]
             public bool allowBlur = true;
             public bool allowDistortion = true;
             
@@ -40,8 +35,6 @@ namespace StylizedWater2
                      "Camera-space mode looks better, but requires more calculations")]
             public DistortionMode distortionMode = DistortionMode.CameraSpace;
             
-            [Space]
-            
             [Tooltip("Limit caustics only to parts of a surface where sun light hits it")]
             public bool directionalCaustics;
             [Tooltip("(Requires Unity 2020.2+) Use the depth normals texture created from the Depth Normals pre-pass." +
@@ -49,8 +42,6 @@ namespace StylizedWater2
                      "\n\nIf disabled, normals will be reconstructed from the depth texture")]
             public bool accurateDirectionalCaustics = false;
 
-            [Space]
-            
             [Tooltip("Attempts to create a glass-like appearance by refracting the scene geometry behind the water line. Note this does not refract the water surface behind it")]
             public bool waterlineRefraction = true;
         }
@@ -58,8 +49,9 @@ namespace StylizedWater2
         
         private UnderwaterMaskPass maskPass;
         private UnderwaterLinePass waterLinePass;
-        private UnderwaterShadingPass underwaterShadingPass;
-        private UnderwaterPost underwaterPostPass;
+        private UnderwaterShadingPass shadingPass;
+        private DistortionSpherePass distortionSpherePass;
+        private UnderwaterPost postProcessingPass;
         
         public UnderwaterRenderer.KeywordStates keywordStates;
         
@@ -77,7 +69,17 @@ namespace StylizedWater2
             settings.waterlineRefraction = false;
             #endif
         }
-
+        
+        void OnEnable()
+        {
+            #if UNITY_6000_0_OR_NEWER && UNITY_EDITOR
+            if (PipelineUtilities.RenderGraphEnabled())
+            {
+                Debug.LogError($"[{this.name}] Render Graph is enabled but is not supported. Enable \"Compatibility Mode\" in your project's Graphics Settings as a workaround.");
+            }
+            #endif
+        }
+        
         public override void Create()
         {
             #if UNITY_EDITOR
@@ -87,16 +89,27 @@ namespace StylizedWater2
             maskPass = new UnderwaterMaskPass(this);
             maskPass.renderPassEvent = RenderPassEvent.BeforeRenderingTransparents;
             
-            underwaterShadingPass = new UnderwaterShadingPass(this);
-            underwaterShadingPass.renderPassEvent = RenderPassEvent.BeforeRenderingTransparents;
-            
-            underwaterPostPass = new UnderwaterPost(this);
-            underwaterPostPass.renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
+            shadingPass = new UnderwaterShadingPass(this);
+            shadingPass.renderPassEvent = RenderPassEvent.BeforeRenderingTransparents;
+
+            distortionSpherePass = new DistortionSpherePass(resources);
+            distortionSpherePass.renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
+
+            postProcessingPass = new UnderwaterPost(this);
+            postProcessingPass.renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
             
             waterLinePass = new UnderwaterLinePass(this);
             waterLinePass.renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
         }
 
+        private void OnDisable()
+        {
+            maskPass.Dispose();
+            shadingPass.Dispose();
+            distortionSpherePass.Dispose();
+            postProcessingPass.Dispose();
+        }
+        
         private bool cameraIntersecting;
         private bool cameraSubmerged;
 
@@ -110,9 +123,9 @@ namespace StylizedWater2
             #if SWS_DEV
             //Debug.Log($"Name:{cameraData.camera.name} Type:{cameraData.cameraType} Enabled:{cameraData.camera.enabled}");
             #endif
-            
+
             //Likely a planar reflections camera or otherwise
-            if (cameraData.cameraType != CameraType.SceneView && cameraData.camera.enabled == false) return true;
+            if (cameraData.camera.cameraType != CameraType.SceneView && cameraData.camera.enabled == false) return true;
             
             //Camera stacking and depth-based post processing is essentially non-functional.
             //All effects render twice to the screen, causing double brightness. Next to fog causing overlay objects to appear transparent
@@ -123,12 +136,12 @@ namespace StylizedWater2
 
 #if UNITY_EDITOR
             //Skip if post-processing is disabled in scene-view
-            if (cameraData.cameraType == CameraType.SceneView && UnityEditor.SceneView.lastActiveSceneView && !UnityEditor.SceneView.lastActiveSceneView.sceneViewState.showImageEffects) return true;
+            if (cameraData.camera.cameraType == CameraType.SceneView && UnityEditor.SceneView.lastActiveSceneView && !UnityEditor.SceneView.lastActiveSceneView.sceneViewState.showImageEffects) return true;
 
 #endif
 
             //Skip hidden or off-screen cameras. 
-            if (cameraData.cameraType == CameraType.Game && cameraData.camera.hideFlags != HideFlags.None) return true;
+            if (cameraData.camera.cameraType == CameraType.Game && cameraData.camera.hideFlags != HideFlags.None) return true;
             
             #if UNITY_EDITOR
             //Skip rendering if editing a prefab
@@ -143,6 +156,7 @@ namespace StylizedWater2
         }
         
         private int _FullySubmerged = Shader.PropertyToID("_FullySubmerged");
+        private int _UnderwaterRenderingEnabled = Shader.PropertyToID("_UnderwaterRenderingEnabled");
         
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
@@ -158,9 +172,14 @@ namespace StylizedWater2
 
             if (cameraIntersecting)
             {
+                Shader.SetGlobalInt(_UnderwaterRenderingEnabled, 1);
+                
                 keywordStates = UnderwaterRenderer.Instance.materialKeywordStates;
                 cameraSubmerged = UnderwaterRenderer.Instance.CameraSubmerged(renderingData.cameraData.camera);
 
+                //In this case, want to always make sure the underwater mask is sampled
+                //cameraSubmerged &= !Shader.IsKeywordEnabled(DisplacementPrePass.KEYWORD);
+                
                 //Once submerged, the pass stops executing. At which point the water mask buffer will be left entirely filled
                 if (!cameraSubmerged)
                 {
@@ -171,11 +190,16 @@ namespace StylizedWater2
                 //Instead return a full white value in the shader function
                 Shader.SetGlobalInt(_FullySubmerged, cameraSubmerged ? 1 : 0);
 
-                underwaterShadingPass.Setup(settings, renderer);
+                shadingPass.Setup(settings, renderer);
 
                 if (RequiresPostProcessingPass(UnderwaterRenderer.Instance))
                 {
-                    underwaterPostPass.Setup(settings, renderer);
+                    if (UnderwaterRenderer.Instance.enableDistortion && settings.allowDistortion && settings.distortionMode == UnderwaterRenderFeature.Settings.DistortionMode.CameraSpace)
+                    {
+                        renderer.EnqueuePass(distortionSpherePass);
+                    }
+                    
+                    postProcessingPass.Setup(settings, renderer);
                 }
 
                 //No need to render this if the water line won't be visible
@@ -183,6 +207,10 @@ namespace StylizedWater2
                 {
                     renderer.EnqueuePass(waterLinePass);
                 }
+            }
+            else
+            {
+                Shader.SetGlobalInt(_UnderwaterRenderingEnabled, 0);
             }
         }
 

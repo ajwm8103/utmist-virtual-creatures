@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 namespace StylizedWater2
 {
@@ -11,11 +8,9 @@ namespace StylizedWater2
     [AddComponentMenu("Stylized Water 2/Water Grid")]
     public class WaterGrid : MonoBehaviour
     {
-        [Header("Appearance")]
         [Tooltip("Material used on the tile meshes")]
         public Material material;
         
-        [Header("Movement")]
         [Tooltip("When not in play-mode, the water will follow the scene-view camera position.")]
         public bool followSceneCamera = false;
         [Tooltip("If enabled, the object with the \"MainCamera\" tag will be assigned as the follow target when entering play mode")]
@@ -23,15 +18,14 @@ namespace StylizedWater2
         [Tooltip("The grid will follow this Transform's position on the XZ axis. Ideally set to the camera's transform.")]
         public Transform followTarget;
         
-        [Header("Grid")]
         [Tooltip("Scale of the entire grid in the length and width")]
         public float scale = 500f;
         [Range(0.15f, 10f)] 
         [Tooltip("Distance between vertices, rather higher than lower")]
         public float vertexDistance = 2f;
-        [Min(1)]
+        [Min(0)]
         public int rowsColumns = 4;
-        
+
         [HideInInspector]
         public int m_rowsColumns = 4;
         [SerializeField]
@@ -50,6 +44,16 @@ namespace StylizedWater2
         [NonSerialized]
         private Vector3 targetPosition;
 
+        #if UNITY_EDITOR
+        public static bool DisplayGrid = true;
+        public static bool DisplayWireframe;
+        #endif
+
+        private void Reset()
+        {
+            Recreate();
+        }
+        
         private void Start()
         {
             if (autoAssignCamera) followTarget = Camera.main ? Camera.main.transform : followTarget;
@@ -59,10 +63,8 @@ namespace StylizedWater2
         {
 #if UNITY_EDITOR
             UnityEditor.SceneView.duringSceneGui += OnSceneGUI;
-
-            m_rowsColumns = rowsColumns;
-            if(objects.Count == 0) Recreate();
 #endif
+            m_rowsColumns = rowsColumns;
 
             //Mesh is serialized with the scene, if component is used as a prefab, regenerate it
             if (mesh == null)
@@ -119,10 +121,8 @@ namespace StylizedWater2
                     {
                         m_waterObject = WaterObject.New(material, mesh);
                         objects.Add(m_waterObject);
-
+                        
                         m_waterObject.transform.parent = this.transform;
-                        m_waterObject.gameObject.layer = 4;
-
                         m_waterObject.name = "WaterTile_x" + x + "z" + z;
                     }
                     else
@@ -133,18 +133,26 @@ namespace StylizedWater2
                     }
 
                     m_waterObject.transform.localPosition = GridLocalCenterPosition(x, z);
+                    m_waterObject.transform.localScale = Vector3.one;
 
                     index++;
                 }
             }
         }
 
+        private void CalculateTileSize()
+        {
+            rowsColumns = Mathf.Max(rowsColumns, 0);
+            float m_scale = scale * this.transform.lossyScale.x;
+            tileSize = Mathf.Max(1f, m_scale / rowsColumns);
+        }
+        
         private void RecreateMesh()
         {
-            rowsColumns = Mathf.Max(rowsColumns, 1);
-            tileSize = Mathf.Max(1f, scale / rowsColumns);
-            
-            mesh = WaterMesh.Create(WaterMesh.Shape.Rectangle, tileSize, Mathf.FloorToInt(tileSize / vertexDistance), tileSize);
+            CalculateTileSize();
+            float m_vertexDistance = vertexDistance * this.transform.lossyScale.x;
+
+            mesh = WaterMesh.Create(WaterMesh.Shape.Rectangle, tileSize, m_vertexDistance, tileSize);
         }
 
         private void ReassignMesh()
@@ -161,7 +169,7 @@ namespace StylizedWater2
                 z * tileSize - ((tileSize * (rowsColumns)) * 0.5f) + (tileSize * 0.5f));
         }
 
-        private static Vector3 SnapToGrid(Vector3 position, float cellSize)
+        public static Vector3 SnapToGrid(Vector3 position, float cellSize)
         {
             return new Vector3(SnapToGrid(position.x, cellSize), SnapToGrid(position.y, cellSize), SnapToGrid(position.z, cellSize));
         }
@@ -171,22 +179,39 @@ namespace StylizedWater2
             return Mathf.FloorToInt(position / cellSize) * (cellSize) + (cellSize * 0.5f);
         }
 
+#if UNITY_EDITOR
         private void OnDrawGizmosSelected()
         {
-            Gizmos.color = new Color(1f, 0.25f, 0.25f, 0.5f);
-            
-            for (int x = 0; x < rowsColumns; x++)
+            if (DisplayWireframe)
             {
-                for (int z = 0; z < rowsColumns; z++)
+                Gizmos.matrix = this.transform.localToWorldMatrix;
+                Gizmos.color = new Color(0, 0, 0, 0.5f);
+
+                foreach (WaterObject waterObject in objects)
                 {
-                    Vector3 pos = transform.TransformPoint(GridLocalCenterPosition(x, z));
-                   
-                    Gizmos.DrawWireCube(pos, new Vector3(tileSize, 0f, tileSize));
+                    if(waterObject.meshFilter.sharedMesh) Gizmos.DrawWireMesh(waterObject.meshFilter.sharedMesh, waterObject.transform.localPosition);
+                }
+            }
+
+            if (DisplayGrid)
+            {
+                if (tileSize <= 0) CalculateTileSize();
+                
+                Gizmos.color = new Color(1f, 0.25f, 0.25f, 0.5f);
+                Gizmos.matrix = this.transform.localToWorldMatrix;
+                
+                for (int x = 0; x < rowsColumns; x++)
+                {
+                    for (int z = 0; z < rowsColumns; z++)
+                    {
+                        Vector3 pos = GridLocalCenterPosition(x, z);
+
+                        Gizmos.DrawWireCube(pos, new Vector3(tileSize, 0f, tileSize));
+                    }
                 }
             }
         }
 
-#if UNITY_EDITOR
         private void OnSceneGUI(UnityEditor.SceneView sceneView)
         {
             if (followSceneCamera)
@@ -201,40 +226,4 @@ namespace StylizedWater2
         }
 #endif
     }
-
-#if UNITY_EDITOR
-    [CustomEditor(typeof(WaterGrid))]
-    public class CreateWaterGridInspector : Editor
-    {
-        private WaterGrid script;
-        private int vertexCount;
-
-        private void OnEnable()
-        {
-            script = (WaterGrid) target;
-            script.m_rowsColumns = script.rowsColumns;
-        }
-        
-        public override void OnInspectorGUI()
-        {
-            vertexCount = Mathf.FloorToInt(((script.scale / script.rowsColumns) / script.vertexDistance) * ((script.scale / script.rowsColumns) / script.vertexDistance));
-            if(vertexCount > 65535)
-            {
-                EditorGUILayout.HelpBox("Vertex count of individual tiles is too high. Increase the vertex distance, decrease the grid scale, or add more rows/columns", MessageType.Error);
-            }
-            
-            EditorGUI.BeginChangeCheck();
-            
-            if(script.material == null) EditorGUILayout.HelpBox("A material must be assigned", MessageType.Error);
-            
-            base.OnInspectorGUI();
-            
-            //Executed here since objects can't be destroyed from OnValidate
-            if (EditorGUI.EndChangeCheck())
-            {
-                script.Recreate();
-            }
-        }
-    }
-#endif
 }

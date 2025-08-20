@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: c08ec7d2563d4bea89aa3509298f8bf4
+timeCreated: 1701077223
+AssetOrigin:
+  serializedVersion: 1
+  productId: 170386
+  packageName: Stylized Water 2
+  packageVersion: 1.7.0
+  assetPath: Assets/StylizedWater2/Runtime/Rendering/DisplacementPrePass.cs
+  uploadId: 712978

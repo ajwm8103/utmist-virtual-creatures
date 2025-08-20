@@ -7,30 +7,23 @@ using UnityEngine.Rendering;
 #if URP
 using UnityEngine.Rendering.Universal;
 
-namespace StylizedWater2
+namespace StylizedWater2.UnderwaterRendering
 {
     class UnderwaterPost : RenderPass
     {
         private const string ProfilerTag = "Underwater Rendering: Post Processing";
         private static ProfilingSampler m_ProfilingSampler = new ProfilingSampler(ProfilerTag);
-        
-        private RenderTargetIdentifier distortionSphereRT;
-        
+
+        private const string BlurKeyword = "BLUR";
+
         private readonly int _DistortionNoise = Shader.PropertyToID("_DistortionNoise");
-        private readonly int _DistortionSphere = Shader.PropertyToID("_DistortionSphere");
 
         private const string DistortionSSKeyword = "_SCREENSPACE_DISTORTION";
         private const string DistortionWSKeyword = "_CAMERASPACE_DISTORTION";
-        private const string BlurKeyword = "BLUR";
-
-        private Material DistortionSphereMaterial;
 
         public UnderwaterPost(UnderwaterRenderFeature renderFeature)
         {
             base.Initialize(renderFeature, renderFeature.resources.postProcessShader);
-            
-            DistortionSphereMaterial = CoreUtils.CreateEngineMaterial(resources.distortionShader);
-            distortionSphereRT = new RenderTargetIdentifier(_DistortionSphere, 0, CubemapFace.Unknown, -1);
         }
 
         public override void Setup(UnderwaterRenderFeature.Settings settings, ScriptableRenderer renderer)
@@ -40,42 +33,26 @@ namespace StylizedWater2
             renderer.EnqueuePass(this);
         }
         
-        public override void ConfigurePass(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
+        #if UNITY_6000_0_OR_NEWER
+        #pragma warning disable CS0672
+        #pragma warning disable CS0618
+        #endif
+        public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
         {
-            base.ConfigurePass(cmd, cameraTextureDescriptor);
+            base.Configure(cmd, cameraTextureDescriptor);
+            
+            AllocateColorCopy(cameraTextureDescriptor);
+            
+            if (UnderwaterRenderer.Instance.enableDistortion && settings.allowDistortion)
+            {
+                cmd.SetGlobalTexture(_DistortionNoise, resources.distortionNoise);
+            }
             
             CoreUtils.SetKeyword(Material, BlurKeyword, UnderwaterRenderer.Instance.enableBlur && settings.allowBlur);
             CoreUtils.SetKeyword(Material, DistortionSSKeyword, UnderwaterRenderer.Instance.enableDistortion && settings.allowDistortion && settings.distortionMode == UnderwaterRenderFeature.Settings.DistortionMode.ScreenSpace);
             CoreUtils.SetKeyword(Material, DistortionWSKeyword, UnderwaterRenderer.Instance.enableDistortion && settings.allowDistortion && settings.distortionMode == UnderwaterRenderFeature.Settings.DistortionMode.CameraSpace);
-
-            if (UnderwaterRenderer.Instance.enableDistortion && settings.allowDistortion && settings.distortionMode == UnderwaterRenderFeature.Settings.DistortionMode.CameraSpace)
-            {
-                cameraTextureDescriptor.colorFormat = RenderTextureFormat.R8;
-                cameraTextureDescriptor.msaaSamples = 1;
-                cameraTextureDescriptor.width /= 4;
-                cameraTextureDescriptor.height /= 4;
-                
-                cmd.GetTemporaryRT(_DistortionSphere, cameraTextureDescriptor, FilterMode.Bilinear);
-                cmd.SetGlobalTexture(_DistortionSphere, _DistortionSphere);
-            }
         }
 
-        private void RenderDistortionSphere(CommandBuffer cmd)
-        {
-            if (UnderwaterRenderer.Instance.enableDistortion && settings.allowDistortion)
-            {
-                cmd.SetGlobalTexture(_DistortionNoise, resources.distortionNoise);
-
-                if (settings.distortionMode == UnderwaterRenderFeature.Settings.DistortionMode.CameraSpace)
-                {
-                    cmd.SetRenderTarget(distortionSphereRT);
-                    cmd.ClearRenderTarget(false, true, Color.clear);
-
-                    cmd.DrawMesh(resources.geoSphere, Matrix4x4.identity, DistortionSphereMaterial, 0);
-                }
-            }
-        }
-        
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
             var cmd = CommandBufferPool.Get();
@@ -83,20 +60,82 @@ namespace StylizedWater2
             using (new ProfilingScope(cmd, m_ProfilingSampler))
             {
                 base.Execute(context, ref renderingData);
-                
-                RenderDistortionSphere(cmd);
 
-                BlitToCamera(cmd, ref renderingData);
+                BlitToCamera(cmd, ref renderingData, true);
+            }
+            
+            context.ExecuteCommandBuffer(cmd);
+            CommandBufferPool.Release(cmd);
+        }
+    }
+    
+    class DistortionSpherePass : ScriptableRenderPass
+    {
+        private const string ProfilerTag = "Underwater Rendering: Post Processing (Distortion)";
+        private static ProfilingSampler m_ProfilingSampler = new ProfilingSampler(ProfilerTag);
+        
+        private RTHandle distortionSphereRT;
+
+        private const string _DistortionSphere = "_DistortionSphere";
+        private readonly int _DistortionSphereID = Shader.PropertyToID("_DistortionSphere");
+        
+        private readonly Material DistortionSphereMaterial;
+        private readonly Mesh geoSphere;
+
+        public DistortionSpherePass(UnderwaterResources resources)
+        {
+            if(resources.distortionShader) DistortionSphereMaterial = CoreUtils.CreateEngineMaterial(resources.distortionShader);
+            this.geoSphere = resources.geoSphere;
+        }
+
+        #if UNITY_6000_0_OR_NEWER //Silence warning spam
+        public override void RecordRenderGraph(UnityEngine.Rendering.RenderGraphModule.RenderGraph renderGraph, ContextContainer frameData) { }
+        #endif
+        
+        #if UNITY_6000_0_OR_NEWER
+        #pragma warning disable CS0672
+        #pragma warning disable CS0618
+        #endif
+        public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
+        {
+            cameraTextureDescriptor.colorFormat = RenderTextureFormat.R8;
+            cameraTextureDescriptor.msaaSamples = 1;
+            cameraTextureDescriptor.width /= 4;
+            cameraTextureDescriptor.height /= 4;
+            //cameraTextureDescriptor.dimension = TextureDimension.Tex2D;
+
+            if (RenderPass.RTHandleNeedsReAlloc(distortionSphereRT, cameraTextureDescriptor, _DistortionSphere))
+            {
+                //Note: function does a null check, needed for the first allocation
+                if(distortionSphereRT != null) RTHandles.Release(distortionSphereRT);
+                distortionSphereRT = RTHandles.Alloc(cameraTextureDescriptor.width, cameraTextureDescriptor.height, cameraTextureDescriptor.volumeDepth, DepthBits.None, cameraTextureDescriptor.graphicsFormat, FilterMode.Bilinear, TextureWrapMode.Clamp, cameraTextureDescriptor.dimension, name: _DistortionSphere);
+
+            }
+            cmd.SetGlobalTexture(_DistortionSphereID, distortionSphereRT);
+            
+            ConfigureTarget(distortionSphereRT);
+            ConfigureClear(ClearFlag.Color, Color.clear);
+        }
+
+        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
+        {
+            var cmd = CommandBufferPool.Get();
+
+            using (new ProfilingScope(cmd, m_ProfilingSampler))
+            {
+                //cmd.SetRenderTarget(distortionSphereRT);
+                //cmd.ClearRenderTarget(false, true, Color.clear);
+
+                cmd.DrawMesh(geoSphere, Matrix4x4.identity, DistortionSphereMaterial, 0);
             }
             
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);
         }
         
-        protected override void Cleanup(CommandBuffer cmd)
+        public void Dispose()
         {
-            base.Cleanup(cmd);
-            cmd.ReleaseTemporaryRT(_DistortionSphere);
+            RTHandles.Release(distortionSphereRT);
         }
     }
 

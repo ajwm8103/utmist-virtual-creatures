@@ -4,7 +4,7 @@
 
 using UnityEngine;
 
-namespace StylizedWater2
+namespace StylizedWater2.UnderwaterRendering
 {
     public static class UnderwaterUtilities
     {

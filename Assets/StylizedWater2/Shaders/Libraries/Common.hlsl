@@ -5,46 +5,38 @@
 #ifndef WATER_COMMON_INCLUDED
 #define WATER_COMMON_INCLUDED
 
-#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareOpaqueTexture.hlsl"
-
-#if defined(TESSELLATION_ON)
-#if (defined(SHADER_API_D3D11) || defined(SHADER_API_GLES3) || defined(SHADER_API_GLCORE) || defined(SHADER_API_VULKAN) || defined(SHADER_API_METAL) || defined(SHADER_API_PSSL) || defined(SHADER_API_XBOXONE))
-#define UNITY_CAN_COMPILE_TESSELLATION
-#else
-#error [Stylized Water] Current graphics API does not support tessellation (only Direct3D 11, OpenGL ES 3.0, OpenGL, Vulkan, Metal, PS4 and Xbox One)
-#endif
-#endif
-
-//As per the "Shader" section of the documentation, this is primarily used to synchronizing animations in networked games
-//#define USE_CUSTOM_TIME
-
-#if !defined(USE_CUSTOM_TIME)
-#define TIME_FRAG_INPUT input.uv.z
-#define TIME_VERTEX_OUTPUT output.uv.z
-#else
+//As per the "Shader" section of the documentation, this is primarily used for synchronizing animations in networked applications.
 float _CustomTime;
-#define TIME_FRAG_INPUT _CustomTime
-#define TIME_VERTEX_OUTPUT _CustomTime
-#endif
+#define TIME_FRAG_INPUT _CustomTime > 0 ? _CustomTime : input.uv.z
+#define TIME_VERTEX_OUTPUT _CustomTime > 0 ? _CustomTime : output.uv.z
 
-#define TIME ((TIME_FRAG_INPUT * _AnimationParams.z) * _AnimationParams.xy)
-#define TIME_VERTEX ((TIME_VERTEX_OUTPUT * _AnimationParams.z) * _AnimationParams.xy)
+#define TIME ((TIME_FRAG_INPUT * _Speed) * -_Direction.xy)
+#define TIME_VERTEX ((TIME_VERTEX_OUTPUT * _Speed) * -_Direction.xy)
 
-#define HORIZONTAL_DISPLACEMENT_SCALAR 0.010
+#define HORIZONTAL_DISPLACEMENT_SCALAR 0.01
 #define UP_VECTOR float3(0,1,0)
+#define RAD2DEGREE 57.29578
 
 struct WaterSurface
 {
 	uint vFace;
 	float3 positionWS;
+	float3 viewDelta; //Un-normalized view direction, 
 	float3 viewDir;
 
+	//Normal from the base geometry, in world-space
 	float3 vertexNormal;
+	//Normal of geometry + waves
 	float3 waveNormal;	
 	half3x3 tangentToWorldMatrix;
+	//Tangent-space normal
 	float3 tangentNormal;
+	//World-space normal, include geometry+waves+normal map
 	float3 tangentWorldNormal;
+	//The normal used for diffuse lighting.
 	float3 diffuseNormal;
+	//Per-pixel offset vector
+	float4 refractionOffset;
 	
 	float3 albedo;
 	float3 reflections;
@@ -65,16 +57,22 @@ struct WaterSurface
 	float shadowMask;
 };
 
+//Set through the public static C# parameter: StylizedWater2.WaterObject.PositionOffset
+float3 _WaterPositionOffset;
 
 float2 GetSourceUV(float2 uv, float2 wPos, float state) 
 {
-	float2 output =  lerp(uv, wPos, state);
-	//output.x = (int)((output.x / 0.5) + 0.5) * 0.5;
-	//output.y = (int)((output.y / 0.5) + 0.5) * 0.5;
-
 	#ifdef _RIVER
 	//World-space tiling is useless in this case
 	return uv;
+	#endif
+	
+	float2 output =  lerp(uv, wPos - _WaterPositionOffset.xz, state);
+
+	//Pixelize
+	#ifdef PIXELIZE_UV
+	output.x = (int)((output.x / 0.5) + 0.5) * 0.5;
+	output.y = (int)((output.y / 0.5) + 0.5) * 0.5;
 	#endif
 	
 	return output;
@@ -90,39 +88,14 @@ float DepthDistance(float3 wPos, float3 viewPos, float3 normal)
 	return length((wPos - viewPos) * normal);
 }
 
-float2 BoundsToWorldUV(in float3 wPos, in float4 b)
+float4 PackedUV(float2 sourceUV, float2 tiling, float2 time, float speed, float subTiling, float subSpeed)
 {
-	float2 uv = b.xy / b.z + (b.z / (b.z * b.z)) * wPos.xz;
+	float2 baseSpeed = speed.xx * tiling;
+	float2 uv1 = (sourceUV.xy * tiling.xy) + (time.xy * baseSpeed);
 
-	//TODO: Check if required per URP version
-	uv.y = 1 - uv.y;
-
-	return uv;
-}
-
-float BoundsEdgeMask(float2 rect)
-{
-	float2 xz = abs(rect.xy * 14.0) - 6.0;
-	float pos = length(max(xz, 0));
-	float neg = min(max(xz.x, xz.y), 0);
-	return 1-saturate(pos + neg);
-}
-
-float4 PackedUV(float2 sourceUV, float2 time, float speed)
-{
-	#if _RIVER
-	time.x = 0; //Only move in forward direction
-	#endif
+	float2 tiling_uv2 = tiling * subTiling;
+	float2 uv2 = (sourceUV.xy * tiling_uv2) + (time.xy * (speed.xx * subSpeed * tiling_uv2));
 	
-	float2 uv1 = sourceUV.xy + (time.xy * speed);
-	#ifndef _RIVER
-	//Second UV, 2x larger, twice as slow, in opposite direction
-	float2 uv2 = (sourceUV.xy * 0.5) + ((1 - time.xy) * speed * 0.5);
-	#else
-	//2x larger, same direction/speed
-	float2 uv2 = (sourceUV.xy * 0.5) + (time.xy * speed);
-	#endif
-
 	return float4(uv1.xy, uv2.xy);
 }
 
@@ -134,18 +107,14 @@ struct SurfaceNormalData
 	float mask;
 };
 
-float3 BlendTangentNormals(float3 a, float3 b)
+float CalculateSlopeMask(float3 normalWS, float threshold, float falloff)
 {
-	#if _ADVANCED_SHADING
-	return BlendNormalRNM(a, b);
-	#else
-	return BlendNormal(a, b);
-	#endif
-}
+	const float surfaceAngle = acos(dot(normalWS, UP_VECTOR) * 2.0 - 1.0) * RAD2DEGREE;
 
-float GetSlope(float3 normalWS, float threshold)
-{
-	return 1-smoothstep(1.0 - threshold, 1.0, saturate(dot(UP_VECTOR, normalWS)));
+	const float start = surfaceAngle - threshold;
+	const float end = threshold - falloff;
+	
+	return saturate((end - start) / (end - threshold));
 }
 
 struct SceneDepth
@@ -164,7 +133,7 @@ struct SceneDepth
 float SurfaceDepth(SceneDepth depth, float4 positionCS)
 {
 	const float sceneDepth = (unity_OrthoParams.w == 0) ? depth.eye : LinearDepthToEyeDepth(depth.raw);
-	const float clipSpaceDepth = (unity_OrthoParams.w == 0) ? LinearEyeDepth(positionCS.z, _ZBufferParams) : LinearEyeDepth(positionCS.z / positionCS.w, _ZBufferParams);
+	const float clipSpaceDepth = (unity_OrthoParams.w == 0) ? LinearEyeDepth(positionCS.z, _ZBufferParams) : LinearDepthToEyeDepth(positionCS.z / positionCS.w);
 
 	return sceneDepth - clipSpaceDepth;
 }
@@ -189,11 +158,6 @@ SceneDepth SampleDepth(float4 screenPos)
 	return depth;
 }
 
-float CheckPerspective(float x)
-{
-	return lerp(x, 1.0, unity_OrthoParams.w);
-}
-
 #define ORTHOGRAPHIC_SUPPORT
 
 #if defined(USING_STEREO_MATRICES)
@@ -201,8 +165,8 @@ float CheckPerspective(float x)
 #undef ORTHOGRAPHIC_SUPPORT
 #endif
 
-//Reconstruct view-space position from depth.
-float3 ReconstructViewPos(float4 screenPos, float3 viewDir, SceneDepth sceneDepth)
+//Reconstruct world-space position from depth.
+float3 ReconstructWorldPosition(float4 screenPos, float3 viewDir, SceneDepth sceneDepth)
 {
 	#if UNITY_REVERSED_Z
 	real rawDepth = sceneDepth.raw;
@@ -210,7 +174,9 @@ float3 ReconstructViewPos(float4 screenPos, float3 viewDir, SceneDepth sceneDept
 	// Adjust z to match NDC for OpenGL
 	real rawDepth = lerp(UNITY_NEAR_CLIP_VALUE, 1, sceneDepth.raw);
 	#endif
-	
+
+	//return ComputeWorldSpacePosition(screenPos.xy / screenPos.w, rawDepth, UNITY_MATRIX_I_VP);
+
 	#if defined(ORTHOGRAPHIC_SUPPORT)
 	//View to world position
 	float4 viewPos = float4((screenPos.xy/screenPos.w) * 2.0 - 1.0, rawDepth, 1.0);
@@ -236,20 +202,16 @@ float3 ReconstructViewPos(float4 screenPos, float3 viewDir, SceneDepth sceneDept
 
 }
 
-#define CHROMATIC_OFFSET 2.0
+#if UNITY_VERSION > 202110
+#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/NormalReconstruction.hlsl"
 
-float3 SampleOpaqueTexture(float4 screenPos, half vFace)
+float3 ReconstructWorldNormal(float4 positionCS)
 {
-	//Normalize for perspective projection
-	screenPos.xy /= screenPos.w;
-	
-	float3 sceneColor = SampleSceneColor(screenPos.xy).rgb;
-		
-	#if _ADVANCED_SHADING //Chromatic
-	sceneColor.r = lerp(sceneColor.r, SampleSceneColor(screenPos.xy + float2((_ScreenParams.z - 1.0) * CHROMATIC_OFFSET, 0)).r, vFace);
-	sceneColor.b = lerp(sceneColor.b, SampleSceneColor(screenPos.xy - float2((_ScreenParams.z - 1.0) * CHROMATIC_OFFSET, 0)).b, vFace);
-	#endif
+	half3 normalVS = ReconstructNormalTap3(positionCS.xy);
 
-	return sceneColor;
+	return normalVS;
 }
+#else
+float3 ReconstructWorldNormal(float4 positionCS) { return 0; }
+#endif
 #endif

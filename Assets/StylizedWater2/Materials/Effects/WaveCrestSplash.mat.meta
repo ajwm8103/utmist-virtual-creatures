@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 9037e6ba95d968b4985f5ab7f403b0e6
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 170386
+  packageName: Stylized Water 2
+  packageVersion: 1.7.0
+  assetPath: Assets/StylizedWater2/Materials/Effects/WaveCrestSplash.mat
+  uploadId: 712978

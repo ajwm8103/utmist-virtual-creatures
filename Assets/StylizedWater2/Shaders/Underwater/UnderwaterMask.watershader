@@ -1,0 +1,54 @@
+﻿//ScriptedImporter: StylizedWater2.WaterShaderImporter
+
+//Stylized Water 2
+//Staggart Creations (http://staggart.xyz)
+//Copyright protected under Unity Asset Store EULA
+
+%asset_version%
+
+%shader_name%
+{
+    SubShader
+    {
+        Tags { "RenderType" = "Opaque" "RenderPipeline" = "UniversalPipeline" }
+        Cull Off ZWrite Off
+
+        Pass
+        {
+            Name "Underwater Mask"
+            HLSLPROGRAM
+
+            #pragma vertex VertexWaterLine
+            #pragma fragment frag
+
+            #pragma multi_compile_local _ _WAVES
+
+            //Multi-compile variants for installed extensions
+			%multi_compile dynamic effects%
+
+            #define FULLSCREEN_QUAD
+
+			#include_library "../Libraries/URP.hlsl"
+            //#pragma multi_compile _ WATER_DISPLACEMENT_PASS
+			//#include_library "../Libraries/Displacement.hlsl" //v1.6.0+
+
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #if DYNAMIC_EFFECTS_ENABLED
+            #include_library "../DynamicEffects/DynamicEffects.hlsl"
+            #endif
+            #include_library "UnderwaterMask.hlsl"
+
+            half4 frag(Varyings input) : SV_Target
+            {
+                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+
+                //Perform some antialiasing so the render target can be of a much lower resolution
+                float gradient = pow(abs(input.uv.y), 256);
+                return 1-gradient;
+            }
+            
+            ENDHLSL
+        }
+    }
+    FallBack "Hidden/InternalErrorShader"
+}

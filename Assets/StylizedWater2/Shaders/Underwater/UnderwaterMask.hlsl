@@ -6,16 +6,15 @@
 //#define DEBUG
 
 #include "../Libraries/URP.hlsl"
-
-#if MODIFIERS_ENABLED
-//#include "../SurfaceModifiers/SurfaceModifiers.hlsl"
-#endif
+#include "../Libraries/Common.hlsl"
 
 float _WaterLevel;
 float _ClipOffset;
 float _WaterLineWidth;
 		   
-float4 _AnimationParams;
+float _Speed;
+float2 _Direction;
+
 float _WaveHeight;
 float _WaveNormalStr; //Unused
 float _WaveDistance;
@@ -71,7 +70,7 @@ struct Attributes
 struct Varyings
 {
 	float4 positionCS 	: SV_POSITION;
-	float2 uv 			: TEXCOORD0;
+	float3 uv 			: TEXCOORD0;
 	#ifdef WATERLINE
 	float3 positionWS	: TEXCOORD1;
 	float4 screenPos 	: TEXCOORD2;
@@ -98,6 +97,15 @@ float GetWaveAmplitudeXZ(float2 position, float2 wavePosition)
 	return waveAmp + PADDING;
 }
 
+float SampleWaterLevel(float3 positionWS)
+{
+	#if WATER_DISPLACEMENT_PASS
+	return SampleWaterHeight(positionWS);
+	#else
+	return _WaterLevel;
+	#endif
+}
+
 Varyings VertexWaterLine(Attributes input)
 {
 	Varyings output = (Varyings)0;
@@ -106,6 +114,7 @@ Varyings VertexWaterLine(Attributes input)
 	UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
 	output.uv.xy = input.uv.xy;
+	output.uv.z = _TimeParameters.x;
 
 	float clipPlane = (NEAR_PLANE * 2.0) + _ClipOffset;
 	
@@ -130,7 +139,7 @@ Varyings VertexWaterLine(Attributes input)
 	float planeLength = distance(bottom, top);
 
 	//Distance from near-clip bottom to water level (straight up)
-	float depth = _WaterLevel - bottom.y;
+	float depth = SampleWaterLevel(positionWS) - bottom.y;
 
 	//Camera's X-angle
 	float upFactor = dot(CAM_UP, float3(0.0, 1.0, 0.0));
@@ -141,14 +150,12 @@ Varyings VertexWaterLine(Attributes input)
 
 	//Intersection point with water level when traveling along the plane's tangent
 	float3 samplePos = bottom + (CAM_UP * hypotenuse);
-
-	#if MODIFIERS_ENABLED
-	samplePos += SampleDisplacementModifiersNear(samplePos);
-	#endif
 	
-	float waveAmp = 0;
-	#if _WAVES
-	WaveInfo waves = GetWaveInfo(samplePos.xz, ((_TimeParameters.x * _AnimationParams.z) * _AnimationParams.xy) * _WaveSpeed, 1000, 1001);
+	//Simply snap to water level
+	float waveAmp = length(samplePos - bottom);
+	
+	#if _WAVES && !WATER_DISPLACEMENT_PASS
+	WaveInfo waves = GetWaveInfo(samplePos.xz, TIME_VERTEX * _WaveSpeed, 1000, 1001);
 	waves.position.xz = samplePos.xz;
 	//Wave height is relative to 0, convert to absolute world-space height and scale
 	waves.position.y = _WaterLevel + (waves.position.y * _WaveHeight);
@@ -158,10 +165,12 @@ Varyings VertexWaterLine(Attributes input)
 
 	//If below the lowest possible wave height, fix to top of plane
 	if (top.y + _WaveHeight < _WaterLevel) waveAmp = planeLength;
+	#endif
 
-	#else
-	//Simply snap to water level
-	waveAmp = length(samplePos - bottom);
+	#if DYNAMIC_EFFECTS_ENABLED && !WATER_DISPLACEMENT_PASS
+	float4 effectsData = SampleDynamicEffectsData(samplePos.xyz);
+	
+	waveAmp += effectsData[DE_DISPLACEMENT_CHANNEL] * effectsData[DE_ALPHA_CHANNEL];
 	#endif
 	
 #if defined(FULLSCREEN_QUAD)

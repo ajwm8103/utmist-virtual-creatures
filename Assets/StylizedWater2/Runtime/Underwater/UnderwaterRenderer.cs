@@ -2,19 +2,21 @@
 //Staggart Creations (http://staggart.xyz)
 //Copyright protected under Unity Asset Store EULA
 
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
+using System;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Serialization;
 
-namespace StylizedWater2
+namespace StylizedWater2.UnderwaterRendering
 {
     [AddComponentMenu("Stylized Water 2/Underwater Renderer")]
     [ExecuteInEditMode]
     public class UnderwaterRenderer : MonoBehaviour
     {
-        public const string Version = "1.0.5";
-        public const string MinBaseVersion = "1.1.5";
+        public const string Version = "1.2.8";
+        public const string MinBaseVersion = "1.5.2";
         
 #if URP
         public static UnderwaterRenderer Instance;
@@ -50,8 +52,8 @@ namespace StylizedWater2
         }
         
         [Tooltip("Rendering is triggered once the bottom of the screen touches the water.\n\nIf the water surface is artificially raised (eg. vertex shader), use this padding value to trigger the effects early." +
-                 "\n\nIf you don't know what this means, leave it at 0!")]
-        public float waterLevelPadding = 0f;
+                 "\n\nSet this to at least 0.5 when using Dynamic Effects with displacement")]
+        public float waterLevelPadding = 0.5f;
         
         [Tooltip("The water material used in the environment. This is used to copy its colors and wave settings, so everything is in sync")]
         public Material waterMaterial;
@@ -67,7 +69,6 @@ namespace StylizedWater2
         
         [Tooltip("Pushes the fog this many units away from the camera, resulting in clear water")]
         public float startDistance = 0f;
-        [FormerlySerializedAs("horizontalDensity")]
         [Min(0f)]
         public float fogDensity = 8f;
 
@@ -76,7 +77,7 @@ namespace StylizedWater2
         public float heightFogDepth = 25f;
         [Min(0f)]
         [Tooltip("This essentially controls how harsh the start transition of the height fog is")]
-        public float heightFogDensity = 50f;
+        public float heightFogDensity = 1f;
         [Range(0f, 1f)]
         [Tooltip("Within the height fog, the fog color is multiplied by this value")]
         public float heightFogBrightness = 0.5f;
@@ -86,14 +87,14 @@ namespace StylizedWater2
         public float fogBrightness = 1f;
         [Min(0f)]
         [Tooltip("This value acts as a multiplier for the translucency strength value on the water material")]
-        public float subsurfaceStrength = 1f;
+        public float subsurfaceStrength = 0.5f;
         [Min(0f)]
         [Tooltip("This value acts as a multiplier for the caustics strength value on the water material")]
         public float causticsStrength = 1f;
         
-        [Range(0f, 1f)]
+        [Range(0f, 2f)]
         public float distortionStrength = 0.25f;
-        [Range(0f, 1f)]
+        [Range(0f, 5f)]
         public float distortionFrequency = 0.75f;
         [Range(0f, 1f)]
         public float distortionSpeed = 0.5f;
@@ -101,7 +102,7 @@ namespace StylizedWater2
         //[Header("Waterline")]
         [Tooltip("Pushes the lens effect this many units away from the camera. The camera's Near Clip value is added to this.")]
         [Min(0f)]
-        public float offset = 1f;
+        public float offset = 0.25f;
         [Range(0.1f, 0.7f)]
         public float waterLineThickness = 0.4f;
         
@@ -128,7 +129,7 @@ namespace StylizedWater2
         private static int _ClipOffset = Shader.PropertyToID("_ClipOffset");
         
         private static int _StartDistance = Shader.PropertyToID("_StartDistance");
-        private static int _FogDensity = Shader.PropertyToID("_FogDensity");
+        private static int _UnderwaterFogDensity = Shader.PropertyToID("_UnderwaterFogDensity");
         
         private static int _HeightFogDepth = Shader.PropertyToID("_HeightFogDepth");
         private static int _HeightFogDensity = Shader.PropertyToID("_HeightFogDensity");
@@ -151,7 +152,7 @@ namespace StylizedWater2
             Shader.SetGlobalFloat(_ClipOffset, offset);
 
             Shader.SetGlobalFloat(_StartDistance, useVolumeBlending && settings ? settings.startDistance.value : startDistance);
-            Shader.SetGlobalFloat(_FogDensity, (useVolumeBlending && settings ? settings.fogDensity.value : fogDensity) * 0.01f);
+            Shader.SetGlobalFloat(_UnderwaterFogDensity, (useVolumeBlending && settings ? settings.fogDensity.value : fogDensity) * 0.01f);
             
             Shader.SetGlobalFloat(_HeightFogDepth, (useVolumeBlending && settings ? settings.heightFogDepth.value : heightFogDepth));
             Shader.SetGlobalFloat(_HeightFogDensity, (useVolumeBlending && settings ? settings.heightFogDensity.value : heightFogDensity) * 0.01f);
@@ -166,21 +167,20 @@ namespace StylizedWater2
             Shader.SetGlobalFloat(_DistortionSpeed, (useVolumeBlending && settings ? settings.distortionSpeed.value  : distortionSpeed) * 0.1f);
         }
 
-        private static int SourceShallowColorID = Shader.PropertyToID("_ShallowColor");
-        private static int SourceDeepColorID = Shader.PropertyToID("_BaseColor");
-        private static int DestShallowColorID = Shader.PropertyToID("_WaterShallowColor");
-        private static int DestDeepColorID = Shader.PropertyToID("_WaterDeepColor");
+        private static readonly int SourceShallowColorID = Shader.PropertyToID("_ShallowColor");
+        private static readonly int SourceDeepColorID = Shader.PropertyToID("_BaseColor");
+        private static readonly int DestShallowColorID = Shader.PropertyToID("_WaterShallowColor");
+        private static readonly int DestDeepColorID = Shader.PropertyToID("_WaterDeepColor");
         
-        private static int CausticsTexID = Shader.PropertyToID("_CausticsTex");
-        private static int CausticsTilingID = Shader.PropertyToID("_CausticsTiling");
-        private static int CausticsBrightnessID = Shader.PropertyToID("_CausticsBrightness");
-        private static int CausticsSpeedID = Shader.PropertyToID("_CausticsSpeed");
+        private static readonly int CausticsTexID = Shader.PropertyToID("_CausticsTex");
+        private static readonly int CausticsTilingID = Shader.PropertyToID("_CausticsTiling");
+        private static readonly int CausticsBrightnessID = Shader.PropertyToID("_CausticsBrightness");
+        private static readonly int CausticsSpeedID = Shader.PropertyToID("_CausticsSpeed");
+        private static readonly int SpeedID = Shader.PropertyToID("_Speed");
         
-        private static int _TranslucencyParams = Shader.PropertyToID("_TranslucencyParams");
+        private static readonly int _TranslucencyStrength = Shader.PropertyToID("_TranslucencyStrength");
+        private static readonly int _TranslucencyExp = Shader.PropertyToID("_TranslucencyExp");
         
-        private static int _UnderwaterSurfaceSmoothness = Shader.PropertyToID("_UnderwaterSurfaceSmoothness");
-        private static int _UnderwaterRefractionOffset = Shader.PropertyToID("_UnderwaterRefractionOffset");
-
         public struct KeywordStates
         {
             public bool translucency;
@@ -212,12 +212,10 @@ namespace StylizedWater2
                 Shader.SetGlobalTexture(CausticsTexID, waterMaterial.GetTexture(CausticsTexID));
                 Shader.SetGlobalFloat(CausticsTilingID, waterMaterial.GetFloat(CausticsTilingID));
                 Shader.SetGlobalFloat(CausticsBrightnessID, waterMaterial.GetFloat(CausticsBrightnessID));
-                Shader.SetGlobalFloat(CausticsSpeedID, waterMaterial.GetFloat(CausticsSpeedID));
+                Shader.SetGlobalFloat(CausticsSpeedID, waterMaterial.GetFloat(CausticsSpeedID) * waterMaterial.GetFloat(SpeedID));
                 
-                Shader.SetGlobalVector(_TranslucencyParams, waterMaterial.GetVector(_TranslucencyParams));
-                
-                Shader.SetGlobalFloat(_UnderwaterSurfaceSmoothness, waterMaterial.GetFloat(_UnderwaterSurfaceSmoothness));
-                Shader.SetGlobalFloat(_UnderwaterRefractionOffset, waterMaterial.GetFloat(_UnderwaterRefractionOffset));
+                Shader.SetGlobalFloat(_TranslucencyStrength, waterMaterial.GetFloat(_TranslucencyStrength));
+                Shader.SetGlobalFloat(_TranslucencyExp, waterMaterial.GetFloat(_TranslucencyExp));
                 
                 //Debug.Log("Updating water material parameters");
                 waveParameters.Update(waterMaterial);
@@ -244,10 +242,20 @@ namespace StylizedWater2
             #if UNITY_EDITOR && URP
             if (Application.isPlaying == false)
             {
-                if (!PipelineUtilities.RenderFeatureAdded<UnderwaterRenderFeature>())
+                if (PipelineUtilities.RenderFeatureMissing<UnderwaterRenderFeature>(out UnityEngine.Rendering.Universal.ScriptableRendererData[] renderers))
                 {
-                    Debug.LogError("The \"Underwater Render Feature\" hasn't been added to the render pipeline. Check the inspector for setup instructions", this);
-                    UnityEditor.EditorGUIUtility.PingObject(this);
+                    string[] rendererNames = new string[renderers.Length];
+                    for (int i = 0; i < rendererNames.Length; i++)
+                    {
+                        rendererNames[i] = "• " + renderers[i].name;
+                    }
+
+                    if (EditorUtility.DisplayDialog("Underwater Rendering", $"The Underwater Rendering render feature hasn't been added to the following renderers:\n\n" +
+                                                                       System.String.Join(System.Environment.NewLine, rendererNames) +
+                                                                       $"\n\nThis is required for rendering to take effect.", "Setup", "Ignore"))
+                    {
+                        PipelineUtilities.SetupRenderFeature<UnderwaterRenderFeature>(name:"Stylized Water 2: Underwater Rendering");
+                    }
                 }
             }
             #endif
@@ -269,7 +277,7 @@ namespace StylizedWater2
 
         public void GetVolumeSettings()
         {
-            settings = VolumeManager.instance.stack.GetComponent<UnderwaterSettings>();
+            settings = VolumeManager.instance?.stack?.GetComponent<UnderwaterSettings>();
         }
 
         private void OnDisable()
@@ -329,6 +337,11 @@ namespace StylizedWater2
         {
             if (!Instance) return;
 
+            if (material.GetFloat("_Cull") > 0)
+            {
+                throw new Exception($"[Underwater Renderer] Assigned material ({material.name}) is not double-sided! Set the Cull Faces option to \"Off\"");
+            }
+            
             Instance.waterMaterial = material;
             Instance.UpdateMaterialParameters();
             Instance.UpdateProperties();
@@ -372,13 +385,33 @@ namespace StylizedWater2
         {
             //Little caveat, this must be done on a per-camera basis. The render passes are shared by all cameras using the same renderer.
             //Set the keyword before rendering, before any passes execute (including underwater rendering)
-            UnderwaterUtilities.ToggleUnderwaterKeyword(CameraIntersectingWater(currentCamera));
+            UnderwaterUtilities.ToggleUnderwaterKeyword(CameraIntersectingWater(currentCamera) && EnableRendering);
         }
 
         private void OnEndCameraRendering(ScriptableRenderContext content, Camera currentCamera)
         {
             //Disable if necessary for whatever camera comes next, it may not be underwater
             UnderwaterUtilities.ToggleUnderwaterKeyword(false);
+        }
+
+        public static void DrawWaterLevelGizmo(Vector3 center, Vector3 scale, float waterLevel)
+        {
+            Gizmos.color = new Color(0, 1f, 0f, 0.5f);
+            Vector3 pos = center;
+            pos.y = waterLevel;
+				
+            Vector3 size = new Vector3(scale.x, 0f, scale.z);
+            Gizmos.DrawCube(pos, size);
+				
+            Gizmos.color = new Color(0, 1f, 0f, 1f);
+            Gizmos.DrawWireCube(pos, size);
+        }
+
+        public static bool VisualizeWaterLevel;
+        
+        private void OnDrawGizmosSelected()
+        {
+            if(VisualizeWaterLevel) DrawWaterLevelGizmo(this.transform.position, Vector3.one * 3000f, CurrentWaterLevel);
         }
 #else
 #error Underwater Rendering extension is imported without either the "Stylized Water 2" asset or the "Universal Render Pipeline" installed. Will not be functional until these are both installed and set up.

@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: 1318138c4ac146af86a745a7082ac2a8
+timeCreated: 1701267893
+AssetOrigin:
+  serializedVersion: 1
+  productId: 170386
+  packageName: Stylized Water 2
+  packageVersion: 1.7.0
+  assetPath: Assets/StylizedWater2/Shaders/Libraries/Displacement.hlsl
+  uploadId: 712978

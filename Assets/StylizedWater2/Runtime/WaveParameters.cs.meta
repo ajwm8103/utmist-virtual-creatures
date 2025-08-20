@@ -1,3 +1,10 @@
 ﻿fileFormatVersion: 2
 guid: 99230946af6b43d59e5588b131421f2d
 timeCreated: 1616150513
+AssetOrigin:
+  serializedVersion: 1
+  productId: 170386
+  packageName: Stylized Water 2
+  packageVersion: 1.7.0
+  assetPath: Assets/StylizedWater2/Runtime/WaveParameters.cs
+  uploadId: 712978

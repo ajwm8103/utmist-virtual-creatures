@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 3bbcc008d31f4e54498c850c47e3a275
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 170386
+  packageName: Stylized Water 2
+  packageVersion: 1.7.0
+  assetPath: Assets/StylizedWater2/Shaders/SubGraphs/Readme.txt
+  uploadId: 712978

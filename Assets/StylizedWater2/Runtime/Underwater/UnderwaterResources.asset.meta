@@ -7,3 +7,10 @@ NativeFormatImporter:
   icon: {fileID: -4981542250972756107, guid: 0000000000000000d000000000000000, type: 0}
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 185030
+  packageName: Underwater Rendering for Stylized Water 2 (Extension)
+  packageVersion: 1.2.8
+  assetPath: Assets/StylizedWater2/Runtime/Underwater/UnderwaterResources.asset
+  uploadId: 712977

@@ -1,0 +1,29 @@
+fileFormatVersion: 2
+guid: 964c3b6361fa417d90ebf84bb1e09732
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 531a3ff0802e4acbaef16e2b9d97fd66, type: 3}
+  template: {instanceID: 0}
+  settings:
+    shaderName: UnderwaterShading
+    hidden: 1
+    type: 1
+    underwaterRendering: 0
+    decals: 0
+    autoFogIntegration: 1
+    fogIntegration: 1
+    CurvedWorld2020: 0
+    quadNormalMapSamples: 0
+    customDirectives: []
+AssetOrigin:
+  serializedVersion: 1
+  productId: 185030
+  packageName: Underwater Rendering for Stylized Water 2 (Extension)
+  packageVersion: 1.2.8
+  assetPath: Assets/StylizedWater2/Shaders/Underwater/UnderwaterShading.watershader
+  uploadId: 712977

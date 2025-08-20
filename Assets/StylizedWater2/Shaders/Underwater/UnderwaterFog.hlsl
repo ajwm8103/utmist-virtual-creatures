@@ -11,7 +11,7 @@ float4 _WaterShallowColor;
 float4 _WaterDeepColor;
 
 float _StartDistance;
-float _FogDensity;
+float _UnderwaterFogDensity;
 
 float _HeightFogDepth;
 float _HeightFogDensity;
@@ -32,12 +32,12 @@ float ComputeDistanceXYZ(float3 positionWS)
 
 	//Start distance
 	horizontal -= _ProjectionParams.y + _StartDistance;
-	horizontal *= _FogDensity;
+	horizontal *= _UnderwaterFogDensity;
 	
 	return saturate(1-(exp(-horizontal)));
 }
 
-float ComputeHeight(float3 positionWS)
+float ComputeUnderwaterFogHeight(float3 positionWS)
 {
 	float start = (_WaterLevel - 1.0 - _HeightFogDepth) - _HeightFogDensity;
 	
@@ -64,7 +64,7 @@ float ComputeDensity(float distanceDepth, float heightDepth)
 float GetUnderwaterFogDensity(float3 positionWS)
 {
 	const float distanceDensity = ComputeDistanceXYZ(positionWS);
-	const float heightDensity = ComputeHeight(positionWS);
+	const float heightDensity = ComputeUnderwaterFogHeight(positionWS);
 	const float density = ComputeDensity(distanceDensity, heightDensity);
 
 	return density;
@@ -98,7 +98,7 @@ float3 GetUnderwaterFogColor(float distanceDensity, float heightDensity)
 float3 GetUnderwaterFogColor(float3 positionWS)
 {
 	const float distanceDensity = ComputeDistanceXYZ(positionWS);
-	const float heightDensity = ComputeHeight(positionWS);
+	const float heightDensity = ComputeUnderwaterFogHeight(positionWS);
 
 	return GetUnderwaterFogColor(distanceDensity, heightDensity);
 }

@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Object = UnityEngine.Object;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
+using UnityEngine.Rendering;
 
 namespace StylizedWater2
 {
@@ -17,11 +14,50 @@ namespace StylizedWater2
     [DisallowMultipleComponent]
     public class WaterObject : MonoBehaviour
     {
+        /// <summary>
+        /// Collection of all available WaterObject instances. Instances (un)register themselves in the OnEnable/OnDisable functions.
+        /// </summary>
         public static readonly List<WaterObject> Instances = new List<WaterObject>();
         
         public Material material;
         public MeshFilter meshFilter;
         public MeshRenderer meshRenderer;
+
+        private static Vector3 s_PositionOffset;
+        private static readonly int _WaterPositionOffset = Shader.PropertyToID("_WaterPositionOffset");
+        
+        /// <summary>
+        /// For use with floating-point origin systems. In the shader, the world-position (used for UV coordinates) will be offset by this value.
+        /// Buoyancy calculations will also be offset to stay in sync.
+        /// </summary>
+        public static Vector3 PositionOffset
+        {
+            set
+            {
+                s_PositionOffset = value;
+                Shader.SetGlobalVector(_WaterPositionOffset, s_PositionOffset);
+            }
+            internal get => s_PositionOffset;
+        }
+        
+        private static float m_customTimeValue = -1f;
+        private static readonly int CustomTimeID = Shader.PropertyToID("_CustomTime");
+
+        /// <summary>
+        /// Pass in any time value, any kind of animations will use this as a time index, including wave animations (and thus buoyancy calculations as well).
+        /// This is typically used for network synchronized waves or cutscenes.
+        /// To revert to using normal <see cref="Time.time"/>, pass in a value lower than <c>0</c>.
+        /// </summary>
+        /// <param name="value"></param>
+        public static float CustomTime
+        {
+            set
+            {
+                m_customTimeValue = value;
+                Shader.SetGlobalFloat(CustomTimeID, m_customTimeValue);
+            }
+            get => m_customTimeValue;
+        }
         
         private MaterialPropertyBlock _props;
         public MaterialPropertyBlock props
@@ -31,11 +67,24 @@ namespace StylizedWater2
                 //Fetch when required, execution order makes it unreliable otherwise
                 if (_props == null)
                 {
-                    _props = new MaterialPropertyBlock();
-                    meshRenderer.GetPropertyBlock(_props);
+                    CreatePropertyBlock(meshRenderer);
                 }
                 return _props;
             }
+            private set => _props = value;
+        }
+
+        private void CreatePropertyBlock(Renderer sourceRenderer)
+        {
+            _props = new MaterialPropertyBlock();
+            sourceRenderer.GetPropertyBlock(_props);
+        }
+
+        private void Reset()
+        {
+            meshRenderer = GetComponent<MeshRenderer>();
+            CreatePropertyBlock(meshRenderer);
+            meshFilter = GetComponent<MeshFilter>();
         }
 
         private void OnEnable()
@@ -58,11 +107,20 @@ namespace StylizedWater2
         /// <summary>
         /// Grabs the material from the attached Mesh Renderer
         /// </summary>
-        public void FetchWaterMaterial()
+        public Material FetchWaterMaterial()
         {
-            if (meshRenderer) material = meshRenderer.sharedMaterial;
+            if (meshRenderer)
+            {
+                material = meshRenderer.sharedMaterial;
+                return material;
+            }
+
+            return null;
         }
 
+        /// <summary>
+        /// Applies to changes made to the Material Property Blocks ('props' property)
+        /// </summary>
         public void ApplyInstancedProperties()
         {
             if(props != null) meshRenderer.SetPropertyBlock(props);
@@ -96,6 +154,12 @@ namespace StylizedWater2
         public static WaterObject New(Material waterMaterial = null, Mesh mesh = null)
         {
             GameObject go = new GameObject("Water Object", typeof(MeshFilter), typeof(MeshRenderer), typeof(WaterObject));
+            go.layer = LayerMask.NameToLayer("Water");
+            
+            #if UNITY_EDITOR
+            UnityEditor.Undo.RegisterCreatedObjectUndo(go, "Created Water Object");
+            #endif
+            
             WaterObject waterObject = go.GetComponent<WaterObject>();
             
             waterObject.meshRenderer = waterObject.gameObject.GetComponent<MeshRenderer>();
@@ -103,6 +167,7 @@ namespace StylizedWater2
             
             waterObject.meshFilter.sharedMesh = mesh;
             waterObject.meshRenderer.sharedMaterial = waterMaterial;
+            waterObject.meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
             waterObject.material = waterMaterial;
 
             return waterObject;
@@ -123,7 +188,7 @@ namespace StylizedWater2
                 if (rotationSupport)
                 {
                     //Local space
-                    ray.origin = obj.transform.InverseTransformPoint(position + (Vector3.up * 1000f));
+                    ray.origin = obj.transform.InverseTransformPoint(ray.origin);
                     if (obj.meshFilter.sharedMesh.bounds.IntersectRay(ray)) return obj;
                 }
                 else
@@ -136,27 +201,4 @@ namespace StylizedWater2
             return null;
         }
     }
-    
-    #if UNITY_EDITOR
-    [CustomEditor(typeof(WaterObject))]
-    [CanEditMultipleObjects]
-    public class WaterObjectInspector : Editor
-    {
-        public override void OnInspectorGUI()
-        {
-            EditorGUILayout.HelpBox("This component provides a means for other scripts to identify and find water bodies", MessageType.None);
-            
-            EditorGUI.BeginDisabledGroup(true);
-            base.OnInspectorGUI();
-            EditorGUI.EndDisabledGroup();
-
-            //In case the material was changed on the attached Mesh Renderer, reflect the change
-            foreach (Object currentTarget in targets)
-            {
-                WaterObject water = (WaterObject)currentTarget;
-                water.FetchWaterMaterial();
-            }
-        }
-    }
-    #endif
 }

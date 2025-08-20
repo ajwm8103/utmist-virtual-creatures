@@ -1,10 +1,15 @@
 {
     "name": "sc.stylizedwater2.editor",
+    "rootNamespace": "",
     "references": [
         "GUID:93226a8cd37f67d4a996a525146f6f09",
         "GUID:15fc0a57446b3144c949da3e2b9737a9",
+        "GUID:4fd6538c1c56b409fb53fdf0183170ec",
         "GUID:df380645f10b7bc4b97d4f5eb6303d95",
-        "GUID:3eae0364be2026648bf74846acb8a731"
+        "GUID:3eae0364be2026648bf74846acb8a731",
+        "GUID:e40ba710768534012815d3193fa296cb",
+        "GUID:f9fe0089ec81f4079af78eb2287a6163",
+        "GUID:75ecb28acc33857438e533566abcb3be"
     ],
     "includePlatforms": [
         "Editor"
@@ -17,29 +22,24 @@
     "defineConstraints": [],
     "versionDefines": [
         {
+            "name": "com.unity.xr.management",
+            "expression": "3.2.10",
+            "define": "XR"
+        },
+        {
             "name": "com.unity.render-pipelines.universal",
-            "expression": "7.5.3",
+            "expression": "10.3.2",
             "define": "URP"
         },
         {
-            "name": "com.unity.render-pipelines.universal",
-            "expression": "8.9.9",
-            "define": "URP_9_0_OR_NEWER"
+            "name": "com.unity.visualeffectgraph",
+            "expression": "10.3.2",
+            "define": "VFX_GRAPH"
         },
         {
-            "name": "com.unity.render-pipelines.universal",
-            "expression": "10.0.0",
-            "define": "URP_10_0_OR_NEWER"
-        },
-        {
-            "name": "com.unity.render-pipelines.universal",
-            "expression": "10.9.9",
-            "define": "URP_11_0_OR_NEWER"
-        },
-        {
-            "name": "com.unity.render-pipelines.universal",
-            "expression": "11.9.9",
-            "define": "URP_12_0_OR_NEWER"
+            "name": "com.unity.splines",
+            "expression": "2.0.0",
+            "define": "SPLINES"
         }
     ],
     "noEngineReferences": false

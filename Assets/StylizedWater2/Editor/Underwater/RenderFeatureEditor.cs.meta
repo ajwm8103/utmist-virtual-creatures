@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: e66021c01d384f49be2b52b0d3690799
+timeCreated: 1699267684
+AssetOrigin:
+  serializedVersion: 1
+  productId: 185030
+  packageName: Underwater Rendering for Stylized Water 2 (Extension)
+  packageVersion: 1.2.8
+  assetPath: Assets/StylizedWater2/Editor/Underwater/RenderFeatureEditor.cs
+  uploadId: 712977

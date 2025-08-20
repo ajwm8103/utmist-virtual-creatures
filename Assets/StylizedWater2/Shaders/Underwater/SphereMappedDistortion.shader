@@ -6,6 +6,7 @@
         ZTest Always
         ZWrite Off
         Cull Off //Mesh already has flipped normals
+        ZClip Off
         
         Pass
         {
@@ -42,7 +43,7 @@
 
                 //Scale to the projection's field of view
                 //Additional scale increases noise frequency, but also offers more variety
-                output.positionOS = input.positionOS.xyz *  unity_CameraInvProjection._m11 * 4.0;
+                output.positionOS = input.positionOS.xyz *  unity_CameraInvProjection._m11;
                 
                 //Position to camera origin
                 output.positionWS.xyz = _WorldSpaceCameraPos.xyz + output.positionOS;

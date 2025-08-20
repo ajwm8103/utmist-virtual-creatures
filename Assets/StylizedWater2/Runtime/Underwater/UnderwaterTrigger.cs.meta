@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 818449093bc6ad6488e4be7aa1b80f8f
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 185030
+  packageName: Underwater Rendering for Stylized Water 2 (Extension)
+  packageVersion: 1.2.8
+  assetPath: Assets/StylizedWater2/Runtime/Underwater/UnderwaterTrigger.cs
+  uploadId: 712977

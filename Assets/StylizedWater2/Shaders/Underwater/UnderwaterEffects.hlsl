@@ -2,8 +2,9 @@
 //Staggart Creations (http://staggart.xyz)
 //Copyright protected under Unity Asset Store EULA
 
-//Victim of changes in early URP versions. Technically applies to 7.5.2 and older, but can't check for sub-versions
-#if (SHADER_LIBRARY_VERSION_MAJOR == 7 && SHADER_LIBRARY_VERSION_MINOR < 5) || defined(STEREO_INSTANCING_ON) || defined(UNITY_STEREO_MULTIVIEW_ENABLED)
+#include "../Libraries/Common.hlsl"
+
+#if defined(STEREO_INSTANCING_ON) || defined(UNITY_STEREO_MULTIVIEW_ENABLED)
 #define LEFT_HANDED_VIEW_SPACE
 #endif
 
@@ -52,7 +53,7 @@ float3 ViewSpacePosition(float2 uv)
 	return ComputeViewSpacePosition(uv, rawDepth, unity_CameraInvProjection);
 }
 
-#if _SOURCE_DEPTH_NORMALS && SHADER_LIBRARY_VERSION_MAJOR >= 10
+#if _SOURCE_DEPTH_NORMALS && UNITY_VERSION >= 202020
 #define DEPTH_NORMALS_PREPASS_AVAILABLE
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
 #else
@@ -65,12 +66,17 @@ float3 GetWorldNormal(float2 screenPos)
 	
 	#ifdef DEPTH_NORMALS_PREPASS_AVAILABLE
 	viewNormal = SampleSceneNormals(screenPos);
+
+	//Already in world-space
+	#if UNITY_VERSION >= 202130
+	return viewNormal;
+	#endif
 	#else
 
 	//https://wickedengine.net/2019/09/22/improved-normal-reconstruction-from-depth/
 	
 	// get current pixel's view space position
-	const half3 center = ViewSpacePosition(screenPos);
+	const float3 center = ViewSpacePosition(screenPos);
 
 	// get view space position at 1 pixel offsets in each major direction
 	const half3 left = ViewSpacePosition(screenPos - float2(_ScreenParams.z - 1.0, 0.0));
@@ -85,8 +91,8 @@ float3 GetWorldNormal(float2 screenPos)
 	half3 u = up - center;
 
 	// pick horizontal and vertical diff with the smallest z difference
-	const half3 H = abs(l.z) < abs(r.z) ? l : r;
-	const half3 V = abs(d.z) < abs(u.z) ? d : u;
+	const float3 H = abs(l.z) < abs(r.z) ? l : r;
+	const float3 V = abs(d.z) < abs(u.z) ? d : u;
 
 	// get view space normal from the cross product of the diffs
 	viewNormal = normalize(cross(H, V));
@@ -98,7 +104,7 @@ float3 GetWorldNormal(float2 screenPos)
 	viewNormal.y = -viewNormal.y;
 	#endif
 
-	float3 worldNormal = mul((float3x3)unity_CameraToWorld, viewNormal);
+	float3 worldNormal = mul((float3x3)unity_CameraToWorld, viewNormal.xyz);
 	
 	return worldNormal;
 }
@@ -118,11 +124,16 @@ float _DistortionSpeed;
 
 #define HALF_FREQUENCY 0.5
 #define STRENGTH_SCALAR 4.0
-
+	
+float GetDistortionTime()
+{
+	return (_CustomTime > 0 ? _CustomTime : _TimeParameters.x) * _DistortionSpeed;
+}
+	
 float MapWorldSpaceDistortionOffsets(float3 wPos)
 {
 	wPos *= _DistortionFreq;
-	float distortionOffset = _TimeParameters.x * _DistortionSpeed;
+	float distortionOffset = GetDistortionTime();
 	
 	float x1 =  SAMPLE_TEXTURE2D(_DistortionNoise, sampler_DistortionNoise, float2(wPos.y + distortionOffset, wPos.z + distortionOffset)).r;
 	#ifdef HQ_WORLDSPACE_DISTORTION
@@ -151,7 +162,7 @@ half DistortUV(float2 uv, inout float2 distortedUV)
 	
 #if _SCREENSPACE_DISTORTION
 	float2 distortionFreq = uv * _DistortionFreq;
-	float distortionOffset = _TimeParameters.x * _DistortionSpeed;
+	float distortionOffset = GetDistortionTime();
 				
 	float n1 = SAMPLE_TEXTURE2D(_DistortionNoise, sampler_DistortionNoise, float2(distortionFreq.x + distortionOffset, distortionFreq.y + distortionOffset)).r ;
 	float n2 = SAMPLE_TEXTURE2D(_DistortionNoise, sampler_DistortionNoise, float2(distortionFreq.x - (distortionOffset * HALF_FREQUENCY), distortionFreq.y)).r;

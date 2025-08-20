@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: bc44ed7be80a4457ab68b36746675546
+timeCreated: 1686819225
+AssetOrigin:
+  serializedVersion: 1
+  productId: 170386
+  packageName: Stylized Water 2
+  packageVersion: 1.7.0
+  assetPath: Assets/StylizedWater2/Shaders/Libraries/Foam.hlsl
+  uploadId: 712978

@@ -10,6 +10,7 @@ TEXTURE2D(_DepthTex);
 CBUFFER_START(UnityPerMaterial)
 	float4 _ShallowColor;
 	float4 _BaseColor;
+	half _ColorAbsorption;
 
 	//float _Smoothness;
 	//float _Metallic;
@@ -19,24 +20,31 @@ CBUFFER_START(UnityPerMaterial)
 	float _DepthHorizontal;
 	float _DepthExp;
 	float _WorldSpaceUV;
-	float _NormalTiling;
+	float2 _NormalTiling;
+	float _NormalSubTiling;
 	float _NormalSpeed;
-	half4 _DistanceNormalParams;
+	float _NormalSubSpeed;
 	half _NormalStrength;
-	half4 _TranslucencyParams;
-//X: Strength
-//Y: Exponent
-	half _TranslucencyReflectionMask;
+
+	half2 _DistanceNormalsFadeDist;
+	half _DistanceNormalsTiling;
+
+	half _TranslucencyStrength;
+	half _TranslucencyStrengthDirect;
+	half _TranslucencyExp;
+	half _TranslucencyCurvatureMask;
 	half _EdgeFade;
 	float _WaveSpeed;
 	float4 _HorizonColor;
 	half _HorizonDistance;
 	float _SparkleIntensity;
 	half _SparkleSize;
-	float _SunReflectionDistortion;
-	float _SunReflectionSize;
+	half _SunReflectionDistortion;
+	half _SunReflectionSize;
 	float _SunReflectionStrength;
-	float _PointSpotLightReflectionExp;
+	float _PointSpotLightReflectionStrength;
+	half _PointSpotLightReflectionSize;
+	half _PointSpotLightReflectionDistortion;
 	float _ReflectionDistortion;
 	float _ReflectionBlur;
 	float _ReflectionFresnel;
@@ -44,23 +52,37 @@ CBUFFER_START(UnityPerMaterial)
 	half _ReflectionLighting;
 	half _PlanarReflectionsEnabled;
 	half _ShadowStrength;
-	float4 _AnimationParams;
-	float4 _SlopeParams;
-	half _SlopeThreshold;
+	float2 _Direction;
+	float _Speed;
+
+	half _SlopeStretching;
+	half _SlopeSpeed;
+	half _SlopeAngleThreshold;
+	half _SlopeAngleFalloff;
+	half _SlopeFoam;
 
 	//Foam
-	float _FoamTiling;
 	float4 _FoamColor;
 	float _FoamSpeed;
-	half _FoamSize;
-	half _FoamWaveMask;
-	half _FoamWaveMaskExp;
+	float _FoamSubSpeed;
+	float2 _FoamTiling;
+	float _FoamSubTiling;
+	half _FoamBaseAmount;
+	half _FoamClipping;
+	half _FoamWaveAmount;
+	half _FoamDistortion;
+
+	float _FoamTilingDynamic;
+	float _FoamSubTilingDynamic;
+	float _FoamSpeedDynamic;
+	float _FoamSubSpeedDynamic;
 
 	//Intersection
 	half _IntersectionSource;
 	half _IntersectionLength;
 	half _IntersectionFalloff;
 	half _IntersectionTiling;
+	half _IntersectionDistortion;
 	half _IntersectionRippleDist;
 	half _IntersectionRippleStrength;
 	half _IntersectionClipping;
@@ -70,7 +92,7 @@ CBUFFER_START(UnityPerMaterial)
 	half _WaveHeight;
 	half _WaveNormalStr;
 	float _WaveDistance;
-	half4 _WaveFadeDistance;
+	half2 _WaveFadeDistance;
 	float _WaveSteepness;
 	uint _WaveCount;
 	half4 _WaveDirection;
@@ -81,12 +103,22 @@ CBUFFER_START(UnityPerMaterial)
 
 	//Underwater
 	half _CausticsBrightness;
+	half _CausticsChromance;
 	float _CausticsTiling;
 	half _CausticsSpeed;
 	half _RefractionStrength;
+	half _RefractionChromaticAberration;
 	half _CausticsDistortion;
 
-	half4 _VertexColorMask;
+	half _UnderwaterSurfaceSmoothness;
+	half _UnderwaterRefractionOffset;
+
+	half _VertexColorDepth;
+	half _VertexColorWaveFlattening;
+	half _VertexColorFoam;
+
+	bool _ReceiveDynamicEffects;
+
 	half _WaveTint;
 #ifdef TESSELLATION_ON	
 	float _TessValue;
