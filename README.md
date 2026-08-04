@@ -50,6 +50,6 @@ Andrew Magnuson - ajwmagnuson@gmail.com
 - [Anoop Rehman](https://github.com/anoop-rehman)
 - [Daniel Chua](https://github.com/latexsupremecist)
 - [Youssef Rachad](https://github.com/Youssef-Rachad)
-- [Carol Meng](https://github.com/Caspian-9)
+- [Carol Meng](https://github.com/carolmeng9)
 - [Ryan Wei](https://github.com/AC-W)
 - [Efe Tascioglu](https://github.com/efetascioglu)
